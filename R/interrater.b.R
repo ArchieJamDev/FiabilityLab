@@ -21,6 +21,12 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
     inherit = interRaterBase,
     private = list(
 
+        # ── Stored state for plot renderers ───────────────────────────────
+        .plot_rows = NULL,   # data.frame: coefficient, value, ci_lower, ci_upper
+        .diag_type = NULL,   # "prevalence" | "rater_mean" | NULL
+        .diag_data = NULL,   # data.frame backing .plotDiagnostic
+        .diag_extra = NULL,  # scalar backing .plotDiagnostic (e.g. grand mean)
+
         .tr = function(en, es) if (identical(self$options$reportLang, "es")) es else en,
 
         # Landis & Koch (1977) bands -- the field-standard interpretation
@@ -87,7 +93,9 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                     "Por favor seleccione al menos 2 variables de calificación para calcular los coeficientes de acuerdo."
                 ), "</i></p>"))
                 self$results$mainTable$setVisible(FALSE)
+                self$results$plotComparison$setVisible(FALSE)
                 self$results$discordanceNote$setVisible(FALSE)
+                self$results$plotDiagnostic$setVisible(FALSE)
                 self$results$interpretation$setVisible(FALSE)
                 return()
             }
@@ -105,7 +113,9 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                     "No hay suficientes casos completos (mínimo 5 requeridos)."
                 ), "</b></p>"))
                 self$results$mainTable$setVisible(FALSE)
+                self$results$plotComparison$setVisible(FALSE)
                 self$results$discordanceNote$setVisible(FALSE)
+                self$results$plotDiagnostic$setVisible(FALSE)
                 self$results$interpretation$setVisible(FALSE)
                 return()
             }
@@ -281,6 +291,20 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             private$.reset_table(mt, length(rows))
             for (i in seq_along(rows)) mt$setRow(rowNo = i, values = rows[[i]])
 
+            # Data for .plotComparison: only rows with a real value (skip
+            # "not applicable" placeholders like the ICC row on nominal data).
+            plot_rows <- Filter(function(r) !is.na(r$value), rows)
+            if (length(plot_rows) > 0L) {
+                private$.plot_rows <- data.frame(
+                    coefficient = vapply(plot_rows, function(r) r$coefficient, character(1)),
+                    value       = vapply(plot_rows, function(r) r$value, numeric(1)),
+                    ci_lower    = vapply(plot_rows, function(r) if (is.na(r$ci_lower)) r$value else r$ci_lower, numeric(1)),
+                    ci_upper    = vapply(plot_rows, function(r) if (is.na(r$ci_upper)) r$value else r$ci_upper, numeric(1)),
+                    stringsAsFactors = FALSE)
+            } else {
+                self$results$plotComparison$setVisible(FALSE)
+            }
+
             # ── 7. Discordance panel ──────────────────────────────────────────
             discord_html <- ""
             if (level %in% c("nominal", "ordinal") && !is.na(kappa_val) && !is.na(gwet_val)) {
@@ -352,6 +376,11 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 others_pct  <- round(mean(rater_avg[-worst_i]) * 100, 1)
                 rater_gap   <- round(others_pct - worst_pct, 1)
                 has_outlier_rater <- rater_gap > 8
+
+                private$.diag_type <- "prevalence"
+                private$.diag_data <- data.frame(
+                    category = names(prev_tab), pct = unname(prev_tab) * 100,
+                    stringsAsFactors = FALSE)
             } else if (level == "continuous" && k >= 2L) {
                 rater_means <- colMeans(df_num, na.rm = TRUE)
                 grand_mean  <- mean(rater_means)
@@ -359,6 +388,14 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 biased_rater<- names(rater_means)[worst_i]
                 bias_gap    <- round(rater_means[worst_i] - grand_mean, 1)
                 has_biased_rater <- abs(bias_gap) > 3
+
+                private$.diag_type  <- "rater_mean"
+                private$.diag_data  <- data.frame(
+                    rater = names(rater_means), mean = unname(rater_means),
+                    stringsAsFactors = FALSE)
+                private$.diag_extra <- grand_mean
+            } else {
+                self$results$plotDiagnostic$setVisible(FALSE)
             }
 
             # ── 9. Interpretation & recommendations (four questions) ─────────
@@ -511,9 +548,12 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 why_html,
                 "<h4>", tr("What it means", "Qué implica"), "</h4>",
                 implies_html,
+                if (nzchar(bands_html)) paste0(
+                    "<p style='margin-top:0.8em;font-weight:700;'>", tr("Interpretation Benchmarks", "Criterios de interpretación"), "</p>",
+                    bands_html
+                ) else "",
                 "<h4>", tr("What to do now", "Qué hacer ahora"), "</h4>",
                 action_html,
-                if (nzchar(bands_html)) paste0("<h4>", tr("Interpretation Benchmarks", "Criterios de interpretación"), "</h4>", bands_html) else "",
                 "<p style='font-size:11px;color:#666;'>", tr(
                     "See Fiability Library → Inter-Rater Agreement for full definitions and assumptions, and Bibliography → Inter-Rater Reliability for references.",
                     "Vea Biblioteca de Confiabilidad → Acuerdo entre Jueces para definiciones y supuestos completos, y Bibliografía → Confiabilidad entre Jueces para las referencias."),
@@ -521,6 +561,64 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 "</div>"
             )
             self$results$interpretation$setContent(rec_html)
+        },
+
+        # ── Plot: coefficient comparison (forest-plot style) ────────────────
+        # EN: One point + CI whisker per computed coefficient -- the visual
+        # counterpart of the discordance panel: a Kappa/Gwet or ICC-forms
+        # gap that reads as one sentence in text is immediately visible
+        # here as two dots sitting apart on the same 0-1 scale.
+        # ES: Un punto + barra de error por coeficiente calculado -- la
+        # contraparte visual del panel de discordancia: una brecha Kappa/
+        # Gwet o entre formas de ICC que se lee como una oración en texto
+        # es inmediatamente visible aquí como dos puntos separados en la
+        # misma escala 0-1.
+        .plotComparison = function(image, ggtheme, theme, ...) {
+            d <- private$.plot_rows
+            if (is.null(d) || nrow(d) == 0L) return(FALSE)
+            d$coefficient <- factor(d$coefficient, levels = rev(d$coefficient))
+            lo <- min(0, d$ci_lower, na.rm = TRUE)
+            hi <- max(1, d$ci_upper, na.rm = TRUE)
+            p <- ggplot2::ggplot(d, ggplot2::aes(x = value, y = coefficient)) +
+                ggplot2::geom_errorbar(ggplot2::aes(xmin = ci_lower, xmax = ci_upper),
+                                       width = .15, orientation = "y", colour = "#4E79A7", linewidth = .6) +
+                ggplot2::geom_point(size = 3.2, colour = "#4E79A7") +
+                ggplot2::coord_cartesian(xlim = c(lo, hi)) +
+                ggplot2::labs(x = private$.tr("Value (95% CI)", "Valor (IC 95%)"), y = NULL,
+                              title = private$.tr("Coefficient Comparison", "Comparación de Coeficientes")) +
+                ggtheme
+            print(p)
+            TRUE
+        },
+
+        # ── Plot: category prevalence (nominal/ordinal) or per-rater mean
+        # (continuous) -- the visual counterpart of the "Why" diagnosis.
+        # ES: Prevalencia de categoría (nominal/ordinal) o media por juez
+        # (continuo) -- la contraparte visual del diagnóstico de "Por qué".
+        .plotDiagnostic = function(image, ggtheme, theme, ...) {
+            d <- private$.diag_data
+            if (is.null(d) || nrow(d) == 0L) return(FALSE)
+            tr <- private$.tr
+            if (identical(private$.diag_type, "prevalence")) {
+                d$category <- factor(d$category, levels = rev(d$category))
+                p <- ggplot2::ggplot(d, ggplot2::aes(x = pct, y = category)) +
+                    ggplot2::geom_bar(stat = "identity", fill = "#4E79A7", alpha = .85, width = .6) +
+                    ggplot2::labs(x = tr("% of all ratings", "% de todas las calificaciones"), y = NULL,
+                                  title = tr("Category Prevalence", "Prevalencia de Categoría")) +
+                    ggtheme
+            } else if (identical(private$.diag_type, "rater_mean")) {
+                grand_mean <- private$.diag_extra
+                p <- ggplot2::ggplot(d, ggplot2::aes(x = rater, y = mean)) +
+                    ggplot2::geom_bar(stat = "identity", fill = "#4E79A7", alpha = .85, width = .6) +
+                    ggplot2::geom_hline(yintercept = grand_mean, linetype = "dashed",
+                                        colour = "#E15759", linewidth = .6) +
+                    ggplot2::labs(x = NULL, y = tr("Mean score", "Puntaje medio"),
+                                  title = tr("Rater Mean Score (dashed = grand mean)",
+                                             "Puntaje Medio por Juez (línea punteada = media general)")) +
+                    ggtheme
+            } else return(FALSE)
+            print(p)
+            TRUE
         }
     )
 )

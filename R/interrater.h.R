@@ -113,7 +113,9 @@ interRaterResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
     active = list(
         autoDetectNote = function() private$.items[["autoDetectNote"]],
         mainTable = function() private$.items[["mainTable"]],
+        plotComparison = function() private$.items[["plotComparison"]],
         discordanceNote = function() private$.items[["discordanceNote"]],
+        plotDiagnostic = function() private$.items[["plotDiagnostic"]],
         interpretation = function() private$.items[["interpretation"]]),
     private = list(),
     public=list(
@@ -160,10 +162,25 @@ interRaterResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                         `title`="p", 
                         `type`="number", 
                         `format`="zto,digits=4"))))
+            self$add(jmvcore::Image$new(
+                options=options,
+                name="plotComparison",
+                title="Coefficient Comparison",
+                width=600,
+                height=350,
+                renderFun=".plotComparison",
+                visible="(kappa || gwet || krippendorff || icc)"))
             self$add(jmvcore::Html$new(
                 options=options,
                 name="discordanceNote",
                 title="Coefficient Discordance"))
+            self$add(jmvcore::Image$new(
+                options=options,
+                name="plotDiagnostic",
+                title="Diagnostic Plot",
+                width=600,
+                height=350,
+                renderFun=".plotDiagnostic"))
             self$add(jmvcore::Html$new(
                 options=options,
                 name="interpretation",
@@ -208,7 +225,9 @@ interRaterBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #' \tabular{llllll}{
 #'   \code{results$autoDetectNote} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$mainTable} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$plotComparison} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$discordanceNote} \tab \tab \tab \tab \tab a html \cr
+#'   \code{results$plotDiagnostic} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$interpretation} \tab \tab \tab \tab \tab a html \cr
 #' }
 #'

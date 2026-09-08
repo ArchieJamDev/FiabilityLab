@@ -35,9 +35,24 @@ items:
         type: number
         format: zto,digits=4
 
+  - name: plotComparison
+    type: Image
+    title: Coefficient Comparison
+    width: 600
+    height: 350
+    renderFun: .plotComparison
+    visible: (kappa || gwet || krippendorff || icc)
+
   - name: discordanceNote
     type: Html
     title: Coefficient Discordance
+
+  - name: plotDiagnostic
+    type: Image
+    title: Diagnostic Plot
+    width: 600
+    height: 350
+    renderFun: .plotDiagnostic
 
   - name: interpretation
     type: Html

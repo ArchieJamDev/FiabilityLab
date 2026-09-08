@@ -633,11 +633,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                     "See the Reliability Coefficients and Item Analysis tables above for the exact numbers behind each point below; the Fiability Library (Coefficients section) documents each coefficient's assumptions and formula in full.",
                     "Vea las tablas de Coeficientes de Confiabilidad y Análisis de Ítems arriba para las cifras exactas detrás de cada punto; la Biblioteca de Confiabilidad (sección Coeficientes) documenta el supuesto y la fórmula de cada coeficiente en detalle."),
                 "</p>",
-
-                "<h4>", tr("What to do now", "Qué hacer ahora"), "</h4>",
-                action_html,
-
-                "<h4>", tr("Interpretation Benchmarks", "Criterios de interpretación"), "</h4>",
+                "<p style='margin-top:0.8em;font-weight:700;'>", tr("Interpretation Benchmarks", "Criterios de interpretación"), "</p>",
                 "<table style='border-collapse:collapse;'>",
                 "<tr><th style='padding:3px 8px;border:1px solid #ccc;'>", tr("Value","Valor"), "</th>",
                 "<th style='padding:3px 8px;border:1px solid #ccc;'>", tr("Interpretation","Interpretación"), "</th></tr>",
@@ -648,6 +644,10 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>.60 – .69</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Poor","Pobre"), "</td></tr>",
                 "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>< .60</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Unacceptable","Inaceptable"), "</td></tr>",
                 "</table>",
+
+                "<h4>", tr("What to do now", "Qué hacer ahora"), "</h4>",
+                action_html,
+
                 "<p style='font-size:11px;color:#666;'>", tr(
                     "See Fiability Library → Coefficients for full definitions, assumptions and references (Bibliography → Classical Test Theory).",
                     "Vea Biblioteca de Confiabilidad → Coeficientes para definiciones y supuestos completos, y referencias (Bibliografía → Teoría Clásica de los Tests)."),
