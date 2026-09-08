@@ -28,7 +28,19 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
             plotItemDist = TRUE,
             plotItemTotal = TRUE,
             plotScree = FALSE,
-            plotStyle = "gray", ...) {
+            plotStyle = "gray",
+            advancedEnable = FALSE,
+            secondOrder = FALSE,
+            factorName1 = "Factor 1",
+            factorItems1 = NULL,
+            factorName2 = "Factor 2",
+            factorItems2 = NULL,
+            factorName3 = "Factor 3",
+            factorItems3 = NULL,
+            factorName4 = "Factor 4",
+            factorItems4 = NULL,
+            factorName5 = "Factor 5",
+            factorItems5 = NULL, ...) {
 
             super$initialize(
                 package="fiabilitylab",
@@ -148,6 +160,74 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
                     "purpleorange",
                     "bluegreen"),
                 default="gray")
+            private$..advancedEnable <- jmvcore::OptionBool$new(
+                "advancedEnable",
+                advancedEnable,
+                default=FALSE)
+            private$..secondOrder <- jmvcore::OptionBool$new(
+                "secondOrder",
+                secondOrder,
+                default=FALSE)
+            private$..factorName1 <- jmvcore::OptionString$new(
+                "factorName1",
+                factorName1,
+                default="Factor 1")
+            private$..factorItems1 <- jmvcore::OptionVariables$new(
+                "factorItems1",
+                factorItems1,
+                suggested=list(
+                    "continuous",
+                    "ordinal"),
+                permitted=list(
+                    "numeric"))
+            private$..factorName2 <- jmvcore::OptionString$new(
+                "factorName2",
+                factorName2,
+                default="Factor 2")
+            private$..factorItems2 <- jmvcore::OptionVariables$new(
+                "factorItems2",
+                factorItems2,
+                suggested=list(
+                    "continuous",
+                    "ordinal"),
+                permitted=list(
+                    "numeric"))
+            private$..factorName3 <- jmvcore::OptionString$new(
+                "factorName3",
+                factorName3,
+                default="Factor 3")
+            private$..factorItems3 <- jmvcore::OptionVariables$new(
+                "factorItems3",
+                factorItems3,
+                suggested=list(
+                    "continuous",
+                    "ordinal"),
+                permitted=list(
+                    "numeric"))
+            private$..factorName4 <- jmvcore::OptionString$new(
+                "factorName4",
+                factorName4,
+                default="Factor 4")
+            private$..factorItems4 <- jmvcore::OptionVariables$new(
+                "factorItems4",
+                factorItems4,
+                suggested=list(
+                    "continuous",
+                    "ordinal"),
+                permitted=list(
+                    "numeric"))
+            private$..factorName5 <- jmvcore::OptionString$new(
+                "factorName5",
+                factorName5,
+                default="Factor 5")
+            private$..factorItems5 <- jmvcore::OptionVariables$new(
+                "factorItems5",
+                factorItems5,
+                suggested=list(
+                    "continuous",
+                    "ordinal"),
+                permitted=list(
+                    "numeric"))
 
             self$.addOption(private$..items)
             self$.addOption(private$..reportLang)
@@ -172,6 +252,18 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
             self$.addOption(private$..plotItemTotal)
             self$.addOption(private$..plotScree)
             self$.addOption(private$..plotStyle)
+            self$.addOption(private$..advancedEnable)
+            self$.addOption(private$..secondOrder)
+            self$.addOption(private$..factorName1)
+            self$.addOption(private$..factorItems1)
+            self$.addOption(private$..factorName2)
+            self$.addOption(private$..factorItems2)
+            self$.addOption(private$..factorName3)
+            self$.addOption(private$..factorItems3)
+            self$.addOption(private$..factorName4)
+            self$.addOption(private$..factorItems4)
+            self$.addOption(private$..factorName5)
+            self$.addOption(private$..factorItems5)
         }),
     active = list(
         items = function() private$..items$value,
@@ -196,7 +288,19 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
         plotItemDist = function() private$..plotItemDist$value,
         plotItemTotal = function() private$..plotItemTotal$value,
         plotScree = function() private$..plotScree$value,
-        plotStyle = function() private$..plotStyle$value),
+        plotStyle = function() private$..plotStyle$value,
+        advancedEnable = function() private$..advancedEnable$value,
+        secondOrder = function() private$..secondOrder$value,
+        factorName1 = function() private$..factorName1$value,
+        factorItems1 = function() private$..factorItems1$value,
+        factorName2 = function() private$..factorName2$value,
+        factorItems2 = function() private$..factorItems2$value,
+        factorName3 = function() private$..factorName3$value,
+        factorItems3 = function() private$..factorItems3$value,
+        factorName4 = function() private$..factorName4$value,
+        factorItems4 = function() private$..factorItems4$value,
+        factorName5 = function() private$..factorName5$value,
+        factorItems5 = function() private$..factorItems5$value),
     private = list(
         ..items = NA,
         ..reportLang = NA,
@@ -220,7 +324,19 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
         ..plotItemDist = NA,
         ..plotItemTotal = NA,
         ..plotScree = NA,
-        ..plotStyle = NA)
+        ..plotStyle = NA,
+        ..advancedEnable = NA,
+        ..secondOrder = NA,
+        ..factorName1 = NA,
+        ..factorItems1 = NA,
+        ..factorName2 = NA,
+        ..factorItems2 = NA,
+        ..factorName3 = NA,
+        ..factorItems3 = NA,
+        ..factorName4 = NA,
+        ..factorItems4 = NA,
+        ..factorName5 = NA,
+        ..factorItems5 = NA)
 )
 
 internalConsistencyResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
@@ -241,7 +357,12 @@ internalConsistencyResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
         plotItemDist = function() private$.items[["plotItemDist"]],
         plotItemTotal = function() private$.items[["plotItemTotal"]],
         plotScree = function() private$.items[["plotScree"]],
-        interpretation = function() private$.items[["interpretation"]]),
+        interpretation = function() private$.items[["interpretation"]],
+        advancedFitTable = function() private$.items[["advancedFitTable"]],
+        advancedReliabilityTable = function() private$.items[["advancedReliabilityTable"]],
+        advancedHtmtTable = function() private$.items[["advancedHtmtTable"]],
+        advancedOmegaHNote = function() private$.items[["advancedOmegaHNote"]],
+        advancedInterpretation = function() private$.items[["advancedInterpretation"]]),
     private = list(),
     public=list(
         initialize=function(options) {
@@ -488,7 +609,128 @@ internalConsistencyResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
             self$add(jmvcore::Html$new(
                 options=options,
                 name="interpretation",
-                title="Interpretation & Recommendations"))}))
+                title="Interpretation & Recommendations"))
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="advancedFitTable",
+                title="Advanced (SEM): Confirmatory Factor Model Fit",
+                visible="(advancedEnable)",
+                rows=0,
+                columns=list(
+                    list(
+                        `name`="model", 
+                        `title`="Model", 
+                        `type`="text"),
+                    list(
+                        `name`="chisq", 
+                        `title`="\u03C7\u00B2", 
+                        `type`="number", 
+                        `format`="zto,digits=2"),
+                    list(
+                        `name`="df", 
+                        `title`="df", 
+                        `type`="integer"),
+                    list(
+                        `name`="pvalue", 
+                        `title`="p", 
+                        `type`="number", 
+                        `format`="zto,pvalue"),
+                    list(
+                        `name`="cfi", 
+                        `title`="CFI", 
+                        `type`="number", 
+                        `format`="zto,digits=3"),
+                    list(
+                        `name`="tli", 
+                        `title`="TLI", 
+                        `type`="number", 
+                        `format`="zto,digits=3"),
+                    list(
+                        `name`="rmsea", 
+                        `title`="RMSEA", 
+                        `type`="number", 
+                        `format`="zto,digits=3"),
+                    list(
+                        `name`="rmsea_ci", 
+                        `title`="RMSEA 90% CI", 
+                        `type`="text"),
+                    list(
+                        `name`="srmr", 
+                        `title`="SRMR", 
+                        `type`="number", 
+                        `format`="zto,digits=3"),
+                    list(
+                        `name`="verdict", 
+                        `title`="Fit", 
+                        `type`="text"))))
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="advancedReliabilityTable",
+                title="Advanced (SEM): Reliability by Factor",
+                visible="(advancedEnable)",
+                rows=0,
+                columns=list(
+                    list(
+                        `name`="factor", 
+                        `title`="Factor", 
+                        `type`="text"),
+                    list(
+                        `name`="items", 
+                        `title`="Items", 
+                        `type`="integer"),
+                    list(
+                        `name`="cr", 
+                        `title`="CR / \u03C9", 
+                        `type`="number", 
+                        `format`="zto,digits=3"),
+                    list(
+                        `name`="ave", 
+                        `title`="AVE", 
+                        `type`="number", 
+                        `format`="zto,digits=3"),
+                    list(
+                        `name`="h", 
+                        `title`="H", 
+                        `type`="number", 
+                        `format`="zto,digits=3"),
+                    list(
+                        `name`="interpretation", 
+                        `title`="Interpretation", 
+                        `type`="text"))))
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="advancedHtmtTable",
+                title="Advanced (SEM): Discriminant Validity (HTMT)",
+                visible="(advancedEnable)",
+                rows=0,
+                columns=list(
+                    list(
+                        `name`="factor_a", 
+                        `title`="Factor A", 
+                        `type`="text"),
+                    list(
+                        `name`="factor_b", 
+                        `title`="Factor B", 
+                        `type`="text"),
+                    list(
+                        `name`="htmt", 
+                        `title`="HTMT", 
+                        `type`="number", 
+                        `format`="zto,digits=3"),
+                    list(
+                        `name`="verdict", 
+                        `title`="Verdict", 
+                        `type`="text"))))
+            self$add(jmvcore::Html$new(
+                options=options,
+                name="advancedOmegaHNote",
+                title="Advanced (SEM): Second-Order Omega Hierarchical",
+                visible="(advancedEnable && secondOrder)"))
+            self$add(jmvcore::Html$new(
+                options=options,
+                name="advancedInterpretation",
+                title="Advanced (SEM): Interpretation & Recommendations",
+                visible="(advancedEnable)"))}))
 
 internalConsistencyBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
     "internalConsistencyBase",
@@ -538,6 +780,18 @@ internalConsistencyBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
 #' @param plotItemTotal .
 #' @param plotScree .
 #' @param plotStyle .
+#' @param advancedEnable .
+#' @param secondOrder .
+#' @param factorName1 .
+#' @param factorItems1 .
+#' @param factorName2 .
+#' @param factorItems2 .
+#' @param factorName3 .
+#' @param factorItems3 .
+#' @param factorName4 .
+#' @param factorItems4 .
+#' @param factorName5 .
+#' @param factorItems5 .
 #' @return A results object containing:
 #' \tabular{llllll}{
 #'   \code{results$autoDetectNote} \tab \tab \tab \tab \tab a html \cr
@@ -555,6 +809,11 @@ internalConsistencyBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
 #'   \code{results$plotItemTotal} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$plotScree} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$interpretation} \tab \tab \tab \tab \tab a html \cr
+#'   \code{results$advancedFitTable} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$advancedReliabilityTable} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$advancedHtmtTable} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$advancedOmegaHNote} \tab \tab \tab \tab \tab a html \cr
+#'   \code{results$advancedInterpretation} \tab \tab \tab \tab \tab a html \cr
 #' }
 #'
 #' Tables can be converted to data frames with \code{asDF} or \code{\link{as.data.frame}}. For example:
@@ -588,16 +847,38 @@ internalConsistency <- function(
     plotItemDist = TRUE,
     plotItemTotal = TRUE,
     plotScree = FALSE,
-    plotStyle = "gray") {
+    plotStyle = "gray",
+    advancedEnable = FALSE,
+    secondOrder = FALSE,
+    factorName1 = "Factor 1",
+    factorItems1,
+    factorName2 = "Factor 2",
+    factorItems2,
+    factorName3 = "Factor 3",
+    factorItems3,
+    factorName4 = "Factor 4",
+    factorItems4,
+    factorName5 = "Factor 5",
+    factorItems5) {
 
     if ( ! requireNamespace("jmvcore", quietly=TRUE))
         stop("internalConsistency requires jmvcore to be installed (restart may be required)")
 
     if ( ! missing(items)) items <- jmvcore::resolveQuo(jmvcore::enquo(items))
+    if ( ! missing(factorItems1)) factorItems1 <- jmvcore::resolveQuo(jmvcore::enquo(factorItems1))
+    if ( ! missing(factorItems2)) factorItems2 <- jmvcore::resolveQuo(jmvcore::enquo(factorItems2))
+    if ( ! missing(factorItems3)) factorItems3 <- jmvcore::resolveQuo(jmvcore::enquo(factorItems3))
+    if ( ! missing(factorItems4)) factorItems4 <- jmvcore::resolveQuo(jmvcore::enquo(factorItems4))
+    if ( ! missing(factorItems5)) factorItems5 <- jmvcore::resolveQuo(jmvcore::enquo(factorItems5))
     if (missing(data))
         data <- jmvcore::marshalData(
             parent.frame(),
-            `if`( ! missing(items), items, NULL))
+            `if`( ! missing(items), items, NULL),
+            `if`( ! missing(factorItems1), factorItems1, NULL),
+            `if`( ! missing(factorItems2), factorItems2, NULL),
+            `if`( ! missing(factorItems3), factorItems3, NULL),
+            `if`( ! missing(factorItems4), factorItems4, NULL),
+            `if`( ! missing(factorItems5), factorItems5, NULL))
 
 
     options <- internalConsistencyOptions$new(
@@ -623,7 +904,19 @@ internalConsistency <- function(
         plotItemDist = plotItemDist,
         plotItemTotal = plotItemTotal,
         plotScree = plotScree,
-        plotStyle = plotStyle)
+        plotStyle = plotStyle,
+        advancedEnable = advancedEnable,
+        secondOrder = secondOrder,
+        factorName1 = factorName1,
+        factorItems1 = factorItems1,
+        factorName2 = factorName2,
+        factorItems2 = factorItems2,
+        factorName3 = factorName3,
+        factorItems3 = factorItems3,
+        factorName4 = factorName4,
+        factorItems4 = factorItems4,
+        factorName5 = factorName5,
+        factorItems5 = factorItems5)
 
     analysis <- internalConsistencyClass$new(
         options = options,

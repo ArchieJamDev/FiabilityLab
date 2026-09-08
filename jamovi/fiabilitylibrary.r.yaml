@@ -15,6 +15,10 @@ items:
     type: Html
     title: Inter-Rater Agreement
 
+  - name: advanced
+    type: Html
+    title: Advanced Reliability (SEM)
+
   - name: foundations
     type: Html
     title: Theoretical Foundations

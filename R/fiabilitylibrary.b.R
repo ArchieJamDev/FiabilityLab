@@ -280,6 +280,49 @@ fiabilityLibraryClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6
       )
       interRater_html <- sect(tr("Inter-Rater Agreement", "Acuerdo entre Jueces"), irr_body)
 
+      # ── Advanced Reliability (SEM) ────────────────────────────────────────
+      adv_body <- paste0(
+        p(tr(
+          "The classical coefficients above (&alpha;, &omega;, GLB, ...) treat the scale's factor structure as either unknown (a single common source) or only exploratorily detected (parallel analysis). When the structure is already known — from theory or a prior validation — the Advanced (SEM) tab inside Internal Consistency lets the user assign items to named factors and fits a confirmatory factor model (via lavaan/semTools) instead, giving structure-specific reliability and validity evidence.",
+          "Los coeficientes clásicos de arriba (&alpha;, &omega;, GLB, ...) tratan la estructura factorial de la escala como desconocida (una sola fuente común) o solo detectada exploratoriamente (análisis paralelo). Cuando la estructura ya se conoce — por teoría o una validación previa — la pestaña Avanzada (SEM) dentro de Internal Consistency permite asignar ítems a factores nombrados y ajusta en su lugar un modelo factorial confirmatorio (vía lavaan/semTools), dando evidencia de confiabilidad y validez específica a esa estructura."
+        )),
+        h4(tr("Model Fit", "Ajuste del Modelo")),
+        p(tr(
+          "Composite Reliability, AVE, and H are only as trustworthy as the confirmatory model they come from. FiabilityLab reports &chi;&sup2;, CFI, TLI, RMSEA (with 90% CI), and SRMR for the fitted model, following Hu &amp; Bentler's (1999) cutoffs (CFI/TLI &ge; .95, RMSEA &le; .06, SRMR &le; .08 for good fit) — a model with poor fit should be revised (or its structure reconsidered) before its reliability numbers are reported.",
+          "La Confiabilidad Compuesta, el AVE y el H son tan confiables como el modelo confirmatorio del que provienen. FiabilityLab reporta &chi;&sup2;, CFI, TLI, RMSEA (con IC 95%) y SRMR del modelo ajustado, siguiendo los criterios de Hu &amp; Bentler (1999) (CFI/TLI &ge; .95, RMSEA &le; .06, SRMR &le; .08 para buen ajuste) — un modelo con ajuste pobre debería revisarse (o reconsiderar su estructura) antes de reportar sus cifras de confiabilidad."
+        )),
+        h4(tr("Composite Reliability (CR) / &omega;", "Confiabilidad Compuesta (CR) / &omega;")),
+        p(tr(
+          "The proportion of a factor's composite-score variance attributable to its common factor, computed from the confirmatory model's own standardized loadings — CR (Fornell &amp; Larcker, 1981) and &omega; (McDonald, 1999) are the same underlying quantity from two different literatures (marketing/PLS vs. psychometrics), so FiabilityLab reports one number under both names. Unlike Cronbach's &alpha;, it does not assume equal (tau-equivalent) loadings.",
+          "La proporción de la varianza del puntaje compuesto de un factor atribuible a su factor común, calculada a partir de las cargas estandarizadas propias del modelo confirmatorio — el CR (Fornell &amp; Larcker, 1981) y el &omega; (McDonald, 1999) son la misma cantidad subyacente proveniente de dos literaturas distintas (marketing/PLS vs. psicometría), así que FiabilityLab reporta un solo número bajo ambos nombres. A diferencia del Alfa de Cronbach, no asume cargas iguales (tau-equivalencia)."
+        )),
+        h4("AVE (Average Variance Extracted)"),
+        p(tr(
+          "The average of the squared standardized loadings of a factor's own items — the proportion of variance its indicators share with the factor itself, as opposed to error. AVE &ge; .50 is the field-standard threshold for adequate convergent validity (Fornell &amp; Larcker, 1981); it is a validity index, not a reliability coefficient, and is reported alongside CR/&omega; by convention.",
+          "El promedio de las cargas estandarizadas al cuadrado de los propios ítems de un factor — la proporción de varianza que sus indicadores comparten con el factor mismo, en contraste con el error. AVE &ge; .50 es el umbral estándar del campo para validez convergente adecuada (Fornell &amp; Larcker, 1981); es un índice de validez, no un coeficiente de confiabilidad, y se reporta junto al CR/&omega; por convención."
+        )),
+        h4(tr("Hancock &amp; Mueller's H", "H de Hancock &amp; Mueller")),
+        p(tr(
+          "An alternative construct-reliability coefficient, H = &Sigma;(&lambda;&sup2;/(1&minus;&lambda;&sup2;)) / [1 + &Sigma;(&lambda;&sup2;/(1&minus;&lambda;&sup2;))], computed from the same standardized loadings as CR/&omega; (Hancock &amp; Mueller, 2001). H is monotonically related to each item's own loading in a way CR/&omega; is not, making it somewhat less sensitive to adding or removing a single weak indicator — reported alongside CR/&omega;, not as a replacement for it.",
+          "Un coeficiente de confiabilidad de constructo alternativo, H = &Sigma;(&lambda;&sup2;/(1&minus;&lambda;&sup2;)) / [1 + &Sigma;(&lambda;&sup2;/(1&minus;&lambda;&sup2;))], calculado a partir de las mismas cargas estandarizadas que el CR/&omega; (Hancock &amp; Mueller, 2001). El H se relaciona monótonamente con la carga de cada ítem de una forma en que el CR/&omega; no lo hace, haciéndolo algo menos sensible a agregar o quitar un único indicador débil — se reporta junto al CR/&omega;, no como su reemplazo."
+        )),
+        h4("HTMT (Heterotrait-Monotrait Ratio)"),
+        p(tr(
+          "A discriminant-validity check between pairs of factors: whether two subscales are empirically distinct rather than measuring the same thing twice. HTMT &gt; .85 signals a discriminant-validity concern — the classical Fornell-Larcker criterion and cross-loading inspection were shown to miss this in common research situations that HTMT reliably detects (Henseler, Ringle &amp; Sarstedt, 2015). Only computed when 2 or more factors are defined.",
+          "Una verificación de validez discriminante entre pares de factores: si dos subescalas son empíricamente distintas en vez de medir dos veces lo mismo. HTMT &gt; .85 señala una preocupación de validez discriminante — se demostró que el criterio clásico de Fornell-Larcker y la inspección de cargas cruzadas no detectan esto en situaciones de investigación comunes que el HTMT sí detecta de forma confiable (Henseler, Ringle &amp; Sarstedt, 2015). Solo se calcula cuando se definen 2 o más factores."
+        )),
+        h4(tr("Second-Order Omega Hierarchical", "Omega Jerárquico de Segundo Orden")),
+        p(tr(
+          "When a second-order general factor (G) is specified over 3 or more first-order factors (fewer leaves the higher-order layer statistically unidentified), omega hierarchical is generalized to this confirmatory structure: the proportion of the TOTAL scale's variance attributable specifically to G, net of each subscale's own group-factor variance (McDonald, 1999) — the same concept the exploratory Omega Hierarchical checkbox in the classical tab estimates via Schmid-Leiman rotation, computed here instead from a user-specified, confirmatory structure.",
+          "Cuando se especifica un factor general de segundo orden (G) sobre 3 o más factores de primer orden (menos deja la capa de orden superior estadísticamente no identificada), el omega jerárquico se generaliza a esta estructura confirmatoria: la proporción de la varianza de la escala TOTAL atribuible específicamente a G, descontando la varianza de factor de grupo propia de cada subescala (McDonald, 1999) — el mismo concepto que el checkbox exploratorio Omega Jerárquico de la pestaña clásica estima vía rotación Schmid-Leiman, calculado aquí en cambio a partir de una estructura confirmatoria especificada por el usuario."
+        )),
+        p(tr(
+          "With exactly 3 first-order factors, the second-order model is mathematically equivalent to (has identical fit as) the correlated-factors model above it — a second-order factor over exactly 3 lower factors perfectly reproduces their 3 pairwise correlations without adding any constraint. The two fit rows will show identical &chi;&sup2;/CFI/RMSEA/SRMR in that case; a genuinely testable comparison of whether the general-factor structure fits worse than free correlations among subscales requires 4 or more first-order factors.",
+          "Con exactamente 3 factores de primer orden, el modelo de segundo orden es matemáticamente equivalente (tiene el mismo ajuste) al modelo de factores correlacionados de arriba — un factor de segundo orden sobre exactamente 3 factores inferiores reproduce perfectamente sus 3 correlaciones por pares sin agregar ninguna restricción. Las dos filas de ajuste mostrarán &chi;&sup2;/CFI/RMSEA/SRMR idénticos en ese caso; una comparación genuinamente comprobable de si la estructura de factor general ajusta peor que correlaciones libres entre subescalas requiere 4 o más factores de primer orden."
+        ))
+      )
+      advanced_html <- sect(tr("Advanced Reliability (SEM)", "Confiabilidad Avanzada (SEM)"), adv_body)
+
       # ── Theoretical Foundations ─────────────────────────────────────────────
       found_table <- tbl(
         c(tr("Framework", "Marco teórico"), tr("Core idea", "Idea central"), tr("Key sources", "Fuentes clave")),
@@ -347,12 +390,14 @@ fiabilityLibraryClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6
       self$results$intro$setContent(intro_html)
       self$results$internalConsistency$setContent(internalConsistency_html)
       self$results$interRater$setContent(interRater_html)
+      self$results$advanced$setContent(advanced_html)
       self$results$foundations$setContent(foundations_html)
       self$results$errors$setContent(errors_html)
 
       show <- function(name) category == "all" || category == name
       if (!show("internalConsistency")) self$results$internalConsistency$setVisible(FALSE)
       if (!show("interRater"))          self$results$interRater$setVisible(FALSE)
+      if (!show("advanced"))            self$results$advanced$setVisible(FALSE)
       if (!show("foundations"))         self$results$foundations$setVisible(FALSE)
       if (!show("errors"))              self$results$errors$setVisible(FALSE)
     }

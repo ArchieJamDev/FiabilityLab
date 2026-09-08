@@ -14,6 +14,8 @@ options:
         title: Internal Consistency
       - name: interRater
         title: Inter-Rater Agreement
+      - name: advanced
+        title: Advanced Reliability (SEM)
       - name: foundations
         title: Theoretical Foundations
       - name: errors

@@ -14,6 +14,8 @@ children:
         name: internalConsistency
       - title: Inter-Rater Agreement
         name: interRater
+      - title: Advanced Reliability (SEM)
+        name: advanced
       - title: Theoretical Foundations
         name: foundations
       - title: Common Errors

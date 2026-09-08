@@ -22,6 +22,7 @@ fiabilityLibraryOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
                     "all",
                     "internalConsistency",
                     "interRater",
+                    "advanced",
                     "foundations",
                     "errors"),
                 default="all")
@@ -50,6 +51,7 @@ fiabilityLibraryResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
         intro = function() private$.items[["intro"]],
         internalConsistency = function() private$.items[["internalConsistency"]],
         interRater = function() private$.items[["interRater"]],
+        advanced = function() private$.items[["advanced"]],
         foundations = function() private$.items[["foundations"]],
         errors = function() private$.items[["errors"]]),
     private = list(),
@@ -71,6 +73,10 @@ fiabilityLibraryResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
                 options=options,
                 name="interRater",
                 title="Inter-Rater Agreement"))
+            self$add(jmvcore::Html$new(
+                options=options,
+                name="advanced",
+                title="Advanced Reliability (SEM)"))
             self$add(jmvcore::Html$new(
                 options=options,
                 name="foundations",
@@ -111,6 +117,7 @@ fiabilityLibraryBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Cla
 #'   \code{results$intro} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$internalConsistency} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$interRater} \tab \tab \tab \tab \tab a html \cr
+#'   \code{results$advanced} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$foundations} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$errors} \tab \tab \tab \tab \tab a html \cr
 #' }

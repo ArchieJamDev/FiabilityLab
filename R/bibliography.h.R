@@ -24,7 +24,8 @@ bibliographyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
                     "ctt",
                     "irr",
                     "gtheory",
-                    "irt"))
+                    "irt",
+                    "sem"))
             private$..citationStyle <- jmvcore::OptionList$new(
                 "citationStyle",
                 citationStyle,

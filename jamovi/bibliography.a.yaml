@@ -18,6 +18,8 @@ options:
         title: Generalizability Theory
       - name: irt
         title: Item Response Theory
+      - name: sem
+        title: Advanced Reliability (SEM)
   - name: citationStyle
     type: List
     options:

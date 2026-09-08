@@ -113,7 +113,25 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
              title = "Item response theory for psychologists",
              is_book = TRUE, publisher = "Lawrence Erlbaum Associates", ref_type = "book"),
         list(topics = "irt", authors = list(c("Baker", "F. B."), c("Kim", "S. H.")), year = "2017",
-             title = "The basics of item response theory using R", is_book = TRUE, publisher = "Springer", ref_type = "book")
+             title = "The basics of item response theory using R", is_book = TRUE, publisher = "Springer", ref_type = "book"),
+
+        list(topics = "sem", authors = list(c("Fornell", "C."), c("Larcker", "D. F.")), year = "1981",
+             title = "Evaluating structural equation models with unobservable variables and measurement error",
+             journal = "Journal of Marketing Research", volume = "18", issue = "1", pages = "39-50",
+             doi = "10.1177/002224378101800104", ref_type = "seminal"),
+        list(topics = "sem", authors = list(c("Hancock", "G. R."), c("Mueller", "R. O.")), year = "2001",
+             title = "Rethinking construct reliability within latent variable systems",
+             is_book_chapter = TRUE, editors = "R. Cudeck, S. du Toit, & D. Sörbom",
+             chapter_in = "Structural equation modeling: Present and future—A Festschrift in honor of Karl Jöreskog",
+             pages = "195-216", publisher = "Scientific Software International", ref_type = "seminal"),
+        list(topics = "sem", authors = list(c("Henseler", "J."), c("Ringle", "C. M."), c("Sarstedt", "M.")), year = "2015",
+             title = "A new criterion for assessing discriminant validity in variance-based structural equation modeling",
+             journal = "Journal of the Academy of Marketing Science", volume = "43", issue = "1", pages = "115-135",
+             doi = "10.1007/s11747-014-0403-8", ref_type = "seminal"),
+        list(topics = "sem", authors = list(c("Hu", "L."), c("Bentler", "P. M.")), year = "1999",
+             title = "Cutoff criteria for fit indexes in covariance structure analysis: Conventional criteria versus new alternatives",
+             journal = "Structural Equation Modeling", volume = "6", issue = "1", pages = "1-55",
+             doi = "10.1080/10705519909540118", ref_type = "methodological")
       )
 
       # -----------------------------------------------------------------------
@@ -144,7 +162,10 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
         "Shrout|1979"   = list(citations = "23299", source = "OpenAlex", other = "Crossref API (19797)"),
         "Tukey|1949"    = list(citations = "909",   source = "OpenAlex", other = ""),
         "Koo|2016"      = list(citations = "29067", source = "OpenAlex", other = ""),
-        "Bujang|2017"   = list(citations = "456",   source = "OpenAlex", other = "")
+        "Bujang|2017"   = list(citations = "456",   source = "OpenAlex", other = ""),
+        "Fornell|1981"  = list(citations = "70924", source = "OpenAlex", other = ""),
+        "Henseler|2015" = list(citations = "36358", source = "OpenAlex", other = ""),
+        "Hu|1999"       = list(citations = "108216", source = "OpenAlex", other = "")
       )
 
       journal_biblio <- list(
@@ -158,7 +179,10 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
           quartile = tr("no current SJR/JCR quartile found", "sin cuartil SJR/JCR vigente encontrado")),
         "Journal of Chiropractic Medicine" = list(scopus = TRUE, wos = FALSE, other = "", quartile = "Q2 (SJR)"),
         "Archives of Orofacial Sciences" = list(scopus = TRUE, wos = FALSE, other = "",
-          quartile = tr("Q3-Q4 (SJR, varies by subject category)", "Q3-Q4 (SJR, varía según categoría temática)"))
+          quartile = tr("Q3-Q4 (SJR, varies by subject category)", "Q3-Q4 (SJR, varía según categoría temática)")),
+        "Journal of Marketing Research" = list(scopus = TRUE, wos = TRUE, other = "", quartile = "Q1"),
+        "Journal of the Academy of Marketing Science" = list(scopus = TRUE, wos = TRUE, other = "", quartile = "Q1"),
+        "Structural Equation Modeling" = list(scopus = TRUE, wos = TRUE, other = "", quartile = "Q1")
       )
 
       in_text_cite <- function(r) {
@@ -194,7 +218,7 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
       }
 
       build_citations_table <- function() {
-        article_refs <- Filter(function(r) !isTRUE(r$is_book), refs_db)
+        article_refs <- Filter(function(r) !isTRUE(r$is_book) && !isTRUE(r$is_book_chapter), refs_db)
         cite_labels  <- vapply(article_refs, in_text_cite, character(1))
         article_refs <- article_refs[order(cite_labels)]
 
@@ -250,7 +274,7 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
 
       build_biblio_table <- function() {
         journal_names <- sort(unique(vapply(
-          Filter(function(r) !isTRUE(r$is_book), refs_db), function(r) r$journal, character(1)
+          Filter(function(r) !isTRUE(r$is_book) && !isTRUE(r$is_book_chapter), refs_db), function(r) r$journal, character(1)
         )))
 
         td_c <- 'style="text-align: center; padding: 6px 10px;"'
@@ -328,7 +352,12 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
       format_apa <- function(r) {
         link <- link_html(r)
         ed   <- if (!is.null(r$edition)) paste0(" (", r$edition, ")") else ""
-        inner <- if (isTRUE(r$is_book)) {
+        inner <- if (isTRUE(r$is_book_chapter)) {
+          paste0(join_authors_apa(r$authors), " (", r$year, "). ", esc(r$title), ". ",
+                 "In ", esc(r$editors), " (", if (grepl(",", r$editors)) "Eds." else "Ed.", "), <i>",
+                 esc(r$chapter_in), "</i> (pp. ", r$pages, "). ", esc(r$publisher), ".",
+                 if (nzchar(link)) paste0(" ", link) else "")
+        } else if (isTRUE(r$is_book)) {
           paste0(join_authors_apa(r$authors), " (", r$year, "). <i>", esc(r$title), "</i>", ed, ".",
                  if (!is.null(r$publisher)) paste0(" ", esc(r$publisher), ".") else "",
                  if (nzchar(link)) paste0(" ", link) else "")

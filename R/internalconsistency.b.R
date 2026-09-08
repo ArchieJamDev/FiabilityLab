@@ -890,6 +890,297 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 "</p>",
                 "</div>")
             self$results$interpretation$setContent(rec_html)
+
+            private$.run_advanced(tr)
+        },
+
+        # ── Advanced (SEM-based) reliability ──────────────────────────────
+        # EN: The classical coefficients above (α, ω, GLB, ...) treat the
+        # scale's factor structure as either unknown (a single common
+        # source) or only exploratorily detected (parallel analysis). When
+        # the user already knows -- from theory or a prior validation --
+        # which items belong to which subscale, a confirmatory factor
+        # model (fit via lavaan) gives sharper, structure-specific
+        # reliability evidence: Composite Reliability/ω and AVE per
+        # subscale (Fornell & Larcker, 1981), Hancock & Mueller's (2001) H
+        # coefficient, HTMT discriminant validity between subscales
+        # (Henseler, Ringle & Sarstedt, 2015), and -- when a second-order
+        # general factor is specified -- omega hierarchical generalized to
+        # that confirmatory structure (McDonald, 1999), instead of the
+        # exploratory Schmid-Leiman approximation the Omega Hierarchical
+        # checkbox above uses. Same admission contract as every other
+        # coefficient in this suite: Library entry + Bibliography citation
+        # before this code.
+        # ES: Los coeficientes clásicos de arriba (α, ω, GLB, ...) tratan
+        # la estructura factorial de la escala como desconocida (una sola
+        # fuente común) o solo detectada exploratoriamente (análisis
+        # paralelo). Cuando el usuario ya sabe -- por teoría o una
+        # validación previa -- qué ítems pertenecen a qué subescala, un
+        # modelo factorial confirmatorio (ajustado con lavaan) da evidencia
+        # de confiabilidad más precisa y específica a la estructura:
+        # Confiabilidad Compuesta/ω y AVE por subescala (Fornell & Larcker,
+        # 1981), el coeficiente H de Hancock & Mueller (2001), validez
+        # discriminante HTMT entre subescalas (Henseler, Ringle &
+        # Sarstedt, 2015), y -- cuando se especifica un factor general de
+        # segundo orden -- el omega jerárquico generalizado a esa
+        # estructura confirmatoria (McDonald, 1999), en vez de la
+        # aproximación exploratoria Schmid-Leiman que usa el checkbox
+        # Omega Jerárquico de arriba. Mismo contrato de admisión que
+        # cualquier otro coeficiente de esta suite: entrada en la Library +
+        # cita en Bibliography antes de este código.
+        .run_advanced = function(tr) {
+            opt <- self$options
+            res <- self$results
+            adv_items <- c("advancedFitTable", "advancedReliabilityTable",
+                            "advancedHtmtTable", "advancedOmegaHNote", "advancedInterpretation")
+
+            if (!isTRUE(opt$advancedEnable)) {
+                for (nm in adv_items) res[[nm]]$setVisible(FALSE)
+                return(invisible())
+            }
+
+            esc <- function(x) {
+                x <- gsub("&", "&amp;", x, fixed = TRUE)
+                x <- gsub("<", "&lt;", x, fixed = TRUE)
+                gsub(">", "&gt;", x, fixed = TRUE)
+            }
+
+            if (!requireNamespace("lavaan", quietly = TRUE) || !requireNamespace("semTools", quietly = TRUE)) {
+                res$advancedFitTable$setVisible(FALSE)
+                res$advancedReliabilityTable$setVisible(FALSE)
+                res$advancedHtmtTable$setVisible(FALSE)
+                res$advancedOmegaHNote$setVisible(FALSE)
+                res$advancedInterpretation$setContent(.fl_prose("<p>&#9888; ", tr(
+                    "This tab requires the lavaan and semTools packages, which are not both installed here.",
+                    "Esta pestaña requiere los paquetes lavaan y semTools, que no están ambos instalados aquí."), "</p>"))
+                return(invisible())
+            }
+
+            # ── Collect factor definitions (safe internal ids for lavaan
+            # syntax; user-entered names kept only for display) ───────────
+            factors <- list()
+            for (i in 1:5) {
+                fitems <- opt[[paste0("factorItems", i)]]
+                if (length(fitems) >= 3L) {
+                    fname <- opt[[paste0("factorName", i)]]
+                    if (is.null(fname) || !nzchar(trimws(fname))) fname <- paste(tr("Factor", "Factor"), i)
+                    factors[[length(factors) + 1L]] <- list(id = paste0("F", i), name = fname, items = fitems)
+                }
+            }
+
+            if (length(factors) == 0L) {
+                res$advancedFitTable$setVisible(FALSE)
+                res$advancedReliabilityTable$setVisible(FALSE)
+                res$advancedHtmtTable$setVisible(FALSE)
+                res$advancedOmegaHNote$setVisible(FALSE)
+                res$advancedInterpretation$setContent(.fl_prose("<p>", tr(
+                    "Assign at least 3 items to at least one factor above to run the confirmatory analysis.",
+                    "Asigne al menos 3 ítems a al menos un factor arriba para correr el análisis confirmatorio."), "</p>"))
+                return(invisible())
+            }
+
+            all_items <- unique(unlist(lapply(factors, function(f) f$items)))
+            df_raw <- self$data[, all_items, drop = FALSE]
+            for (col in names(df_raw)) df_raw[[col]] <- suppressWarnings(as.numeric(df_raw[[col]]))
+            df_adv <- na.omit(df_raw)
+            n_adv <- nrow(df_adv)
+
+            if (n_adv < 20L || length(all_items) < 3L) {
+                res$advancedFitTable$setVisible(FALSE)
+                res$advancedReliabilityTable$setVisible(FALSE)
+                res$advancedHtmtTable$setVisible(FALSE)
+                res$advancedOmegaHNote$setVisible(FALSE)
+                res$advancedInterpretation$setContent(.fl_prose("<p>", tr(
+                    "Not enough complete cases to fit a confirmatory factor model (minimum 20 required).",
+                    "No hay suficientes casos completos para ajustar un modelo factorial confirmatorio (mínimo 20 requeridos)."), "</p>"))
+                return(invisible())
+            }
+
+            model_cf <- paste(vapply(factors, function(f)
+                paste0(f$id, " =~ ", paste(f$items, collapse = " + ")), character(1)), collapse = "\n")
+
+            fit_cf <- tryCatch(lavaan::cfa(model_cf, data = df_adv, std.lv = TRUE), error = function(e) NULL)
+            cf_ok  <- !is.null(fit_cf) && isTRUE(tryCatch(lavaan::lavInspect(fit_cf, "converged"), error = function(e) FALSE))
+
+            if (!cf_ok) {
+                res$advancedFitTable$setVisible(FALSE)
+                res$advancedReliabilityTable$setVisible(FALSE)
+                res$advancedHtmtTable$setVisible(FALSE)
+                res$advancedOmegaHNote$setVisible(FALSE)
+                res$advancedInterpretation$setContent(.fl_prose("<p>&#9888; ", tr(
+                    "The confirmatory factor model did not converge on this data/structure -- try fewer factors, more items per factor, or check the item assignments above.",
+                    "El modelo factorial confirmatorio no convergió con estos datos/estructura -- intente con menos factores, más ítems por factor, o revise las asignaciones de arriba."), "</p>"))
+                return(invisible())
+            }
+
+            fit_verdict <- function(cfi, rmsea, srmr) {
+                if (any(is.na(c(cfi, rmsea, srmr)))) return(tr("N/A", "N/D"))
+                if (cfi >= .95 && rmsea <= .06 && srmr <= .08) tr("Good", "Bueno")
+                else if (cfi >= .90 && rmsea <= .08 && srmr <= .10) tr("Acceptable", "Aceptable")
+                else tr("Poor", "Pobre")
+            }
+
+            fm_cf <- lavaan::fitMeasures(fit_cf, c("chisq","df","pvalue","cfi","tli","rmsea","rmsea.ci.lower","rmsea.ci.upper","srmr"))
+            fit_rows <- list(list(
+                model = tr("Correlated factors", "Factores correlacionados"),
+                chisq = .fl_clean_na(unname(fm_cf["chisq"])), df = unname(fm_cf["df"]),
+                pvalue = .fl_clean_na(unname(fm_cf["pvalue"])),
+                cfi = .fl_clean_na(unname(fm_cf["cfi"])), tli = .fl_clean_na(unname(fm_cf["tli"])),
+                rmsea = .fl_clean_na(unname(fm_cf["rmsea"])),
+                rmsea_ci = paste0("[", round(fm_cf["rmsea.ci.lower"], 3), ", ", round(fm_cf["rmsea.ci.upper"], 3), "]"),
+                srmr = .fl_clean_na(unname(fm_cf["srmr"])),
+                verdict = fit_verdict(fm_cf["cfi"], fm_cf["rmsea"], fm_cf["srmr"])))
+
+            # ── Per-factor CR/omega, AVE, Hancock & Mueller's H ────────────
+            rel_cf <- suppressWarnings(suppressMessages(capture.output(
+                cr_vals <- semTools::compRelSEM(fit_cf))))
+            ave_vals <- suppressWarnings(tryCatch(semTools::AVE(fit_cf), error = function(e) NULL))
+            ss <- lavaan::standardizedSolution(fit_cf)
+
+            rel_rows <- lapply(factors, function(f) {
+                lam <- ss$est.std[ss$op == "=~" & ss$lhs == f$id]
+                lam <- lam[is.finite(lam) & abs(lam) < 1]
+                h_terms <- (lam^2) / (1 - lam^2)
+                h_val <- if (length(h_terms) > 0L) sum(h_terms) / (1 + sum(h_terms)) else NA_real_
+                cr_val  <- if (!is.null(cr_vals) && f$id %in% names(cr_vals)) unname(cr_vals[f$id]) else NA_real_
+                ave_val <- if (!is.null(ave_vals) && f$id %in% names(ave_vals)) unname(ave_vals[f$id]) else NA_real_
+                interp <- paste0(private$.interp_rel(cr_val),
+                    if (!is.na(ave_val) && ave_val < .50) paste0("; ", tr("AVE &lt; .50", "AVE &lt; .50")) else "")
+                list(factor = esc(f$name), items = length(f$items),
+                     cr = .fl_clean_na(cr_val), ave = .fl_clean_na(ave_val), h = .fl_clean_na(h_val),
+                     interpretation = interp)
+            })
+
+            rat <- res$advancedReliabilityTable
+            private$.reset_table(rat, length(rel_rows))
+            for (i in seq_along(rel_rows)) rat$setRow(rowNo = i, values = rel_rows[[i]])
+
+            # ── HTMT (discriminant validity between factor pairs) ─────────
+            htmt_rows <- list()
+            if (length(factors) >= 2L) {
+                hm <- tryCatch(semTools::htmt(model_cf, data = df_adv), error = function(e) NULL)
+                if (!is.null(hm)) {
+                    pairs <- combn(length(factors), 2)
+                    for (p in seq_len(ncol(pairs))) {
+                        fa <- factors[[pairs[1, p]]]; fb <- factors[[pairs[2, p]]]
+                        val <- tryCatch(hm[fa$id, fb$id], error = function(e) NA_real_)
+                        htmt_rows[[length(htmt_rows) + 1L]] <- list(
+                            factor_a = esc(fa$name), factor_b = esc(fb$name),
+                            htmt = .fl_clean_na(val),
+                            verdict = if (is.na(val)) tr("N/A", "N/D") else if (val > .85) tr("Concern", "Preocupante") else tr("OK", "OK"))
+                    }
+                }
+            }
+            hmt_tab <- res$advancedHtmtTable
+            private$.reset_table(hmt_tab, length(htmt_rows))
+            if (length(htmt_rows) > 0L)
+                for (i in seq_along(htmt_rows)) hmt_tab$setRow(rowNo = i, values = htmt_rows[[i]])
+            else
+                hmt_tab$setVisible(FALSE)
+
+            # ── Second-order omega hierarchical (requires >=3 first-order
+            # factors for the higher-order layer to be identified) ────────
+            omega_h <- NA_real_
+            second_order_note <- ""
+            if (isTRUE(opt$secondOrder)) {
+                if (length(factors) < 3L) {
+                    second_order_note <- .fl_prose("<p>&#9888; ", tr(
+                        "A second-order general factor needs at least 3 first-order factors to be statistically identified; only ",
+                        "Un factor general de segundo orden necesita al menos 3 factores de primer orden para estar estadísticamente identificado; solo se definieron "),
+                        length(factors), tr(" were defined. Add another factor to enable this.", " . Agregue otro factor para habilitar esto."), "</p>")
+                } else {
+                    model_2nd <- paste0(model_cf, "\nG =~ ", paste(vapply(factors, function(f) f$id, character(1)), collapse = " + "))
+                    fit_2nd <- tryCatch(lavaan::cfa(model_2nd, data = df_adv, std.lv = TRUE), error = function(e) NULL)
+                    ho_ok <- !is.null(fit_2nd) && isTRUE(tryCatch(lavaan::lavInspect(fit_2nd, "converged"), error = function(e) FALSE))
+                    if (ho_ok) {
+                        fm_2nd <- lavaan::fitMeasures(fit_2nd, c("chisq","df","pvalue","cfi","tli","rmsea","rmsea.ci.lower","rmsea.ci.upper","srmr"))
+                        fit_rows[[length(fit_rows) + 1L]] <- list(
+                            model = tr("Second-order (general factor)", "Segundo orden (factor general)"),
+                            chisq = .fl_clean_na(unname(fm_2nd["chisq"])), df = unname(fm_2nd["df"]),
+                            pvalue = .fl_clean_na(unname(fm_2nd["pvalue"])),
+                            cfi = .fl_clean_na(unname(fm_2nd["cfi"])), tli = .fl_clean_na(unname(fm_2nd["tli"])),
+                            rmsea = .fl_clean_na(unname(fm_2nd["rmsea"])),
+                            rmsea_ci = paste0("[", round(fm_2nd["rmsea.ci.lower"], 3), ", ", round(fm_2nd["rmsea.ci.upper"], 3), "]"),
+                            srmr = .fl_clean_na(unname(fm_2nd["srmr"])),
+                            verdict = fit_verdict(fm_2nd["cfi"], fm_2nd["rmsea"], fm_2nd["srmr"]))
+
+                        ss2 <- lavaan::standardizedSolution(fit_2nd)
+                        g_load <- ss2[ss2$op == "=~" & ss2$lhs == "G", c("rhs", "est.std")]
+                        f_load <- ss2[ss2$op == "=~" & ss2$lhs %in% vapply(factors, function(f) f$id, character(1)),
+                                       c("lhs", "rhs", "est.std")]
+                        f_load <- merge(f_load, g_load, by.x = "lhs", by.y = "rhs")
+                        f_load$lambda_g <- f_load$est.std.x * f_load$est.std.y
+                        lambda_g <- setNames(f_load$lambda_g, f_load$rhs)
+                        implied <- tryCatch(lavaan::fitted(fit_2nd)$cov, error = function(e) NULL)
+                        if (!is.null(implied)) {
+                            lambda_g <- lambda_g[rownames(implied)]
+                            omega_h <- sum(lambda_g)^2 / sum(implied)
+                        }
+                    }
+                    second_order_note <- .fl_prose(
+                        if (!ho_ok) paste0("<p>&#9888; ", tr(
+                            "The second-order model did not converge -- the general-factor structure may not fit this data even though the correlated-factors model above does.",
+                            "El modelo de segundo orden no convergió -- la estructura de factor general puede no ajustar a estos datos aunque el modelo de factores correlacionados de arriba sí lo haga."), "</p>")
+                        else paste0("<p>", tr(
+                            paste0("Omega hierarchical for the total scale, generalized to this confirmatory second-order structure, is <b>", round(omega_h, 3), "</b> (", private$.interp_rel(omega_h), ") — the proportion of total-score variance attributable specifically to the general factor G, net of each subscale's own specific variance (McDonald, 1999). Compare the second-order model's fit above to the correlated-factors model: if it fits distinctly worse, the general-factor assumption itself is questionable regardless of this number."),
+                            paste0("El omega jerárquico para la escala total, generalizado a esta estructura confirmatoria de segundo orden, es <b>", round(omega_h, 3), "</b> (", private$.interp_rel(omega_h), ") — la proporción de varianza del puntaje total atribuible específicamente al factor general G, descontando la varianza propia de cada subescala (McDonald, 1999). Compare el ajuste del modelo de segundo orden de arriba con el de factores correlacionados: si ajusta claramente peor, el propio supuesto de factor general es cuestionable sin importar este número.")),
+                            "</p>"))
+                }
+            }
+            res$advancedOmegaHNote$setContent(second_order_note)
+            if (!isTRUE(opt$secondOrder) || !nzchar(second_order_note)) res$advancedOmegaHNote$setVisible(FALSE)
+
+            ft <- res$advancedFitTable
+            private$.reset_table(ft, length(fit_rows))
+            for (i in seq_along(fit_rows)) ft$setRow(rowNo = i, values = fit_rows[[i]])
+
+            # ── Interpretation ──────────────────────────────────────────────
+            worst_ave <- Filter(function(r) !is.na(r$ave) && r$ave < .50, rel_rows)
+            worst_htmt <- Filter(function(r) !is.na(r$htmt) && r$htmt > .85, htmt_rows)
+            adv_html <- paste0(.fl_prose_open(),
+                "<h4>", tr("What happened", "Qué pasó"), "</h4>",
+                "<p>", tr(paste0("A confirmatory factor model with ", length(factors), " factor(s) (",
+                                 paste(vapply(factors, function(f) esc(f$name), character(1)), collapse = ", "),
+                                 ") was fit on n = ", n_adv, " complete cases. Model fit: ",
+                                 fit_verdict(fm_cf["cfi"], fm_cf["rmsea"], fm_cf["srmr"]), "."),
+                          paste0("Se ajustó un modelo factorial confirmatorio con ", length(factors), " factor(es) (",
+                                 paste(vapply(factors, function(f) esc(f$name), character(1)), collapse = ", "),
+                                 ") sobre n = ", n_adv, " casos completos. Ajuste del modelo: ",
+                                 fit_verdict(fm_cf["cfi"], fm_cf["rmsea"], fm_cf["srmr"]), ".")), "</p>",
+                "<h4>", tr("Why", "Por qué"), "</h4>",
+                "<p>", tr(
+                    "Composite Reliability/ω and AVE come from the model's own standardized loadings rather than raw item covariances, so they are only trustworthy to the extent the model above actually fits (Fornell &amp; Larcker, 1981). Hancock &amp; Mueller's H (2001) is reported alongside CR/ω as a less assumption-dependent alternative construct-reliability index.",
+                    "La Confiabilidad Compuesta/ω y el AVE provienen de las cargas estandarizadas propias del modelo, no de covarianzas brutas entre ítems, así que solo son confiables en la medida en que el modelo de arriba realmente ajuste (Fornell &amp; Larcker, 1981). El H de Hancock &amp; Mueller (2001) se reporta junto al CR/ω como una alternativa de confiabilidad de constructo menos dependiente de supuestos."), "</p>",
+                if (length(worst_ave) > 0L) paste0("<p>&#9888; ", tr(
+                        paste0(length(worst_ave), " factor(s) have AVE &lt; .50 — items explain less than half the variance in their own factor, a convergent-validity concern independent of reliability."),
+                        paste0(length(worst_ave), " factor(es) tienen AVE &lt; .50 — los ítems explican menos de la mitad de la varianza de su propio factor, una preocupación de validez convergente independiente de la confiabilidad.")), "</p>") else "",
+                if (length(worst_htmt) > 0L) paste0("<p>&#9888; ", tr(
+                        paste0(length(worst_htmt), " factor pair(s) exceed HTMT &gt; .85 — those subscales may not be empirically distinct (Henseler, Ringle &amp; Sarstedt, 2015)."),
+                        paste0(length(worst_htmt), " par(es) de factores exceden HTMT &gt; .85 — esas subescalas podrían no ser empíricamente distintas (Henseler, Ringle &amp; Sarstedt, 2015).")), "</p>") else "",
+                "<h4>", tr("What it means", "Qué implica"), "</h4>",
+                "<p>", tr(
+                    "See the Fiability Library → Advanced (SEM-Based) Reliability section for full definitions, formulas, and assumptions of CR, AVE, H, HTMT, and second-order omega, and Bibliography → Classical Test Theory for the underlying citations.",
+                    "Vea la sección Biblioteca de Confiabilidad → Confiabilidad Avanzada (Basada en SEM) para definiciones, fórmulas y supuestos completos de CR, AVE, H, HTMT y omega de segundo orden, y Bibliografía → Teoría Clásica de los Tests para las citas correspondientes."), "</p>",
+                "<h4>", tr("What to do now", "Qué hacer ahora"), "</h4>",
+                "<ul style='line-height:1;'>",
+                if (!identical(fit_verdict(fm_cf["cfi"], fm_cf["rmsea"], fm_cf["srmr"]), tr("Good","Bueno")))
+                    paste0("<li>", tr("Model fit is not fully adequate — inspect modification indices or reconsider the factor assignments before trusting CR/AVE/H from this model.",
+                                      "El ajuste del modelo no es plenamente adecuado — revise los índices de modificación o reconsidere las asignaciones de factores antes de confiar en el CR/AVE/H de este modelo."), "</li>") else "",
+                if (length(worst_ave) > 0L)
+                    paste0("<li>", tr("Consider revising or replacing items in the low-AVE factor(s) above.",
+                                      "Considere revisar o reemplazar ítems en el/los factor(es) con AVE bajo de arriba."), "</li>") else "",
+                if (length(worst_htmt) > 0L)
+                    paste0("<li>", tr("Consider merging the flagged factor pair(s) or revising items that cross-load between them.",
+                                      "Considere fusionar el/los par(es) de factores marcados o revisar ítems con cargas cruzadas entre ellos."), "</li>") else "",
+                if (length(worst_ave) == 0L && length(worst_htmt) == 0L)
+                    paste0("<li>", tr("No specific corrective action indicated from the advanced analysis.",
+                                      "No se indica ninguna acción correctiva específica desde el análisis avanzado."), "</li>") else "",
+                "</ul>",
+                .fl_footnote(tr(
+                    "CFA fit cutoffs follow Hu &amp; Bentler (1999); HTMT threshold follows Henseler, Ringle &amp; Sarstedt (2015).",
+                    "Los criterios de ajuste del AFC siguen a Hu &amp; Bentler (1999); el umbral de HTMT sigue a Henseler, Ringle &amp; Sarstedt (2015).")),
+                .fl_prose_close())
+            res$advancedInterpretation$setContent(adv_html)
         },
 
         # ── Plot: coefficient comparison (forest-plot style) ────────────────
