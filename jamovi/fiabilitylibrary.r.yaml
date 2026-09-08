@@ -6,4 +6,20 @@ items:
   - name: intro
     type: Html
     title: Introduction
+
+  - name: internalConsistency
+    type: Html
+    title: Internal Consistency
+
+  - name: interRater
+    type: Html
+    title: Inter-Rater Agreement
+
+  - name: foundations
+    type: Html
+    title: Theoretical Foundations
+
+  - name: errors
+    type: Html
+    title: Common Errors
 ...

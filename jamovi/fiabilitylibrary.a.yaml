@@ -8,21 +8,17 @@ options:
   - name: category
     type: List
     options:
-      - name: concepts
-        title: Concepts
-      - name: theories
-        title: Theories
-      - name: coefficients
-        title: Coefficients
+      - name: all
+        title: All Categories
+      - name: internalConsistency
+        title: Internal Consistency
+      - name: interRater
+        title: Inter-Rater Agreement
+      - name: foundations
+        title: Theoretical Foundations
       - name: errors
         title: Common Errors
-  - name: detail
-    type: List
-    options:
-      - name: summary
-        title: Summary
-      - name: full
-        title: Full
+    default: all
   - name: reportLang
     type: List
     options:

@@ -6,8 +6,7 @@ fiabilityLibraryOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
     inherit = jmvcore::Options,
     public = list(
         initialize = function(
-            category = NULL,
-            detail = NULL,
+            category = "all",
             reportLang = NULL, ...) {
 
             super$initialize(
@@ -20,16 +19,12 @@ fiabilityLibraryOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
                 "category",
                 category,
                 options=list(
-                    "concepts",
-                    "theories",
-                    "coefficients",
-                    "errors"))
-            private$..detail <- jmvcore::OptionList$new(
-                "detail",
-                detail,
-                options=list(
-                    "summary",
-                    "full"))
+                    "all",
+                    "internalConsistency",
+                    "interRater",
+                    "foundations",
+                    "errors"),
+                default="all")
             private$..reportLang <- jmvcore::OptionList$new(
                 "reportLang",
                 reportLang,
@@ -38,16 +33,13 @@ fiabilityLibraryOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
                     "es"))
 
             self$.addOption(private$..category)
-            self$.addOption(private$..detail)
             self$.addOption(private$..reportLang)
         }),
     active = list(
         category = function() private$..category$value,
-        detail = function() private$..detail$value,
         reportLang = function() private$..reportLang$value),
     private = list(
         ..category = NA,
-        ..detail = NA,
         ..reportLang = NA)
 )
 
@@ -55,7 +47,11 @@ fiabilityLibraryResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
     "fiabilityLibraryResults",
     inherit = jmvcore::Group,
     active = list(
-        intro = function() private$.items[["intro"]]),
+        intro = function() private$.items[["intro"]],
+        internalConsistency = function() private$.items[["internalConsistency"]],
+        interRater = function() private$.items[["interRater"]],
+        foundations = function() private$.items[["foundations"]],
+        errors = function() private$.items[["errors"]]),
     private = list(),
     public=list(
         initialize=function(options) {
@@ -66,7 +62,23 @@ fiabilityLibraryResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
             self$add(jmvcore::Html$new(
                 options=options,
                 name="intro",
-                title="Introduction"))}))
+                title="Introduction"))
+            self$add(jmvcore::Html$new(
+                options=options,
+                name="internalConsistency",
+                title="Internal Consistency"))
+            self$add(jmvcore::Html$new(
+                options=options,
+                name="interRater",
+                title="Inter-Rater Agreement"))
+            self$add(jmvcore::Html$new(
+                options=options,
+                name="foundations",
+                title="Theoretical Foundations"))
+            self$add(jmvcore::Html$new(
+                options=options,
+                name="errors",
+                title="Common Errors"))}))
 
 fiabilityLibraryBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
     "fiabilityLibraryBase",
@@ -93,17 +105,19 @@ fiabilityLibraryBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Cla
 #'
 #' 
 #' @param category .
-#' @param detail .
 #' @param reportLang .
 #' @return A results object containing:
 #' \tabular{llllll}{
 #'   \code{results$intro} \tab \tab \tab \tab \tab a html \cr
+#'   \code{results$internalConsistency} \tab \tab \tab \tab \tab a html \cr
+#'   \code{results$interRater} \tab \tab \tab \tab \tab a html \cr
+#'   \code{results$foundations} \tab \tab \tab \tab \tab a html \cr
+#'   \code{results$errors} \tab \tab \tab \tab \tab a html \cr
 #' }
 #'
 #' @export
 fiabilityLibrary <- function(
-    category,
-    detail,
+    category = "all",
     reportLang) {
 
     if ( ! requireNamespace("jmvcore", quietly=TRUE))
@@ -112,7 +126,6 @@ fiabilityLibrary <- function(
 
     options <- fiabilityLibraryOptions$new(
         category = category,
-        detail = detail,
         reportLang = reportLang)
 
     analysis <- fiabilityLibraryClass$new(
