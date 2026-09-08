@@ -242,14 +242,27 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             rows      <- list()   # each element: list(coefficient, value, interpretation, applicability, fn)
             boot_rows <- list()   # only those with opt-in bootstrap
 
-            add_stat <- function(name, val, interp_val, cond, fn = NULL) {
+            # max_b caps bootstrap replicates independently of the user's
+            # bootstrapSamples setting, for statistics that refit an entire
+            # model per replicate (e.g. omega's factor analysis) and would
+            # otherwise multiply a ~1-second refit by up to 10,000 -- slow
+            # enough in the real jamovi engine (not just a raw Rscript call)
+            # to hit its resource watchdog and crash the engine process.
+            # ES: max_b limita las réplicas de bootstrap independientemente
+            # de bootstrapSamples, para estadísticos que reajustan un modelo
+            # completo por réplica (p. ej. el análisis factorial del omega) y
+            # que de otro modo multiplicarían un reajuste de ~1 segundo hasta
+            # por 10,000 -- suficientemente lento en el motor real de jamovi
+            # (no solo en una llamada directa a Rscript) como para activar su
+            # vigilante de recursos y hacer caer el motor.
+            add_stat <- function(name, val, interp_val, cond, fn = NULL, max_b = NULL) {
                 rows[[length(rows) + 1L]] <<- list(
                     coefficient   = name,
                     value         = val,
                     interpretation= private$.interp_rel(interp_val),
                     applicability = cond)
                 if (!is.null(fn))
-                    boot_rows[[length(boot_rows) + 1L]] <<- list(name = name, fn = fn, val = val)
+                    boot_rows[[length(boot_rows) + 1L]] <<- list(name = name, fn = fn, val = val, max_b = max_b)
             }
 
             # helper: Cronbach's alpha from matrix
@@ -318,10 +331,12 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                     tr("Polytomous; robust to non-normality; preferred over \u03B1",
                        "Politómico; robusto a no normalidad; preferible al \u03B1"),
                     function(d) {
-                        o <- tryCatch(psych::omega(d, nfactors = n_omega_factors, plot = FALSE),
-                                     error=function(e) NULL)
+                        o <- suppressWarnings(suppressMessages(tryCatch(
+                            psych::omega(d, nfactors = n_omega_factors, plot = FALSE),
+                            error = function(e) NULL)))
                         if (is.null(o)) NA_real_ else o$omega.tot
-                    })
+                    },
+                    max_b = 200L)
             }
 
             if (opt$omegaHierarchical && !is.null(omega_obj)) {
@@ -433,7 +448,8 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 private$.reset_table(bt_tab, length(boot_rows))
                 for (i in seq_along(boot_rows)) {
                     r  <- boot_rows[[i]]
-                    ci <- private$.bootstrap(df, r$fn, B)
+                    B_i <- if (!is.null(r$max_b)) min(B, r$max_b) else B
+                    ci <- private$.bootstrap(df, r$fn, B_i)
                     bt_tab$setRow(rowNo = i, values = list(
                         coefficient = r$name,
                         estimate    = r$val,
