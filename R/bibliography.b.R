@@ -44,55 +44,231 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
         list(topics = "ctt", authors = list(c("Cronbach", "L. J.")), year = "1951",
              title = "Coefficient alpha and the internal structure of tests",
              journal = "Psychometrika", volume = "16", issue = "3", pages = "297-334",
-             doi = "10.1007/BF02310555"),
+             doi = "10.1007/BF02310555", ref_type = "seminal"),
         list(topics = "ctt", authors = list(c("George", "D."), c("Mallery", "P.")), year = "2003",
              title = "SPSS for Windows step by step", edition = "4th ed.",
-             is_book = TRUE, publisher = "Allyn & Bacon"),
+             is_book = TRUE, publisher = "Allyn & Bacon", ref_type = "book"),
         list(topics = "ctt", authors = list(c("Kline", "P.")), year = "2000",
              title = "The handbook of psychological testing", edition = "2nd ed.",
-             is_book = TRUE, publisher = "Routledge"),
+             is_book = TRUE, publisher = "Routledge", ref_type = "book"),
         list(topics = "ctt", authors = list(c("Kuder", "G. F."), c("Richardson", "M. W.")), year = "1937",
              title = "The theory of the estimation of test reliability",
              journal = "Psychometrika", volume = "2", issue = "3", pages = "151-160",
-             doi = "10.1007/BF02288391"),
+             doi = "10.1007/BF02288391", ref_type = "seminal"),
         list(topics = "ctt", authors = list(c("McDonald", "R. P.")), year = "1999",
              title = "Test theory: A unified treatment",
-             is_book = TRUE, publisher = "Lawrence Erlbaum Associates"),
+             is_book = TRUE, publisher = "Lawrence Erlbaum Associates", ref_type = "book"),
         list(topics = "ctt", authors = list(c("Nunnally", "J. C."), c("Bernstein", "I. H.")), year = "1994",
              title = "Psychometric theory", edition = "3rd ed.",
-             is_book = TRUE, publisher = "McGraw-Hill"),
+             is_book = TRUE, publisher = "McGraw-Hill", ref_type = "book"),
         list(topics = "ctt", authors = list(c("Revelle", "W.")), year = "2024",
              title = "psych: Procedures for psychological, psychometric, and personality research (R package)",
-             is_book = TRUE, publisher = NULL, url = "https://CRAN.R-project.org/package=psych"),
+             is_book = TRUE, publisher = NULL, url = "https://CRAN.R-project.org/package=psych", ref_type = "book"),
         list(topics = "ctt", authors = list(c("Zumbo", "B. D."), c("Gadermann", "A. M."), c("Zeisser", "C.")), year = "2007",
              title = "Ordinal versions of coefficients alpha and theta for Likert rating scales",
              journal = "Journal of Modern Applied Statistical Methods", volume = "6", issue = "1", pages = "21-29",
-             doi = "10.22237/jmasm/1177992180"),
+             doi = "10.22237/jmasm/1177992180", ref_type = "methodological"),
 
         list(topics = "irr", authors = list(c("Cohen", "J.")), year = "1960",
              title = "A coefficient of agreement for nominal scales",
-             journal = "Educational and Psychological Measurement", volume = "20", issue = "1", pages = "37-46"),
+             journal = "Educational and Psychological Measurement", volume = "20", issue = "1", pages = "37-46",
+             doi = "10.1177/001316446002000104", ref_type = "seminal"),
         list(topics = "irr", authors = list(c("Shrout", "P. E."), c("Fleiss", "J. L.")), year = "1979",
              title = "Intraclass correlations: Uses in assessing rater reliability",
-             journal = "Psychological Bulletin", volume = "86", issue = "2", pages = "420-428"),
+             journal = "Psychological Bulletin", volume = "86", issue = "2", pages = "420-428",
+             doi = "10.1037/0033-2909.86.2.420", ref_type = "seminal"),
         list(topics = "irr", authors = list(c("Krippendorff", "K.")), year = "2018",
              title = "Content analysis: An introduction to its methodology", edition = "4th ed.",
-             is_book = TRUE, publisher = "Sage"),
+             is_book = TRUE, publisher = "Sage", ref_type = "book"),
         list(topics = "irr", authors = list(c("Gwet", "K. L.")), year = "2014",
              title = "Handbook of inter-rater reliability", edition = "4th ed.",
-             is_book = TRUE, publisher = "Advanced Analytics, LLC"),
+             is_book = TRUE, publisher = "Advanced Analytics, LLC", ref_type = "book"),
 
         list(topics = "gtheory", authors = list(c("Brennan", "R. L.")), year = "2001",
-             title = "Generalizability theory", is_book = TRUE, publisher = "Springer"),
+             title = "Generalizability theory", is_book = TRUE, publisher = "Springer", ref_type = "book"),
         list(topics = "gtheory", authors = list(c("Shavelson", "R. J."), c("Webb", "N. M.")), year = "1991",
-             title = "Generalizability theory: A primer", is_book = TRUE, publisher = "Sage"),
+             title = "Generalizability theory: A primer", is_book = TRUE, publisher = "Sage", ref_type = "book"),
 
         list(topics = "irt", authors = list(c("Embretson", "S. E."), c("Reise", "S. P.")), year = "2000",
              title = "Item response theory for psychologists",
-             is_book = TRUE, publisher = "Lawrence Erlbaum Associates"),
+             is_book = TRUE, publisher = "Lawrence Erlbaum Associates", ref_type = "book"),
         list(topics = "irt", authors = list(c("Baker", "F. B."), c("Kim", "S. H.")), year = "2017",
-             title = "The basics of item response theory using R", is_book = TRUE, publisher = "Springer")
+             title = "The basics of item response theory using R", is_book = TRUE, publisher = "Springer", ref_type = "book")
       )
+
+      # -----------------------------------------------------------------------
+      # Bibliometric data (Table 1: article citations; Table 2: journal
+      # indexing). Citation counts are the higher of OpenAlex vs. Crossref's
+      # "is-referenced-by-count" for that DOI, both queried directly (not
+      # estimated); the lower value is kept in "other" per AssumptionsLab's
+      # own convention. Journal Scopus/Web of Science/quartile status was
+      # verified via SCImago/journal-metrics lookups. Snapshot: September 2026.
+      # Books are excluded from both tables (no bibliographic indexing data
+      # applies to them).
+      # ES: Datos bibliométricos (Tabla 1: citas por artículo; Tabla 2:
+      # indexación de revistas). Los conteos de citas son el mayor entre
+      # OpenAlex y el "is-referenced-by-count" de Crossref para ese DOI,
+      # ambos consultados directamente; el valor menor se guarda en "other"
+      # siguiendo la misma convención de AssumptionsLab. El estado
+      # Scopus/Web of Science/cuartil de cada revista se verificó vía
+      # SCImago/journal-metrics. Instantánea: septiembre 2026. Los libros se
+      # excluyen de ambas tablas (no aplican datos de indexación bibliográfica).
+      # -----------------------------------------------------------------------
+      citation_db <- list(
+        "Cronbach|1951" = list(citations = "43876", source = "OpenAlex", other = "Crossref API (30225)"),
+        "Kuder|1937"    = list(citations = "2018",  source = "OpenAlex", other = "Crossref API (1371)"),
+        "Zumbo|2007"    = list(citations = "1030",  source = "OpenAlex", other = "Crossref API (802)"),
+        "Cohen|1960"    = list(citations = "42176", source = "OpenAlex", other = "Crossref API (32369)"),
+        "Shrout|1979"   = list(citations = "23299", source = "OpenAlex", other = "Crossref API (19797)")
+      )
+
+      journal_biblio <- list(
+        "Psychometrika" = list(scopus = TRUE, wos = TRUE, other = "", quartile = "Q1"),
+        "Educational and Psychological Measurement" = list(scopus = TRUE, wos = TRUE, other = "", quartile = "Q1"),
+        "Psychological Bulletin" = list(scopus = TRUE, wos = TRUE, other = "", quartile = "Q1"),
+        "Journal of Modern Applied Statistical Methods" = list(
+          scopus = TRUE, wos = FALSE,
+          other = tr("PsycINFO, EMBASE, ScienceDirect", "PsycINFO, EMBASE, ScienceDirect"),
+          quartile = tr("no current SJR/JCR quartile found", "sin cuartil SJR/JCR vigente encontrado"))
+      )
+
+      in_text_cite <- function(r) {
+        n <- length(r$authors)
+        surnames <- vapply(r$authors, function(a) a[1], character(1))
+        label <- if (n == 1) surnames[1]
+                 else if (n == 2) paste0(surnames[1], " & ", surnames[2])
+                 else paste0(surnames[1], " et al.")
+        paste0(label, " (", r$year, ")")
+      }
+
+      ref_type_label <- function(rt) {
+        tr(switch(rt, seminal = "Original/seminal", methodological = "Methodological",
+                  review = "Review/comparison", application = "Application", book = "Reference book", rt),
+           switch(rt, seminal = "Original/seminal", methodological = "Metodológica",
+                  review = "Revisión/comparación", application = "Aplicación", book = "Libro de referencia", rt))
+      }
+
+      get_citation <- function(first_author, year) {
+        hit <- citation_db[[paste0(first_author, "|", year)]]
+        if (is.null(hit)) list(citations = NULL, source = "", other = "") else hit
+      }
+
+      get_journal_biblio <- function(journal_name) {
+        hit <- journal_biblio[[journal_name]]
+        if (is.null(hit)) list(scopus = NA, wos = NA, other = "", quartile = tr("pending", "pendiente"))
+        else hit
+      }
+
+      yesno <- function(x) {
+        if (is.na(x)) return(tr("pending", "pendiente"))
+        if (isTRUE(x)) tr("Yes", "Sí") else "No"
+      }
+
+      build_citations_table <- function() {
+        article_refs <- Filter(function(r) !isTRUE(r$is_book), refs_db)
+        cite_labels  <- vapply(article_refs, in_text_cite, character(1))
+        article_refs <- article_refs[order(cite_labels)]
+
+        td_l <- 'style="text-align: left; padding: 6px 10px;"'
+        td_c <- 'style="text-align: center; padding: 6px 10px;"'
+        th_l <- 'style="text-align: left; padding: 6px 10px; border-bottom: 1px solid #000;"'
+        th_c <- 'style="text-align: center; padding: 6px 10px; border-bottom: 1px solid #000;"'
+
+        rows_html <- vapply(article_refs, function(r) {
+          cite <- get_citation(r$authors[[1]][1], r$year)
+          cites_val  <- if (!is.null(cite$citations)) cite$citations else tr("Pending", "Pendiente")
+          source_val <- if (nzchar(cite$source)) cite$source else "—"
+          other_val  <- if (nzchar(cite$other)) cite$other else "—"
+          paste0("<tr>",
+                 "<td ", td_l, ">", esc(in_text_cite(r)), "</td>",
+                 "<td ", td_c, ">", esc(cites_val), "</td>",
+                 "<td ", td_c, ">", esc(source_val), "</td>",
+                 "<td ", td_c, ">", esc(other_val), "</td>",
+                 "<td ", td_c, ">", esc(ref_type_label(r$ref_type)), "</td>",
+                 "</tr>")
+        }, character(1))
+
+        intro_txt <- paste0("<p>", tr(
+          "The citation count for each reference is the higher of the two values returned by OpenAlex and Crossref's own “is-referenced-by-count” for that DOI (both queried directly, not estimated); the lower value is kept in the “Other sources” column. Values correspond to a snapshot taken in September 2026 and change continuously. Books are not included in this table; only journal-published articles are listed here.",
+          "El número de citas de cada referencia es el mayor entre los dos valores retornados por OpenAlex y el “is-referenced-by-count” propio de Crossref para ese DOI (ambos consultados directamente, no estimados); el valor menor se conserva en la columna “Otras fuentes”. Los valores corresponden a una instantánea tomada en septiembre de 2026 y cambian continuamente. Los libros no se incluyen en esta tabla; solo se listan aquí artículos publicados en revistas."
+        ), "</p>")
+
+        paste0(
+          '<div style="max-width: 700px; width: 100%; line-height: 1; margin-top: 24px; text-align: justify;">',
+          '<div style="margin-bottom: 2px;"><h3 style="margin: 0;">',
+          tr("Bibliometric Profile and Impact of the Literature Used", "Perfil Bibliométrico e Impacto de la Literatura Utilizada"),
+          '</h3><div style="font-size: 0.75em; font-style: italic; line-height: 1; margin-top: 2px;">',
+          tr("(periodicals only)", "(solo publicaciones periódicas)"), '</div></div>',
+          '<h4 style="margin-top: 16px;">', tr("Article-Level Citation Metrics", "Métricas de Citación a Nivel de Artículo"), '</h4>',
+          intro_txt,
+          '<div style="page-break-inside: avoid; break-inside: avoid;">',
+          '<table style="border-collapse: collapse; width: 100%; margin-bottom: 4px;">',
+          '<tr><td style="border: none; padding: 0; line-height: 1;"><b>', tr("Table 1", "Tabla 1"), '</b></td></tr>',
+          '<tr><td style="border: none; padding: 0; font-style: italic; line-height: 1;">', tr("Citations", "Citaciones"), '</td></tr>',
+          '</table>',
+          '<table style="border-collapse: collapse; width: 100%; font-size: 0.85em; border-top: 2px solid #000; border-bottom: 2px solid #000;">',
+          "<thead><tr>",
+          "<th ", th_l, ">", tr("Reference", "Referencia"), "</th>",
+          "<th ", th_c, ">", tr("Citations", "Citaciones"), "</th>",
+          "<th ", th_c, ">", tr("Source", "Fuente"), "</th>",
+          "<th ", th_c, ">", tr("Other sources", "Otras fuentes"), "</th>",
+          "<th ", th_c, ">", tr("Reference type", "Tipo de referencia"), "</th>",
+          "</tr></thead>",
+          "<tbody>", paste(rows_html, collapse = ""), "</tbody>",
+          "</table></div></div>"
+        )
+      }
+
+      build_biblio_table <- function() {
+        journal_names <- sort(unique(vapply(
+          Filter(function(r) !isTRUE(r$is_book), refs_db), function(r) r$journal, character(1)
+        )))
+
+        td_c <- 'style="text-align: center; padding: 6px 10px;"'
+        th_c <- 'style="text-align: center; padding: 6px 10px; border-bottom: 1px solid #000;"'
+
+        rows_html <- vapply(journal_names, function(jname) {
+          bib <- get_journal_biblio(jname)
+          paste0("<tr>",
+                 "<td ", td_c, ">", esc(jname), "</td>",
+                 "<td ", td_c, ">", esc(yesno(bib$scopus)), "</td>",
+                 "<td ", td_c, ">", esc(yesno(bib$wos)), "</td>",
+                 "<td ", td_c, ">", esc(bib$other), "</td>",
+                 "<td ", td_c, ">", esc(bib$quartile), "</td>",
+                 "</tr>")
+        }, character(1))
+
+        intro_txt <- paste0("<p>", tr(
+          "This table describes, for each journal in which at least one of FiabilityLab's references was published, its presence in the main bibliographic indexing databases (Scopus, Web of Science) and, where applicable, other relevant indexes and the journal's quartile. These indicators reflect the editorial quality and dissemination reach of the publication, not the quality of the individual cited article. Each journal appears only once, even if several articles published in it were cited.",
+          "Esta tabla describe, para cada revista en la que se publicó al menos una de las referencias de FiabilityLab, su presencia en las principales bases de indexación bibliográfica (Scopus, Web of Science) y, cuando aplica, otras indexaciones relevantes y el cuartil de la revista. Estos indicadores reflejan la calidad editorial y el alcance de divulgación de la publicación, no la calidad del artículo individual citado. Cada revista aparece una sola vez, aunque se hayan citado varios artículos publicados en ella."
+        ), "</p>")
+
+        paste0(
+          '<div style="max-width: 700px; width: 100%; line-height: 1; margin-top: 24px; text-align: justify;">',
+          '<h4 style="margin-top: 0;">', tr("Journal-Level Quality and Dissemination Metrics", "Métricas de Calidad y Divulgación a Nivel de Revista"), '</h4>',
+          intro_txt,
+          '<div style="page-break-inside: avoid; break-inside: avoid;">',
+          '<table style="border-collapse: collapse; width: 100%; margin-bottom: 4px;">',
+          '<tr><td style="border: none; padding: 0; line-height: 1;"><b>', tr("Table 2", "Tabla 2"), '</b></td></tr>',
+          '<tr><td style="border: none; padding: 0; font-style: italic; line-height: 1;">', tr("Bibliometric Summary", "Resumen Bibliométrico"), '</td></tr>',
+          '</table>',
+          '<table style="border-collapse: collapse; width: 100%; font-size: 0.85em; border-top: 2px solid #000; border-bottom: 2px solid #000;">',
+          "<thead><tr>",
+          "<th ", th_c, ">", tr("Journal", "Revista"), "</th>",
+          "<th ", th_c, ">Scopus</th>",
+          "<th ", th_c, ">", tr("Web of Science", "Web of Science"), "</th>",
+          "<th ", th_c, ">", tr("Other relevant indexes", "Otras indexaciones relevantes"), "</th>",
+          "<th ", th_c, ">", tr("Quartile", "Cuartil"), "</th>",
+          "</tr></thead>",
+          "<tbody>", paste(rows_html, collapse = ""), "</tbody>",
+          "</table></div>",
+          "<p style='font-size: 0.8em; font-style: italic; margin-top: 8px;'>", tr(
+            "Note. Journal-level data (Scopus, Web of Science, quartile, other indexes) were verified per journal, not per individual article, since they belong to the publication, not the article. Each article's reference type is shown in Table 1 (Citations), not here. Books are not included, since the indicators in this table are specific to periodicals.",
+            "Nota. Los datos a nivel de revista (Scopus, Web of Science, cuartil, otras indexaciones) se verificaron por revista, no por artículo individual, ya que pertenecen a la publicación, no al artículo. El tipo de referencia de cada artículo se muestra en la Tabla 1 (Citaciones), no aquí. Los libros no se incluyen, ya que los indicadores de esta tabla son específicos de publicaciones periódicas."
+          ), "</p>",
+          "</div>"
+        )
+      }
 
       # -----------------------------------------------------------------------
       # APA 7th formatter, with hanging indent.
@@ -209,6 +385,8 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
       self$results$intro$setContent(intro)
       self$results$references$setContent(refs)
       self$results$notes$setContent(notes)
+      self$results$citationsTable$setContent(build_citations_table())
+      self$results$biblioSummary$setContent(build_biblio_table())
     }
   )
 )

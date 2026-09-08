@@ -14,4 +14,12 @@ items:
   - name: notes
     type: Html
     title: Curation Notes
+
+  - name: citationsTable
+    type: Html
+    title: Citations
+
+  - name: biblioSummary
+    type: Html
+    title: Bibliometric Summary
 ...
