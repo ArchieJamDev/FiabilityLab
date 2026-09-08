@@ -69,6 +69,10 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
              journal = "Journal of Modern Applied Statistical Methods", volume = "6", issue = "1", pages = "21-29",
              doi = "10.22237/jmasm/1177992180", ref_type = "methodological"),
 
+        list(topics = "irr", authors = list(c("Fleiss", "J. L.")), year = "1971",
+             title = "Measuring nominal scale agreement among many raters",
+             journal = "Psychological Bulletin", volume = "76", issue = "5", pages = "378-382",
+             doi = "10.1037/h0031619", ref_type = "seminal"),
         list(topics = "irr", authors = list(c("Landis", "J. R."), c("Koch", "G. G.")), year = "1977",
              title = "The measurement of observer agreement for categorical data",
              journal = "Biometrics", volume = "33", issue = "1", pages = "159-174",
@@ -119,6 +123,7 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
       # excluyen de ambas tablas (no aplican datos de indexación bibliográfica).
       # -----------------------------------------------------------------------
       citation_db <- list(
+        "Fleiss|1971"   = list(citations = "8746",  source = "OpenAlex", other = "Crossref API (6268)"),
         "Landis|1977"   = list(citations = "80951", source = "OpenAlex", other = "Crossref API (64279)"),
         "Cronbach|1951" = list(citations = "43876", source = "OpenAlex", other = "Crossref API (30225)"),
         "Kuder|1937"    = list(citations = "2018",  source = "OpenAlex", other = "Crossref API (1371)"),

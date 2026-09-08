@@ -150,10 +150,19 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
 
             # ── 4. Accumulate rows (value, interpretation, ci, p) ─────────────
             rows <- list()
+            # Sanitize NA_real_/NaN to plain NA before they reach the Table:
+            # a numeric NA_real_/NaN that survives to the real jamovi engine
+            # (not just a direct-R asDF() check, which shows it correctly as
+            # NA) can render as the literal text "NaN" in the jamovi Desktop
+            # UI once it crosses the engine's serialization boundary. Plain
+            # NA is the pattern already used elsewhere in the Lab suite for
+            # "not computable" numeric table cells (e.g. AssumptionsLab's
+            # multcheck.b.R).
+            .clean_na <- function(x) if (is.na(x)) NA else x
             add_row <- function(name, val, interp, ci = c(NA_real_, NA_real_), p = NA_real_) {
                 rows[[length(rows) + 1L]] <<- list(
-                    coefficient = name, value = val, interpretation = interp,
-                    ci_lower = ci[1], ci_upper = ci[2], p_value = p)
+                    coefficient = name, value = .clean_na(val), interpretation = interp,
+                    ci_lower = .clean_na(ci[1]), ci_upper = .clean_na(ci[2]), p_value = .clean_na(p))
             }
 
             # max_b caps replicate count independently of the user's
@@ -305,35 +314,172 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             self$results$discordanceNote$setContent(discord_html)
             if (!nzchar(discord_html)) self$results$discordanceNote$setVisible(FALSE)
 
-            # ── 8. Interpretation & recommendations (four questions) ─────────
+            # ── 8. Data-grounded diagnostics for "Why" ────────────────────────
+            # EN: Computed once here so both "Why" and "What to do now" can
+            # ground their text in the actual pattern found in THIS data
+            # (category prevalence + which rater deviates most from the
+            # rest, for nominal/ordinal; per-rater mean bias, for
+            # continuous) instead of restating design metadata already
+            # shown in the Data Summary panel above.
+            # ES: Calculado una sola vez aquí para que "Por qué" y "Qué
+            # hacer ahora" ancoren su texto en el patrón real de ESTOS
+            # datos (prevalencia de categoría + qué juez se desvía más del
+            # resto, para nominal/ordinal; sesgo de media por juez, para
+            # continuo) en vez de repetir metadatos de diseño que ya se
+            # muestran en el panel de Resumen de Datos de arriba.
+            top_cat <- top_pct <- NULL
+            worst_rater <- worst_pct <- others_pct <- rater_gap <- NULL
+            has_outlier_rater <- FALSE
+            biased_rater <- bias_gap <- NULL
+            has_biased_rater <- FALSE
+
+            if (level %in% c("nominal", "ordinal") && k >= 2L) {
+                all_vals <- unlist(lapply(df, as.character), use.names = FALSE)
+                prev_tab <- sort(prop.table(table(all_vals)), decreasing = TRUE)
+                top_cat  <- names(prev_tab)[1]
+                top_pct  <- round(unname(prev_tab[1]) * 100, 1)
+
+                pair_idx  <- combn(seq_len(k), 2)
+                pairwise  <- apply(pair_idx, 2, function(ij) mean(df[[ij[1]]] == df[[ij[2]]]))
+                rater_avg <- vapply(seq_len(k), function(j) {
+                    in_pair <- apply(pair_idx, 2, function(ij) j %in% ij)
+                    mean(pairwise[in_pair])
+                }, numeric(1))
+                names(rater_avg) <- names(df)
+                worst_i     <- which.min(rater_avg)
+                worst_rater <- names(rater_avg)[worst_i]
+                worst_pct   <- round(rater_avg[worst_i] * 100, 1)
+                others_pct  <- round(mean(rater_avg[-worst_i]) * 100, 1)
+                rater_gap   <- round(others_pct - worst_pct, 1)
+                has_outlier_rater <- rater_gap > 8
+            } else if (level == "continuous" && k >= 2L) {
+                rater_means <- colMeans(df_num, na.rm = TRUE)
+                grand_mean  <- mean(rater_means)
+                worst_i     <- which.max(abs(rater_means - grand_mean))
+                biased_rater<- names(rater_means)[worst_i]
+                bias_gap    <- round(rater_means[worst_i] - grand_mean, 1)
+                has_biased_rater <- abs(bias_gap) > 3
+            }
+
+            # ── 9. Interpretation & recommendations (four questions) ─────────
             primary_val <- if (!is.na(kappa_val)) kappa_val
                            else if (!is.na(gwet_val)) gwet_val
                            else if (!is.na(icc_a_val)) icc_a_val
                            else if (!is.na(icc_c_val)) icc_c_val
                            else krip_val
             primary_lbl <- if (level == "continuous") private$.interp_rel(primary_val) else private$.interp_kappa(primary_val)
+            has_discordance <- (level %in% c("nominal","ordinal") && !is.na(kappa_val) && !is.na(gwet_val) && abs(kappa_val - gwet_val) > .05) ||
+                                (level == "continuous" && !is.na(icc_c_val) && !is.na(icc_a_val) && (icc_c_val - icc_a_val) > .05)
+            band_is_weak <- level != "continuous" && !is.na(primary_val) && primary_val <= .40
 
+            # ---- What happened: the mechanics, not just the number ---------
+            happened_html <- if (level %in% c("nominal", "ordinal")) paste0(
+                "<p>", tr(
+                    paste0("Three estimators of the same question — how much do raters agree beyond chance? — were computed on the same ", k, " raters and ", n, " cases: ",
+                           if (!is.na(kappa_val)) paste0("Kappa (", round(kappa_val,3), "), ") else "",
+                           if (!is.na(gwet_val))  paste0("Gwet's coefficient (", round(gwet_val,3), "), ") else "",
+                           if (!is.na(krip_val))  paste0("and Krippendorff's α (", round(krip_val,3), ")") else "",
+                           ". They can legitimately disagree because each one defines “agreement expected by chance” differently: Kappa (Cohen, 1960 for 2 raters; Fleiss, 1971 for more than 2) derives it from the observed marginal distribution of each category, which makes it highly sensitive to skewed prevalence; Gwet's AC1/AC2 (Gwet, 2014) was designed specifically to not degrade under that same skew; and Krippendorff's α (Krippendorff, 2018) generalizes the calculation across any measurement level and tolerates missing data."),
+                    paste0("Se calcularon tres estimadores de la misma pregunta —¿qué tanto concuerdan los jueces más allá del azar?— sobre los mismos ", k, " jueces y ", n, " casos: ",
+                           if (!is.na(kappa_val)) paste0("Kappa (", round(kappa_val,3), "), ") else "",
+                           if (!is.na(gwet_val))  paste0("el coeficiente de Gwet (", round(gwet_val,3), "), ") else "",
+                           if (!is.na(krip_val))  paste0("y el α de Krippendorff (", round(krip_val,3), ")") else "",
+                           ". Pueden diferir legítimamente porque cada uno define de forma distinta el “acuerdo esperado por azar”: el Kappa (Cohen, 1960 para 2 jueces; Fleiss, 1971 para más de 2) lo deriva de la distribución marginal observada de cada categoría, lo cual lo hace muy sensible a la prevalencia sesgada; el AC1/AC2 de Gwet (Gwet, 2014) fue diseñado específicamente para no degradarse ante esa misma prevalencia sesgada; y el α de Krippendorff (Krippendorff, 2018) generaliza el cálculo a cualquier nivel de medida y tolera datos faltantes.")
+                ), "</p>",
+                if (has_discordance) paste0("<p>", tr(
+                    paste0("In this case the gap between Kappa and Gwet's coefficient (", round(abs(kappa_val-gwet_val),3), ") is large enough that the choice of formula changes the headline conclusion — see the discordance diagnosis above the tables."),
+                    paste0("En este caso la brecha entre el Kappa y el coeficiente de Gwet (", round(abs(kappa_val-gwet_val),3), ") es suficientemente grande como para que la elección de fórmula cambie la conclusión principal — ver el diagnóstico de discordancia sobre las tablas.")
+                ), "</p>") else paste0("<p>", tr(
+                    "The estimators agree closely here, so the choice of formula does not change the substantive conclusion.",
+                    "Los estimadores coinciden de cerca aquí, así que la elección de fórmula no cambia la conclusión sustantiva."
+                ), "</p>")
+            ) else paste0(
+                "<p>", tr(
+                    paste0("Reliability was assessed via two ICC forms and Krippendorff's interval α on the same ", k, " raters and ", n, " cases. ICC (consistency) asks whether raters RANK cases similarly, tolerating a rater who is systematically higher or lower than the others; ICC (absolute agreement) additionally requires their raw VALUES to be interchangeable (Shrout &amp; Fleiss, 1979)."),
+                    paste0("La confiabilidad se evaluó mediante dos formas de ICC y el α de intervalo de Krippendorff sobre los mismos ", k, " jueces y ", n, " casos. El ICC (consistencia) pregunta si los jueces ORDENAN los casos de forma similar, tolerando un juez sistemáticamente más alto o más bajo que los demás; el ICC (acuerdo absoluto) exige además que sus VALORES brutos sean intercambiables (Shrout &amp; Fleiss, 1979).")
+                ), "</p>",
+                if (has_discordance) paste0("<p>", tr(
+                    paste0("Here the gap between the two ICC forms (", round(abs(icc_c_val-icc_a_val),3), ") is large enough to matter — see the discordance diagnosis above the tables."),
+                    paste0("Aquí la brecha entre las dos formas de ICC (", round(abs(icc_c_val-icc_a_val),3), ") es suficientemente grande como para importar — ver el diagnóstico de discordancia sobre las tablas.")
+                ), "</p>") else paste0("<p>", tr(
+                    "Both ICC forms agree closely here, so there is no evidence that rater interchangeability is a concern.",
+                    "Ambas formas de ICC coinciden de cerca aquí, así que no hay evidencia de que la intercambiabilidad de jueces sea un problema."
+                ), "</p>")
+            )
+
+            # ---- Why: grounded in THIS data's pattern, not design metadata --
+            why_html <- if (level %in% c("nominal", "ordinal")) paste0(
+                "<p>", tr(
+                    paste0("Category “", top_cat, "” accounts for ", top_pct, "% of every rating issued across all ", k, " raters — a markedly uneven distribution. This is exactly the condition under which Kappa becomes conservative: when nearly every case falls in one category, the “chance agreement” Kappa subtracts is already high, leaving little room for Kappa to register genuine agreement even when raters are truly consistent (Gwet, 2014). AC1/AC2 and Krippendorff's α are not penalized this way."),
+                    paste0("La categoría “", top_cat, "” concentra el ", top_pct, "% de todas las calificaciones emitidas entre los ", k, " jueces — una distribución marcadamente desigual. Esta es exactamente la condición bajo la cual el Kappa se vuelve conservador: cuando casi todos los casos caen en una sola categoría, el “acuerdo por azar” que el Kappa resta ya es alto de por sí, dejando poco margen para que el Kappa registre acuerdo genuino aun cuando los jueces sean realmente consistentes (Gwet, 2014). El AC1/AC2 y el α de Krippendorff no se penalizan de esta forma.")
+                ), "</p>",
+                if (has_outlier_rater) paste0("<p>", tr(
+                    paste0("Rater “", worst_rater, "” also stands out: their average pairwise agreement with the other raters is ", worst_pct, "%, versus ", others_pct, "% among the remaining rater pairs — a ", rater_gap, "-point gap. This points to that specific rater applying a different criterion, rather than a problem with the measurement design itself."),
+                    paste0("El juez “", worst_rater, "” también se distingue: su acuerdo promedio por pares con los demás jueces es ", worst_pct, "%, frente a ", others_pct, "% entre el resto de pares de jueces — una brecha de ", rater_gap, " puntos porcentuales. Esto apunta a que ese juez en particular está aplicando un criterio distinto, más que a un problema del diseño de medición en sí.")
+                ), "</p>") else paste0("<p>", tr(
+                    "No single rater stands out from the rest — pairwise agreement is fairly even across all rater pairs, so the pattern found here reflects the measurement design (category prevalence) rather than one rater's individual behavior.",
+                    "Ningún juez se distingue del resto — el acuerdo por pares es bastante parejo entre todos los pares de jueces, así que el patrón encontrado aquí refleja el diseño de medición (prevalencia de categoría) más que el comportamiento individual de un juez."
+                ), "</p>")
+            ) else paste0(
+                "<p>", tr(
+                    paste0("Rater “", biased_rater, "” averages ", round(rater_means[worst_i],1), " points against an overall mean of ", round(grand_mean,1), " — a ", if(bias_gap>0) "+" else "", bias_gap, "-point systematic shift. This is exactly what produces a gap between the two ICC forms: raters agree on WHO scores higher or lower (preserving rank, hence high consistency-type ICC), but not on the exact MAGNITUDE of the score (hurting absolute-agreement-type ICC) (Shrout &amp; Fleiss, 1979)."),
+                    paste0("El juez “", biased_rater, "” promedia ", round(rater_means[worst_i],1), " puntos frente a una media general de ", round(grand_mean,1), " — un desplazamiento sistemático de ", if(bias_gap>0) "+" else "", bias_gap, " puntos. Esto es exactamente lo que produce la brecha entre las dos formas de ICC: los jueces concuerdan en QUIÉN puntúa más alto o más bajo (preservando el orden, de ahí el ICC tipo consistencia alto), pero no en la MAGNITUD exacta del puntaje (perjudicando el ICC tipo acuerdo absoluto) (Shrout &amp; Fleiss, 1979).")
+                ), "</p>")
+
+            # ---- What it means: decision-relevant, not a "see above" pointer -
+            implies_html <- if (level %in% c("nominal", "ordinal")) paste0(
+                "<p>", tr(
+                    paste0("A value of ", round(primary_val,3), " (", primary_lbl, ") on the Landis &amp; Koch (1977) scale means that, corrected for chance, rater agreement is ",
+                           if (band_is_weak) "not yet strong enough to treat a single rater's classification — or even the consensus across raters — as trustworthy for consequential decisions (e.g. diagnosis, selection); a non-trivial share of individual classifications likely do not reflect a shared criterion."
+                           else "strong enough to support using the raters' consensus classification (e.g. the modal category across raters) as a dependent variable with reasonable confidence."),
+                    paste0("Un valor de ", round(primary_val,3), " (", primary_lbl, ") en la escala de Landis &amp; Koch (1977) significa que, corregido por azar, el acuerdo entre jueces es ",
+                           if (band_is_weak) "todavía insuficiente para tratar la clasificación de un solo juez —o incluso el consenso entre jueces— como confiable para decisiones consecuentes (p. ej. diagnóstico, selección); una proporción no trivial de las clasificaciones individuales probablemente no refleja un criterio compartido."
+                           else "suficientemente fuerte como para respaldar el uso de la clasificación consensuada de los jueces (p. ej. la categoría modal entre jueces) como variable dependiente con confianza razonable.")
+                ), "</p>",
+                if (has_discordance) paste0("<p>", tr(
+                    "The Kappa/Gwet discordance is not a mere technicality: reporting only Kappa here would lead a reader to conclude the agreement is weaker than the rating pattern actually supports, given the observed category skew.",
+                    "La discordancia Kappa/Gwet no es un simple tecnicismo: reportar solo el Kappa aquí llevaría a un lector a concluir que el acuerdo es más débil de lo que el patrón de calificaciones realmente respalda, dado el sesgo de categoría observado."
+                ), "</p>") else ""
+            ) else paste0(
+                "<p>", tr(
+                    paste0("An absolute-agreement ICC of ", round(icc_a_val,3), " means raters' raw scores can", if (!is.na(icc_a_val) && icc_a_val >= .75) "" else "not yet", " be used interchangeably (e.g. averaged into a single composite score) with reasonable confidence; the higher consistency-type ICC (", round(icc_c_val,3), ") means their RANKING of cases is more trustworthy than their absolute scale."),
+                    paste0("Un ICC de acuerdo absoluto de ", round(icc_a_val,3), " significa que los puntajes brutos de los jueces ", if (!is.na(icc_a_val) && icc_a_val >= .75) "sí pueden" else "todavía no pueden", " usarse de forma intercambiable (p. ej. promediados en un puntaje compuesto único) con confianza razonable; el ICC tipo consistencia más alto (", round(icc_c_val,3), ") indica que su ORDENAMIENTO de los casos es más confiable que su escala absoluta.")
+                ), "</p>")
+
+            # ---- What to do now: concrete, data-driven methodological steps -
             action_items <- character(0)
-            if (level %in% c("nominal", "ordinal") && !is.na(kappa_val) && !is.na(gwet_val) && abs(kappa_val - gwet_val) > .05)
-                action_items <- c(action_items, tr("Report Gwet's coefficient as the primary estimate, not Kappa.",
-                                                    "Reporte el coeficiente de Gwet como estimación primaria, no el Kappa."))
-            if (level == "continuous" && !is.na(icc_c_val) && !is.na(icc_a_val) && (icc_c_val - icc_a_val) > .05)
-                action_items <- c(action_items, tr("Report ICC (absolute agreement) rather than ICC (consistency) if raw scores must be interchangeable across raters.",
-                                                    "Reporte ICC (acuerdo absoluto) en vez de ICC (consistencia) si los puntajes brutos deben ser intercambiables entre jueces."))
+            if (has_discordance && level %in% c("nominal","ordinal"))
+                action_items <- c(action_items, tr("Report Gwet's coefficient (or Krippendorff's α) as the primary estimate, not Kappa — Kappa's value here is an artifact of category prevalence, not weaker rater agreement.",
+                                                    "Reporte el coeficiente de Gwet (o el α de Krippendorff) como estimación primaria, no el Kappa — el valor del Kappa aquí es un artefacto de la prevalencia de categoría, no un acuerdo entre jueces más débil."))
+            if (has_discordance && level == "continuous")
+                action_items <- c(action_items, tr("Report ICC (absolute agreement) rather than ICC (consistency) if raters' raw scores must be interchangeable; if only relative ranking matters, the consistency form is the right one to report instead.",
+                                                    "Reporte ICC (acuerdo absoluto) en vez de ICC (consistencia) si los puntajes brutos de los jueces deben ser intercambiables; si solo importa el orden relativo, la forma de consistencia es la correcta para reportar."))
+            if (level %in% c("nominal","ordinal") && !is.na(top_pct) && (top_pct > 60 || has_discordance))
+                action_items <- c(action_items, tr(paste0("The category system is heavily imbalanced (", top_pct, "% in one category). If more data will be collected, deliberately oversample the minority categories; if the categories themselves are the issue, consider whether they need to be redefined or collapsed."),
+                                                    paste0("El sistema de categorías está muy desbalanceado (", top_pct, "% en una sola categoría). Si se recolectarán más datos, sobremuestree deliberadamente las categorías minoritarias; si las categorías en sí son el problema, considere si necesitan redefinirse o colapsarse.")))
+            if (has_outlier_rater)
+                action_items <- c(action_items, tr(paste0("Rater “", worst_rater, "” disagrees with the group more than the others do. Review that rater's criteria against the category definitions, consider a calibration/training session with shared examples, or add an adjudication step for cases where that rater's classification is the deciding vote."),
+                                                    paste0("El juez “", worst_rater, "” discrepa del grupo más que los demás. Revise el criterio de ese juez frente a las definiciones de categoría, considere una sesión de calibración/entrenamiento con ejemplos compartidos, o agregue un paso de arbitraje para los casos en que la clasificación de ese juez sea el voto decisivo.")))
+            if (has_biased_rater)
+                action_items <- c(action_items, tr(paste0("Rater “", biased_rater, "” has a systematic mean shift (", if(bias_gap>0) "+" else "", bias_gap, " points). Consider a calibration session with shared anchor cases, or mean-center that rater's scores before combining them with the others."),
+                                                    paste0("El juez “", biased_rater, "” tiene un desplazamiento sistemático de media (", if(bias_gap>0) "+" else "", bias_gap, " puntos). Considere una sesión de calibración con casos ancla compartidos, o centre la media de ese juez antes de combinar sus puntajes con los demás.")))
+            if (band_is_weak)
+                action_items <- c(action_items, tr("Overall agreement is Fair or worse: before using these ratings for any consequential decision, run a rater-training session with shared examples and explicit category anchors, then re-rate a fresh sample to confirm agreement improves.",
+                                                    "El acuerdo general es Aceptable o peor: antes de usar estas calificaciones para cualquier decisión consecuente, realice una sesión de entrenamiento de jueces con ejemplos compartidos y anclas de categoría explícitas, y vuelva a calificar una muestra nueva para confirmar que el acuerdo mejora."))
             if (level == "ordinal" && k > 2L && opt$kappa)
                 action_items <- c(action_items, tr("Weighted multi-rater Kappa is not available here for >2 raters; Krippendorff's ordinal α already accounts for the ordinal scale with any number of raters.",
                                                     "El Kappa ponderado multi-juez no está disponible aquí para >2 jueces; el α ordinal de Krippendorff ya considera la escala ordinal con cualquier número de jueces."))
             if (n < 30L)
                 action_items <- c(action_items, tr(paste0("n = ", n, " is a small sample for agreement statistics; treat the confidence intervals above as wide."),
                                                     paste0("n = ", n, " es una muestra pequeña para estadísticos de acuerdo; trate los intervalos de confianza de arriba como amplios.")))
+            if (length(action_items) == 0L)
+                action_items <- c(tr("No specific corrective action indicated — the primary estimate can be reported as-is.",
+                                      "No se indica ninguna acción correctiva específica — la estimación primaria puede reportarse tal cual."))
 
-            action_html <- if (length(action_items) > 0L)
-                paste0("<ul style='font-size:13px;line-height:1.8;'>", paste0("<li>", action_items, "</li>", collapse = ""), "</ul>")
-            else paste0("<p>", tr("No specific corrective action indicated — the primary estimate can be reported as-is.",
-                                   "No se indica ninguna acción correctiva específica — la estimación primaria puede reportarse tal cual."), "</p>")
+            action_html <- paste0("<ul style='line-height:1.8;'>", paste0("<li>", action_items, "</li>", collapse = ""), "</ul>")
 
             bands_html <- if (level %in% c("nominal", "ordinal")) paste0(
-                "<table style='border-collapse:collapse;font-size:13px;'>",
+                "<table style='border-collapse:collapse;'>",
                 "<tr><th style='padding:3px 8px;border:1px solid #ccc;'>", tr("Value", "Valor"), "</th><th style='padding:3px 8px;border:1px solid #ccc;'>", tr("Interpretation", "Interpretación"), "</th></tr>",
                 "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>&lt; 0</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Poor", "Pobre"), "</td></tr>",
                 "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>0.00 – 0.20</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Slight", "Leve"), "</td></tr>",
@@ -346,24 +492,33 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                                                               "Bandas de Landis &amp; Koch (1977), aplicadas al acuerdo categórico corregido por azar (Kappa, Gwet, Krippendorff en datos nominales/ordinales)."), "</p>"
             ) else ""
 
+            # Every heading/paragraph/list/table below shares one font-size
+            # via this wrapper -- previously "What to do now"'s <ul> and the
+            # benchmarks <table> hardcoded their own 13px while the other
+            # sections' <p> tags had no size at all, so the panel visibly
+            # changed typeface size partway through.
+            # ES: Todo encabezado/párrafo/lista/tabla de abajo comparte un
+            # solo tamaño de fuente vía este contenedor -- antes el <ul> de
+            # "Qué hacer ahora" y la <table> de bandas fijaban su propio
+            # 13px mientras las demás secciones (<p>) no tenían tamaño
+            # alguno, así que el panel cambiaba de tamaño de letra a mitad
+            # de camino.
             rec_html <- paste0(
+                "<div style='font-size:13px;line-height:1.6;'>",
                 "<h4>", tr("What happened", "Qué pasó"), "</h4>",
-                "<p>", tr(paste0("The primary agreement estimate for this data is <b>", round(primary_val, 3), "</b> (", primary_lbl, ")."),
-                          paste0("La estimación primaria de acuerdo para estos datos es <b>", round(primary_val, 3), "</b> (", primary_lbl, ").")), "</p>",
-                discord_html,
+                happened_html,
                 "<h4>", tr("Why", "Por qué"), "</h4>",
-                "<p>", tr(paste0("Detected design: ", k, " raters, ", n, " complete cases, ", level_lbl, " measurement level."),
-                          paste0("Diseño detectado: ", k, " jueces, ", n, " casos completos, nivel de medida ", level_lbl, ".")), "</p>",
+                why_html,
                 "<h4>", tr("What it means", "Qué implica"), "</h4>",
-                "<p>", tr("See the Agreement Coefficients table above for the exact numbers; the Fiability Library (Inter-Rater Agreement section) documents each coefficient's assumptions and formula in full.",
-                          "Vea la tabla de Coeficientes de Acuerdo arriba para las cifras exactas; la Biblioteca de Confiabilidad (sección Acuerdo entre Jueces) documenta el supuesto y la fórmula de cada coeficiente en detalle."), "</p>",
+                implies_html,
                 "<h4>", tr("What to do now", "Qué hacer ahora"), "</h4>",
                 action_html,
                 if (nzchar(bands_html)) paste0("<h4>", tr("Interpretation Benchmarks", "Criterios de interpretación"), "</h4>", bands_html) else "",
                 "<p style='font-size:11px;color:#666;'>", tr(
                     "See Fiability Library → Inter-Rater Agreement for full definitions and assumptions, and Bibliography → Inter-Rater Reliability for references.",
                     "Vea Biblioteca de Confiabilidad → Acuerdo entre Jueces para definiciones y supuestos completos, y Bibliografía → Confiabilidad entre Jueces para las referencias."),
-                "</p>"
+                "</p>",
+                "</div>"
             )
             self$results$interpretation$setContent(rec_html)
         }

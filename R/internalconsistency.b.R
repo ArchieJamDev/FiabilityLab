@@ -600,13 +600,23 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 action_items <- c(action_items, tr(paste0("n = ", n, " is below the n ≥ 200 rule of thumb for a stable estimate; treat the CI above as wide."),
                                                     paste0("n = ", n, " está por debajo de la regla empírica n ≥ 200 para una estimación estable; trate el IC de arriba como amplio.")))
             action_html <- if (length(action_items) > 0L)
-                paste0("<ul style='font-size:13px;line-height:1.8;'>",
+                paste0("<ul style='line-height:1.8;'>",
                        paste0("<li>", action_items, "</li>", collapse = ""), "</ul>")
             else
                 paste0("<p>", tr("No specific corrective action indicated — the primary estimate can be reported as-is.",
                                   "No se indica ninguna acción correctiva específica — la estimación primaria puede reportarse tal cual."), "</p>")
 
+            # Wrapped in one font-size so headings/paragraphs/lists/tables
+            # never visibly change typeface size partway through the panel
+            # (previously only the <ul> and benchmarks <table> hardcoded
+            # 13px while the surrounding <p> tags had no size at all).
+            # ES: Envuelto en un solo tamaño de fuente para que los
+            # encabezados/párrafos/listas/tablas nunca cambien de tamaño de
+            # letra a mitad del panel (antes solo el <ul> y la tabla de
+            # bandas fijaban 13px mientras los <p> circundantes no tenían
+            # tamaño alguno).
             rec_html <- paste0(
+                "<div style='font-size:13px;line-height:1.6;'>",
                 "<h4>", tr("What happened", "Qué pasó"), "</h4>",
                 "<p>", tr(
                     paste0("The primary reliability estimate for this scale is <b>",
@@ -628,7 +638,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 action_html,
 
                 "<h4>", tr("Interpretation Benchmarks", "Criterios de interpretación"), "</h4>",
-                "<table style='border-collapse:collapse;font-size:13px;'>",
+                "<table style='border-collapse:collapse;'>",
                 "<tr><th style='padding:3px 8px;border:1px solid #ccc;'>", tr("Value","Valor"), "</th>",
                 "<th style='padding:3px 8px;border:1px solid #ccc;'>", tr("Interpretation","Interpretación"), "</th></tr>",
                 "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>≥ .95</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Excellent","Excelente"), "</td></tr>",
@@ -641,7 +651,8 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 "<p style='font-size:11px;color:#666;'>", tr(
                     "See Fiability Library → Coefficients for full definitions, assumptions and references (Bibliography → Classical Test Theory).",
                     "Vea Biblioteca de Confiabilidad → Coeficientes para definiciones y supuestos completos, y referencias (Bibliografía → Teoría Clásica de los Tests)."),
-                "</p>")
+                "</p>",
+                "</div>")
             self$results$interpretation$setContent(rec_html)
         },
 
