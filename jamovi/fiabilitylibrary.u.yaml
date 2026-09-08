@@ -12,6 +12,8 @@ children:
         name: concepts
       - title: Theories
         name: theories
+      - title: Coefficients
+        name: coefficients
       - title: Common Errors
         name: errors
   - type: ComboBox

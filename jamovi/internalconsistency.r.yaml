@@ -170,8 +170,4 @@ items:
   - name: interpretation
     type: Html
     title: Interpretation & Recommendations
-
-  - name: references
-    type: Html
-    title: References (APA 7th)
 ...

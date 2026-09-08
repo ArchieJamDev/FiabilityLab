@@ -214,8 +214,7 @@ internalConsistencyResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
         plotItemDist = function() private$.items[["plotItemDist"]],
         plotItemTotal = function() private$.items[["plotItemTotal"]],
         plotScree = function() private$.items[["plotScree"]],
-        interpretation = function() private$.items[["interpretation"]],
-        references = function() private$.items[["references"]]),
+        interpretation = function() private$.items[["interpretation"]]),
     private = list(),
     public=list(
         initialize=function(options) {
@@ -413,11 +412,7 @@ internalConsistencyResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
             self$add(jmvcore::Html$new(
                 options=options,
                 name="interpretation",
-                title="Interpretation & Recommendations"))
-            self$add(jmvcore::Html$new(
-                options=options,
-                name="references",
-                title="References (APA 7th)"))}))
+                title="Interpretation & Recommendations"))}))
 
 internalConsistencyBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
     "internalConsistencyBase",
@@ -478,7 +473,6 @@ internalConsistencyBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
 #'   \code{results$plotItemTotal} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$plotScree} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$interpretation} \tab \tab \tab \tab \tab a html \cr
-#'   \code{results$references} \tab \tab \tab \tab \tab a html \cr
 #' }
 #'
 #' Tables can be converted to data frames with \code{asDF} or \code{\link{as.data.frame}}. For example:

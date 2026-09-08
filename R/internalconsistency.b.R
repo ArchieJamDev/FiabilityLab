@@ -160,6 +160,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             self$results$sampleAdequacy$setContent(samp_html)
 
             # ── 6. Normality tests (Shapiro-Wilk per item) ────────────────────
+            nonnormal_count <- 0L
             if (opt$normality) {
                 norm_tab <- self$results$normalityTable
                 private$.reset_table(norm_tab, k)
@@ -183,6 +184,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                     dec <- if (is.na(p_val)) tr("–","–")
                            else if (p_val < .05) tr("Non-normal", "No normal")
                            else tr("Normal", "Normal")
+                    if (!is.na(p_val) && p_val < .05) nonnormal_count <- nonnormal_count + 1L
                     norm_tab$setRow(rowNo = j, values = list(
                         item     = names(df)[j],
                         W        = W_val,
@@ -234,6 +236,9 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             }
 
             # ── 8. Compute all statistics → accumulate rows ───────────────────
+            # Safe defaults so the interpretation engine (step 12) can always
+            # reference these regardless of which coefficients the user enabled.
+            oa <- ot <- oh <- glb_val <- NA_real_
             rows      <- list()   # each element: list(coefficient, value, interpretation, applicability, fn)
             boot_rows <- list()   # only those with opt-in bootstrap
 
@@ -268,10 +273,9 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             # ── 8b. Ordinal Alpha ─────────────────────────────────────────────
             if (opt$ordinalAlpha) {
                 oa <- tryCatch({
-                    pc  <- psych::polychoric(df, correct = 0)
-                    eig <- eigen(pc$rho, only.values = TRUE)$values
-                    kk  <- ncol(df)
-                    (kk/(kk-1)) * (1 - kk/sum(eig))
+                    pc <- psych::polychoric(df, correct = 0)
+                    kk <- ncol(df)
+                    (kk/(kk-1)) * (1 - kk/sum(pc$rho))
                 }, error = function(e) NA_real_)
                 add_stat(
                     tr("Ordinal \u03B1 (polychoric)", "Alfa Ordinal (policórica)"),
@@ -280,11 +284,29 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                        "Ítems ordinales/Likert; no requiere normalidad"))
             }
 
-            # ── 8c. McDonald's Omega ──────────────────────────────────────────
+            # ── 8c. Dimensionality pre-check for Omega / Omega-h ──────────────
+            # Omega hierarchical is only meaningful relative to a bifactor
+            # model with real group factors beneath the general factor; a
+            # fixed nfactors=1 makes omega_h collapse onto omega_total for
+            # every scale. Parallel analysis (reused below for the
+            # dimensionality note/scree plot) runs once here so both omega
+            # coefficients fit the data's own suggested factor structure.
+            fa_par <- NULL
+            if ((opt$omega || opt$omegaHierarchical || opt$checkDimensionality || opt$plotScree) && k >= 3L) {
+                fa_par <- tryCatch(
+                    suppressWarnings(psych::fa.parallel(df, plot = FALSE, fa = "both")),
+                    error = function(e) NULL)
+                private$.fa_result <- fa_par
+            }
+            n_omega_factors <- if (!is.null(fa_par))
+                max(1L, min(fa_par$nfact, max(1L, floor(k / 3))))
+            else 1L
+
+            # ── 8d. McDonald's Omega (total & hierarchical) ───────────────────
             omega_obj <- NULL
-            if ((opt$omega || opt$omegaHierarchical || opt$glb) && k >= 3L) {
+            if ((opt$omega || opt$omegaHierarchical) && k >= 3L) {
                 omega_obj <- tryCatch(
-                    psych::omega(df, nfactors = 1L, plot = FALSE, warnings = FALSE),
+                    psych::omega(df, nfactors = n_omega_factors, plot = FALSE),
                     error = function(e) NULL)
             }
 
@@ -296,7 +318,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                     tr("Polytomous; robust to non-normality; preferred over \u03B1",
                        "Politómico; robusto a no normalidad; preferible al \u03B1"),
                     function(d) {
-                        o <- tryCatch(psych::omega(d, nfactors=1, plot=FALSE, warnings=FALSE),
+                        o <- tryCatch(psych::omega(d, nfactors = n_omega_factors, plot = FALSE),
                                      error=function(e) NULL)
                         if (is.null(o)) NA_real_ else o$omega.tot
                     })
@@ -304,22 +326,28 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
 
             if (opt$omegaHierarchical && !is.null(omega_obj)) {
                 oh <- omega_obj$omega_h
+                cond_h <- if (n_omega_factors >= 2L)
+                    tr("Multidimensional scales; proportion of variance due to g-factor",
+                       "Escalas multidimensionales; proporción de varianza del factor g")
+                else
+                    tr("Parallel analysis suggests 1 factor: this collapses onto ω total here",
+                       "El análisis paralelo sugiere 1 factor: esto colapsa sobre el ω total aquí")
                 add_stat(
                     tr("McDonald's \u03C9 hierarchical", "Omega Jerárquico (\u03C9\u2095)"),
-                    oh, oh,
-                    tr("Multidimensional scales; proportion of variance due to g-factor",
-                       "Escalas multidimensionales; proporción de varianza del factor g"))
+                    oh, oh, cond_h)
             }
 
-            # ── 8d. GLB ───────────────────────────────────────────────────────
-            if (opt$glb && !is.null(omega_obj)) {
-                glb_val <- tryCatch(omega_obj$GLB, error=function(e) NA_real_)
-                if (is.null(glb_val)) glb_val <- NA_real_
+            # ── 8e. GLB ───────────────────────────────────────────────────────
+            # psych::omega()'s result object has no $GLB field -- GLB is
+            # computed by its own dedicated function, independently of the
+            # omega fit above.
+            if (opt$glb) {
+                glb_val <- tryCatch(psych::glb.fa(df)$glb, error = function(e) NA_real_)
                 add_stat(
                     tr("GLB (Greatest Lower Bound)", "Límite Inferior Máximo (GLB)"),
                     glb_val, glb_val,
-                    tr("Upper bound for true reliability; no distributional assumptions",
-                       "Cota superior de la confiabilidad real; sin supuestos distribucionales"))
+                    tr("Best achievable lower-bound estimate; no distributional assumptions",
+                       "Mejor cota inferior alcanzable; sin supuestos distribucionales"))
             }
 
             # ── 8e. Split-half & Guttman Lambdas ─────────────────────────────
@@ -347,7 +375,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 for (lam in c("lambda2","lambda3","lambda4","lambda5","lambda6")) {
                     val <- tryCatch(split_obj[[lam]], error=function(e) NA_real_)
                     if (!is.null(val) && !is.na(val)) {
-                        lbl <- sub("lambda","\\u03BB", lam)
+                        lbl <- sub("lambda","λ", lam)
                         add_stat(
                             tr(paste0("Guttman ", lbl), paste0("Guttman ", lbl)),
                             val, val,
@@ -416,11 +444,16 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             }
 
             # ── 11. Dimensionality (parallel analysis) ────────────────────────
+            # Reuses the fa_par already computed in step 8c above (whenever
+            # omega/omegaHierarchical/checkDimensionality triggered it); only
+            # recomputes here if none of those requested it yet.
             if (opt$checkDimensionality && k >= 3L && n >= 20L) {
-                fa_par <- tryCatch(
-                    psych::fa.parallel(df, plot = FALSE, warnings = FALSE, fa = "both"),
-                    error = function(e) NULL)
-                private$.fa_result <- fa_par
+                if (is.null(fa_par)) {
+                    fa_par <- tryCatch(
+                        suppressWarnings(psych::fa.parallel(df, plot = FALSE, fa = "both")),
+                        error = function(e) NULL)
+                    private$.fa_result <- fa_par
+                }
 
                 if (!is.null(fa_par)) {
                     n_f <- fa_par$nfact
@@ -451,60 +484,149 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             }
 
             # ── 12. Interpretation & recommendations ──────────────────────────
-            best_val <- if (!is.null(alpha_obj)) alpha_obj$total$raw_alpha else NA_real_
+            # EN: Data-reactive interpretation engine. Always answers four
+            # questions grounded in THIS run's numbers, not generic templated
+            # boilerplate: What happened? Why? What does it imply? What
+            # should the researcher do now? References live exclusively in
+            # the Bibliography module (topic: Classical Test Theory) -- this
+            # report never duplicates a citation list.
+            # ES: Motor de interpretación reactivo a los datos. Responde
+            # siempre cuatro preguntas ancladas en los números de ESTA
+            # corrida: ¿Qué pasó? ¿Por qué? ¿Qué implica? ¿Qué debe hacer el
+            # investigador ahora? Las referencias viven exclusivamente en el
+            # módulo Bibliography (tema: Teoría Clásica de los Tests).
+            best_val   <- if (!is.null(alpha_obj)) alpha_obj$total$raw_alpha else NA_real_
             interp_lbl <- private$.interp_rel(best_val)
 
+            citc_v  <- private$.citc_vals
+            drop_v  <- private$.alpha_drop
+            weak_idx <- if (!is.null(citc_v)) which(citc_v < .30) else integer(0)
+
+            weak_html <- if (length(weak_idx) > 0L) {
+                items_txt <- vapply(weak_idx, function(j) {
+                    paste0("<code>", names(df)[j], "</code> (r = ", round(citc_v[j], 3),
+                           if (!is.null(drop_v) && j <= length(drop_v))
+                               paste0(", α ", tr("if removed","si se elimina"), " = ", round(drop_v[j], 3))
+                           else "",
+                           ")")
+                }, character(1))
+                paste0("<p>&#9888; <b>", tr("Weak items detected", "Ítems débiles detectados"), ":</b> ",
+                       tr("the following item(s) fall below the r(item-total) ≥ .30 threshold and are actively pulling reliability down: ",
+                          "el/los siguiente(s) ítem(s) está(n) por debajo del umbral r(ítem-total) ≥ .30 y está(n) reduciendo activamente la confiabilidad: "),
+                       paste(items_txt, collapse = "; "), ". ",
+                       tr("Consider revising or removing them — the item-analysis table above already shows α improves if each is dropped.",
+                          "Considere revisarlos o eliminarlos — la tabla de análisis de ítems arriba ya muestra que α mejora al eliminar cada uno."),
+                       "</p>")
+            } else {
+                paste0("<p>&#10003; ", tr("No items fall below the r(item-total) ≥ .30 threshold.",
+                                          "Ningún ítem está por debajo del umbral r(ítem-total) ≥ .30."), "</p>")
+            }
+
+            discord_html <- if (!is.na(best_val) && !is.na(ot) && abs(best_val - ot) > .04) {
+                paste0("<p>&#9888; <b>", tr("Coefficients disagree", "Los coeficientes no coinciden"), ":</b> ",
+                       tr(paste0("Cronbach's α (", round(best_val,3), ") and McDonald's ω (", round(ot,3),
+                                 ") differ by more than .04. α assumes equal item loadings (τ-equivalence); "),
+                          paste0("El Alfa de Cronbach (", round(best_val,3), ") y el Omega de McDonald (", round(ot,3),
+                                 ") difieren en más de .04. El α asume cargas de ítem iguales (τ-equivalencia); ")),
+                       tr("this scale's items likely load unequally on the underlying factor, so α is probably biased here — trust ω instead.",
+                          "los ítems de esta escala probablemente cargan de forma desigual sobre el factor subyacente, así que el α probablemente esté sesgado aquí — confíe en ω en su lugar."),
+                       "</p>")
+            } else if (!is.na(best_val) && !is.na(ot)) {
+                paste0("<p>&#10003; ", tr("Cronbach's α and McDonald's ω agree closely — the τ-equivalence assumption behind α looks reasonable here.",
+                                          "El Alfa de Cronbach y el Omega de McDonald coinciden de cerca — el supuesto de τ-equivalencia detrás del α parece razonable aquí."), "</p>")
+            } else ""
+
+            normality_html <- if (opt$normality && k > 0L) {
+                if (nonnormal_count > 0L) {
+                    paste0("<p>&#9888; ",
+                           tr(paste0(nonnormal_count, " of ", k, " item(s) fail the Shapiro-Wilk normality test (p < .05). "),
+                              paste0(nonnormal_count, " de ", k, " ítem(s) fallan la prueba de normalidad de Shapiro-Wilk (p < .05). ")),
+                           tr(paste0("Prefer ", if (!is.na(oa)) "Ordinal α" else "McDonald's ω",
+                                     " over raw Cronbach's α for the primary estimate."),
+                              paste0("Prefiera el ", if (!is.na(oa)) "Alfa Ordinal" else "Omega de McDonald",
+                                     " sobre el Alfa de Cronbach bruto como estimación primaria.")),
+                           "</p>")
+                } else {
+                    paste0("<p>&#10003; ", tr("All items pass the normality check — Cronbach's α is not at a distributional disadvantage here.",
+                                              "Todos los ítems pasan la prueba de normalidad — el Alfa de Cronbach no está en desventaja distribucional aquí."), "</p>")
+                }
+            } else ""
+
+            dim_summary_html <- if (!is.null(fa_par)) {
+                if (n_omega_factors >= 2L) {
+                    paste0("<p>&#9888; ",
+                           tr(paste0("Parallel analysis suggests ", fa_par$nfact, " factor(s) — this scale is likely multidimensional. ",
+                                     "A single overall α/ω may blend distinct dimensions; consider reporting reliability per subscale."),
+                              paste0("El análisis paralelo sugiere ", fa_par$nfact, " factor(es) — esta escala probablemente es multidimensional. ",
+                                     "Un α/ω global único puede mezclar dimensiones distintas; considere reportar la confiabilidad por subescala.")),
+                           "</p>")
+                } else {
+                    paste0("<p>&#10003; ", tr("Parallel analysis suggests a single (unidimensional) factor — a single overall reliability estimate is appropriate.",
+                                              "El análisis paralelo sugiere un solo factor (unidimensional) — una estimación de confiabilidad global única es apropiada."), "</p>")
+                }
+            } else ""
+
+            action_items <- character(0)
+            if (length(weak_idx) > 0L)
+                action_items <- c(action_items, tr(
+                    paste0("Review or remove: ", paste(names(df)[weak_idx], collapse = ", "), "."),
+                    paste0("Revisar o eliminar: ", paste(names(df)[weak_idx], collapse = ", "), ".")))
+            if (!is.na(best_val) && !is.na(ot) && abs(best_val - ot) > .04)
+                action_items <- c(action_items, tr("Report McDonald's ω as the primary coefficient, not α.",
+                                                    "Reporte el Omega de McDonald como coeficiente primario, no el α."))
+            if (opt$normality && nonnormal_count > 0L && !is.na(oa))
+                action_items <- c(action_items, tr("Report Ordinal α alongside α given the non-normal items.",
+                                                    "Reporte el Alfa Ordinal junto al α dado los ítems no normales."))
+            if (!is.null(fa_par) && n_omega_factors >= 2L)
+                action_items <- c(action_items, tr("Compute reliability per subscale in addition to the overall estimate.",
+                                                    "Calcule la confiabilidad por subescala además de la estimación global."))
+            if (n < 200L)
+                action_items <- c(action_items, tr(paste0("n = ", n, " is below the n ≥ 200 rule of thumb for a stable estimate; treat the CI above as wide."),
+                                                    paste0("n = ", n, " está por debajo de la regla empírica n ≥ 200 para una estimación estable; trate el IC de arriba como amplio.")))
+            action_html <- if (length(action_items) > 0L)
+                paste0("<ul style='font-size:13px;line-height:1.8;'>",
+                       paste0("<li>", action_items, "</li>", collapse = ""), "</ul>")
+            else
+                paste0("<p>", tr("No specific corrective action indicated — the primary estimate can be reported as-is.",
+                                  "No se indica ninguna acción correctiva específica — la estimación primaria puede reportarse tal cual."), "</p>")
+
             rec_html <- paste0(
-                "<h4>", tr("Overall Assessment", "Evaluación general"), "</h4>",
+                "<h4>", tr("What happened", "Qué pasó"), "</h4>",
                 "<p>", tr(
                     paste0("The primary reliability estimate for this scale is <b>",
                            round(best_val, 3), "</b> (", interp_lbl, ")."),
                     paste0("La estimación primaria de confiabilidad para esta escala es <b>",
-                           round(best_val, 3), "</b> (", interp_lbl, ").")),"</p>",
-                "<h4>", tr("Interpretation Benchmarks (Kline, 2000; George & Mallery, 2003)", 
-                            "Criterios de interpretación (Kline, 2000; George & Mallery, 2003)"), "</h4>",
+                           round(best_val, 3), "</b> (", interp_lbl, ").")), "</p>",
+                discord_html,
+
+                "<h4>", tr("Why", "Por qué"), "</h4>",
+                weak_html, normality_html, dim_summary_html,
+
+                "<h4>", tr("What it means", "Qué implica"), "</h4>",
+                "<p>", tr(
+                    "See the Reliability Coefficients and Item Analysis tables above for the exact numbers behind each point below; the Fiability Library (Coefficients section) documents each coefficient's assumptions and formula in full.",
+                    "Vea las tablas de Coeficientes de Confiabilidad y Análisis de Ítems arriba para las cifras exactas detrás de cada punto; la Biblioteca de Confiabilidad (sección Coeficientes) documenta el supuesto y la fórmula de cada coeficiente en detalle."),
+                "</p>",
+
+                "<h4>", tr("What to do now", "Qué hacer ahora"), "</h4>",
+                action_html,
+
+                "<h4>", tr("Interpretation Benchmarks", "Criterios de interpretación"), "</h4>",
                 "<table style='border-collapse:collapse;font-size:13px;'>",
                 "<tr><th style='padding:3px 8px;border:1px solid #ccc;'>", tr("Value","Valor"), "</th>",
                 "<th style='padding:3px 8px;border:1px solid #ccc;'>", tr("Interpretation","Interpretación"), "</th></tr>",
-                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>\u2265 .95</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Excellent","Excelente"), "</td></tr>",
-                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>.90 \u2013 .94</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Good","Bueno"), "</td></tr>",
-                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>.80 \u2013 .89</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Acceptable","Aceptable"), "</td></tr>",
-                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>.70 \u2013 .79</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Questionable","Cuestionable"), "</td></tr>",
-                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>.60 \u2013 .69</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Poor","Pobre"), "</td></tr>",
+                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>≥ .95</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Excellent","Excelente"), "</td></tr>",
+                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>.90 – .94</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Good","Bueno"), "</td></tr>",
+                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>.80 – .89</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Acceptable","Aceptable"), "</td></tr>",
+                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>.70 – .79</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Questionable","Cuestionable"), "</td></tr>",
+                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>.60 – .69</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Poor","Pobre"), "</td></tr>",
                 "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>< .60</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Unacceptable","Inaceptable"), "</td></tr>",
                 "</table>",
-                "<h4>", tr("Effect of Key Factors on Reliability", "Efecto de factores clave en la confiabilidad"), "</h4>",
-                "<ul style='font-size:13px;line-height:1.8;'>",
-                "<li><b>", tr("Sample size","Tamaño de muestra"), ":</b> ",
-                tr(paste0("n = ", n, ". Larger samples produce more stable estimates. Aim for n \u2265 200."),
-                   paste0("n = ", n, ". Muestras más grandes producen estimaciones más estables. Objetivo: n \u2265 200.")), "</li>",
-                "<li><b>", tr("Number of items","Número de ítems"), ":</b> ",
-                tr(paste0("k = ", k, ". More items generally increase \u03B1 (Spearman-Brown prophecy). Minimum 6\u20138 items recommended."),
-                   paste0("k = ", k, ". Más ítems generalmente aumentan \u03B1 (profecía de Spearman-Brown). Mínimo 6\u20138 ítems recomendado.")), "</li>",
-                "<li><b>", tr("Response options","Opciones de respuesta"), ":</b> ",
-                tr(paste0("Max = ", n_opts, ". Scales with 4\u20137 points typically yield higher reliability than binary items."),
-                   paste0("Máx = ", n_opts, ". Escalas con 4\u20137 puntos producen mayor confiabilidad que ítems binarios.")), "</li>",
-                "<li><b>", tr("Normality","Normalidad"), ":</b> ",
-                tr("Non-normal item distributions inflate standard errors. Ordinal \u03B1 or \u03C9 are preferable when normality is violated.",
-                   "Distribuciones no normales inflan los errores estándar. El Alfa Ordinal o el Omega son preferibles cuando se viola la normalidad."), "</li>",
-                "<li><b>", tr("Dimensionality","Dimensionalidad"), ":</b> ",
-                tr("Cronbach\u2019s \u03B1 assumes unidimensionality. If the scale is multidimensional, \u03B1 may be misleading. Use \u03C9\u2095 or compute \u03B1 per subscale.",
-                   "El Alfa de Cronbach asume unidimensionalidad. Si la escala es multidimensional, el \u03B1 puede ser engañoso. Use \u03C9\u2095 o calcule \u03B1 por subescala."), "</li>",
-                "</ul>")
-            self$results$interpretation$setContent(rec_html)
-
-            # ── 13. References ────────────────────────────────────────────────
-            refs_html <- paste0(
-                "<p style='font-size:12px;line-height:1.8;'>",
-                "Cronbach, L. J. (1951). Coefficient alpha and the internal structure of tests. <i>Psychometrika, 16</i>(3), 297\u2013334. https://doi.org/10.1007/BF02310555<br>",
-                "George, D., & Mallery, P. (2003). <i>SPSS for Windows step by step</i> (4th ed.). Allyn & Bacon.<br>",
-                "Kline, P. (2000). <i>The handbook of psychological testing</i> (2nd ed.). Routledge.<br>",
-                "Kuder, G. F., & Richardson, M. W. (1937). The theory of the estimation of test reliability. <i>Psychometrika, 2</i>(3), 151\u2013160. https://doi.org/10.1007/BF02288391<br>",
-                "McDonald, R. P. (1999). <i>Test theory: A unified treatment</i>. Lawrence Erlbaum.<br>",
-                "Revelle, W. (2024). <i>psych: Procedures for psychological, psychometric, and personality research</i> (R package). https://CRAN.R-project.org/package=psych<br>",
-                "Zumbo, B. D., Gadermann, A. M., & Zeisser, C. (2007). Ordinal versions of coefficients alpha and theta for Likert rating scales. <i>Journal of Modern Applied Statistical Methods, 6</i>(1), 21\u201329. https://doi.org/10.22237/jmasm/1177992180",
+                "<p style='font-size:11px;color:#666;'>", tr(
+                    "See Fiability Library → Coefficients for full definitions, assumptions and references (Bibliography → Classical Test Theory).",
+                    "Vea Biblioteca de Confiabilidad → Coeficientes para definiciones y supuestos completos, y referencias (Bibliografía → Teoría Clásica de los Tests)."),
                 "</p>")
-            self$results$references$setContent(refs_html)
+            self$results$interpretation$setContent(rec_html)
         },
 
         # ── Plot: item score distributions ────────────────────────────────────
@@ -573,7 +695,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             # Re-run if needed
             if (is.null(fa_par)) {
                 fa_par <- tryCatch(
-                    psych::fa.parallel(df, plot = FALSE, warnings = FALSE, fa = "both"),
+                    suppressWarnings(psych::fa.parallel(df, plot = FALSE, fa = "both")),
                     error = function(e) NULL)
             }
             if (is.null(fa_par)) return(FALSE)

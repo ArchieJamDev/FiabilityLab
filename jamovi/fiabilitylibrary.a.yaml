@@ -12,6 +12,8 @@ options:
         title: Concepts
       - name: theories
         title: Theories
+      - name: coefficients
+        title: Coefficients
       - name: errors
         title: Common Errors
   - name: detail

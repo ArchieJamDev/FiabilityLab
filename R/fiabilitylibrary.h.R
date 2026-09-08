@@ -22,6 +22,7 @@ fiabilityLibraryOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
                 options=list(
                     "concepts",
                     "theories",
+                    "coefficients",
                     "errors"))
             private$..detail <- jmvcore::OptionList$new(
                 "detail",
