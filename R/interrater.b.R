@@ -38,14 +38,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
         # argumento `ggtheme` de las funciones de renderizado) -- permite
         # que los gráficos del reporte coincidan con el estilo que exija
         # un manuscrito o tesis.
-        .plot_theme = function() {
-            style <- self$options$plotStyle
-            switch(style,
-                light    = ggplot2::theme_light(),
-                gray     = ggplot2::theme_gray(),
-                linedraw = ggplot2::theme_linedraw(),
-                ggplot2::theme_minimal())
-        },
+        .plot_theme = function() .fl_plot_theme(self$options$plotStyle),
 
         # EN: The three colour-scheme styles (green-red, purple-orange,
         # blue-green light) pick a primary/secondary hex pair used across
@@ -59,14 +52,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
         # el azul/rojo fijo anterior. Los tres estilos de tema de fondo
         # (light/gray/linedraw) conservan el par azul/rojo original para
         # que su aspecto no cambie.
-        .plot_colors = function() {
-            style <- self$options$plotStyle
-            switch(style,
-                greenred     = list(primary = "#2E8B57", secondary = "#D6604D"),
-                purpleorange = list(primary = "#8E5FA8", secondary = "#E08214"),
-                bluegreen    = list(primary = "#5B9BD5", secondary = "#66C2A4"),
-                list(primary = "#4E79A7", secondary = "#E15759"))
-        },
+        .plot_colors = function() .fl_plot_colors(self$options$plotStyle),
 
         # ── ICC assumption diagnostics ─────────────────────────────────────
         # EN: ICC (two-way model) is a variance-partition of the same
@@ -246,8 +232,8 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 ordinal    = tr(paste0("Ordinal (", max(n_unique), " categories)"), paste0("Ordinal (", max(n_unique), " categorías)")),
                 continuous = tr("Continuous", "Continuo"))
 
-            auto_html <- paste0(
-                "<table style='border-collapse:collapse;font-size:13px;'>",
+            auto_html <- .fl_prose(
+                "<table style='border-collapse:collapse;'>",
                 "<tr><td style='padding:4px 10px;'><b>", tr("Raters", "Jueces"), "</b></td><td>", k, "</td></tr>",
                 "<tr><td style='padding:4px 10px;'><b>", tr("Complete cases", "Casos completos"), "</b></td><td>", n,
                 if (n_miss > 0) paste0(" <span style='color:orange;'>(", n_miss, " ", tr("removed listwise", "eliminados listwise"), ")</span>") else "",
@@ -488,7 +474,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 lev_bad <- !is.na(lev$p) && lev$p < .05
                 tuk_bad <- !is.na(tuk$p) && tuk$p < .05
 
-                note_html <- paste0("<div style='font-size:13px;line-height:1.6;'>",
+                note_html <- paste0(.fl_prose_open(),
                     "<p>", tr(
                         "The ICC is a variance-partition of the same subject &times; rater ANOVA that its confidence interval is computed from (Shrout &amp; Fleiss, 1979), so it inherits that model's usual assumptions. Unlike Kappa, Gwet's AC1/AC2, Krippendorff's &alpha;, and Kendall's W above (which are rank- or category-based and distribution-free), the ICC's point estimate and especially its F-distribution-based CI are sensitive to non-normal residuals, unequal error variance across raters, and a non-additive (curvilinear) rater relationship.",
                         "El ICC es una partición de varianza del mismo ANOVA sujeto &times; juez del que se calcula su intervalo de confianza (Shrout &amp; Fleiss, 1979), por lo que hereda los supuestos usuales de ese modelo. A diferencia del Kappa, el AC1/AC2 de Gwet, el &alpha; de Krippendorff y la W de Kendall de arriba (de rango o categoría y libres de distribución), el valor puntual del ICC y sobre todo su IC basado en la distribución F son sensibles a residuos no normales, varianza de error desigual entre jueces, y una relación entre jueces no aditiva (curvilínea)."
@@ -590,7 +576,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                                                                "El ICC de consistencia y el de acuerdo absoluto coinciden de cerca — no hay evidencia de sesgo sistemático de jueces."), "</p>")
                 }
             }
-            self$results$discordanceNote$setContent(discord_html)
+            self$results$discordanceNote$setContent(if (nzchar(discord_html)) .fl_prose(discord_html) else discord_html)
             if (!nzchar(discord_html)) self$results$discordanceNote$setVisible(FALSE)
 
             # ── 8. Data-grounded diagnostics for "Why" ────────────────────────
@@ -768,7 +754,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 action_items <- c(tr("No specific corrective action indicated — the primary estimate can be reported as-is.",
                                       "No se indica ninguna acción correctiva específica — la estimación primaria puede reportarse tal cual."))
 
-            action_html <- paste0("<ul style='line-height:1.8;'>", paste0("<li>", action_items, "</li>", collapse = ""), "</ul>")
+            action_html <- paste0("<ul style='line-height:1;'>", paste0("<li>", action_items, "</li>", collapse = ""), "</ul>")
 
             bands_html <- if (level %in% c("nominal", "ordinal")) paste0(
                 "<table style='border-collapse:collapse;'>",
@@ -780,23 +766,27 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>0.61 – 0.80</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Substantial", "Sustancial"), "</td></tr>",
                 "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>0.81 – 1.00</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Almost perfect", "Casi perfecto"), "</td></tr>",
                 "</table>",
-                "<p style='font-size:11px;color:#666;'>", tr("Landis &amp; Koch (1977) bands, applied to chance-corrected categorical agreement (Kappa, Gwet, Krippendorff on nominal/ordinal data).",
+                "<p style='font-size:0.85em;color:#666;'>", tr("Landis &amp; Koch (1977) bands, applied to chance-corrected categorical agreement (Kappa, Gwet, Krippendorff on nominal/ordinal data).",
                                                               "Bandas de Landis &amp; Koch (1977), aplicadas al acuerdo categórico corregido por azar (Kappa, Gwet, Krippendorff en datos nominales/ordinales)."), "</p>"
             ) else ""
 
-            # Every heading/paragraph/list/table below shares one font-size
-            # via this wrapper -- previously "What to do now"'s <ul> and the
-            # benchmarks <table> hardcoded their own 13px while the other
-            # sections' <p> tags had no size at all, so the panel visibly
-            # changed typeface size partway through.
-            # ES: Todo encabezado/párrafo/lista/tabla de abajo comparte un
-            # solo tamaño de fuente vía este contenedor -- antes el <ul> de
-            # "Qué hacer ahora" y la <table> de bandas fijaban su propio
-            # 13px mientras las demás secciones (<p>) no tenían tamaño
-            # alguno, así que el panel cambiaba de tamaño de letra a mitad
-            # de camino.
+            # .fl_prose_open()/.fl_prose_close() (shared-helpers.R) wrap this
+            # whole panel in Bibliography's own typographic convention (no
+            # font-size override -- inherits jamovi's default, same as
+            # Bibliography and the Fiability Library -- plus line-height: 1
+            # and text-align: justify) so all four Html-producing modules
+            # render body text identically instead of each hardcoding its
+            # own size/spacing.
+            # ES: .fl_prose_open()/.fl_prose_close() (shared-helpers.R)
+            # envuelven todo este panel en la misma convención tipográfica
+            # de Bibliography (sin sobreescribir font-size -- hereda el
+            # predeterminado de jamovi, igual que Bibliography y la
+            # Fiability Library -- más line-height: 1 y text-align: justify)
+            # para que los cuatro módulos que producen Html rendericen el
+            # texto corrido de forma idéntica en vez de que cada uno fije
+            # su propio tamaño/espaciado.
             rec_html <- paste0(
-                "<div style='font-size:13px;line-height:1.6;'>",
+                .fl_prose_open(),
                 "<h4>", tr("What happened", "Qué pasó"), "</h4>",
                 happened_html,
                 "<h4>", tr("Why", "Por qué"), "</h4>",
@@ -809,7 +799,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 ) else "",
                 "<h4>", tr("What to do now", "Qué hacer ahora"), "</h4>",
                 action_html,
-                "<p style='font-size:11px;color:#666;'>", tr(
+                "<p style='font-size:0.85em;color:#666;'>", tr(
                     "See Fiability Library → Inter-Rater Agreement for full definitions and assumptions, and Bibliography → Inter-Rater Reliability for references.",
                     "Vea Biblioteca de Confiabilidad → Acuerdo entre Jueces para definiciones y supuestos completos, y Bibliografía → Confiabilidad entre Jueces para las referencias."),
                 "</p>",

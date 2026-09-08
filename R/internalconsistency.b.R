@@ -19,25 +19,8 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
         # argument adapts to) -- lets the report's plots match whatever
         # house style a manuscript/thesis needs. Same option/helper as
         # interRater's .plot_theme(), for consistency across the module.
-        .plot_theme = function() {
-            style <- self$options$plotStyle
-            switch(style,
-                light    = ggplot2::theme_light(),
-                gray     = ggplot2::theme_gray(),
-                linedraw = ggplot2::theme_linedraw(),
-                ggplot2::theme_minimal())
-        },
-
-        # Same colour-scheme helper as interRater's .plot_colors() -- kept
-        # in sync so the two modules' plot style options behave identically.
-        .plot_colors = function() {
-            style <- self$options$plotStyle
-            switch(style,
-                greenred     = list(primary = "#2E8B57", secondary = "#D6604D"),
-                purpleorange = list(primary = "#8E5FA8", secondary = "#E08214"),
-                bluegreen    = list(primary = "#5B9BD5", secondary = "#66C2A4"),
-                list(primary = "#4E79A7", secondary = "#E15759"))
-        },
+        .plot_theme = function() .fl_plot_theme(self$options$plotStyle),
+        .plot_colors = function() .fl_plot_colors(self$options$plotStyle),
 
         # ── Interpretation of reliability coefficient ─────────────────────────
         .interp_rel = function(val) {
@@ -138,8 +121,8 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 tr(paste0("Polytomous (", n_opts, " response options)"),
                    paste0("Politómico (", n_opts, " opciones de respuesta)"))
 
-            auto_html <- paste0(
-                "<table style='border-collapse:collapse;font-size:13px;'>",
+            auto_html <- .fl_prose(
+                "<table style='border-collapse:collapse;'>",
                 "<tr><td style='padding:4px 10px;'><b>", tr("Items", "Ítems"), "</b></td><td>", k, "</td></tr>",
                 "<tr><td style='padding:4px 10px;'><b>", tr("Complete cases", "Casos completos"), "</b></td><td>", n,
                 if (n_miss > 0) paste0(" <span style='color:orange;'>(", n_miss, " ", tr("removed listwise","eliminados listwise"), ")</span>") else "", "</td></tr>",
@@ -175,8 +158,8 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 tr("<b>Few response options (\u2264 4).</b> Consider Ordinal Alpha; standard Alpha may underestimate reliability.",
                    "<b>Pocas opciones de respuesta (\u2264 4).</b> Considere Alfa Ordinal; el Alfa estándar puede subestimar la confiabilidad.")
             else ""
-            samp_html <- paste0(
-                "<ul style='line-height:1.8;font-size:13px;'>",
+            samp_html <- .fl_prose(
+                "<ul style='line-height:1;'>",
                 "<li>", n_warn, "</li>",
                 "<li>", ratio_warn, "</li>",
                 if (nzchar(norm_note))    paste0("<li>", norm_note, "</li>")    else "",
@@ -625,23 +608,27 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 action_items <- c(action_items, tr(paste0("n = ", n, " is below the n ≥ 200 rule of thumb for a stable estimate; treat the CI above as wide."),
                                                     paste0("n = ", n, " está por debajo de la regla empírica n ≥ 200 para una estimación estable; trate el IC de arriba como amplio.")))
             action_html <- if (length(action_items) > 0L)
-                paste0("<ul style='line-height:1.8;'>",
+                paste0("<ul style='line-height:1;'>",
                        paste0("<li>", action_items, "</li>", collapse = ""), "</ul>")
             else
                 paste0("<p>", tr("No specific corrective action indicated — the primary estimate can be reported as-is.",
                                   "No se indica ninguna acción correctiva específica — la estimación primaria puede reportarse tal cual."), "</p>")
 
-            # Wrapped in one font-size so headings/paragraphs/lists/tables
-            # never visibly change typeface size partway through the panel
-            # (previously only the <ul> and benchmarks <table> hardcoded
-            # 13px while the surrounding <p> tags had no size at all).
-            # ES: Envuelto en un solo tamaño de fuente para que los
-            # encabezados/párrafos/listas/tablas nunca cambien de tamaño de
-            # letra a mitad del panel (antes solo el <ul> y la tabla de
-            # bandas fijaban 13px mientras los <p> circundantes no tenían
-            # tamaño alguno).
+            # .fl_prose_open()/.fl_prose_close() (shared-helpers.R) wrap this
+            # whole panel in Bibliography's own typographic convention (no
+            # font-size override -- inherits jamovi's default, same as
+            # Bibliography and the Fiability Library -- plus line-height: 1
+            # and text-align: justify) so all four Html-producing modules
+            # render body text identically.
+            # ES: .fl_prose_open()/.fl_prose_close() (shared-helpers.R)
+            # envuelven todo este panel en la misma convención tipográfica
+            # de Bibliography (sin sobreescribir font-size -- hereda el
+            # predeterminado de jamovi, igual que Bibliography y la
+            # Fiability Library -- más line-height: 1 y text-align: justify)
+            # para que los cuatro módulos que producen Html rendericen el
+            # texto corrido de forma idéntica.
             rec_html <- paste0(
-                "<div style='font-size:13px;line-height:1.6;'>",
+                .fl_prose_open(),
                 "<h4>", tr("What happened", "Qué pasó"), "</h4>",
                 "<p>", tr(
                     paste0("The primary reliability estimate for this scale is <b>",
@@ -673,7 +660,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 "<h4>", tr("What to do now", "Qué hacer ahora"), "</h4>",
                 action_html,
 
-                "<p style='font-size:11px;color:#666;'>", tr(
+                "<p style='font-size:0.85em;color:#666;'>", tr(
                     "See Fiability Library → Coefficients for full definitions, assumptions and references (Bibliography → Classical Test Theory).",
                     "Vea Biblioteca de Confiabilidad → Coeficientes para definiciones y supuestos completos, y referencias (Bibliografía → Teoría Clásica de los Tests)."),
                 "</p>",

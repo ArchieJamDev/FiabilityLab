@@ -32,7 +32,7 @@ fiabilityLibraryClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6
     },
 
     .title_html = function(title) {
-      paste0('<p style="font-weight:700;font-size:1.1em;margin:0 0 0.5em 0;">', title, '</p>')
+      paste0('<p style="font-weight:700;font-size:1.1em;line-height:1;margin:0 0 0.5em 0;">', title, '</p>')
     },
 
     .table_html = function(headers, rows) {
@@ -43,18 +43,26 @@ fiabilityLibraryClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6
                       r, '</td>', collapse = "")
         paste0("<tr>", tds, "</tr>")
       }, character(1))
-      paste0('<table style="border-collapse:collapse;width:100%;margin:0.5em 0 0.8em 0;font-size:0.92em;">',
+      paste0('<table style="border-collapse:collapse;width:100%;margin:0.5em 0 0.8em 0;font-size:0.92em;line-height:1;">',
              "<thead><tr>", th, "</tr></thead><tbody>", paste(trs, collapse = ""), "</tbody></table>")
     },
 
+    # EN: text-align: justify here (and line-height: 1 on every element
+    # below) is the same convention Bibliography uses for its own body
+    # text -- see .fl_prose_open() in shared-helpers.R, used by
+    # internalConsistency and interRater's Html panels for the same reason.
+    # ES: text-align: justify aquí (y line-height: 1 en cada elemento de
+    # abajo) es la misma convención que usa Bibliography para su propio
+    # texto corrido -- ver .fl_prose_open() en shared-helpers.R, usado por
+    # los paneles Html de internalConsistency e interRater por el mismo motivo.
     .section = function(title, body_html) {
-      paste0('<div style="max-width:7.25in;width:100%;box-sizing:border-box;text-align:justify;">',
+      paste0('<div style="max-width:7.25in;width:100%;box-sizing:border-box;line-height:1;text-align:justify;">',
              private$.title_html(title), body_html, '</div>')
     },
 
-    .p = function(...) paste0('<p style="margin:0 0 0.7em 0;">', paste0(...), '</p>'),
+    .p = function(...) paste0('<p style="margin:0 0 0.7em 0;line-height:1;">', paste0(...), '</p>'),
 
-    .h4 = function(x) paste0('<p style="margin:0.9em 0 0.2em 0;font-weight:700;">', x, '</p>'),
+    .h4 = function(x) paste0('<p style="margin:0.9em 0 0.2em 0;font-weight:700;line-height:1;">', x, '</p>'),
 
     .run = function() {
       lang <- .fl_normalize_lang(self$options$reportLang)
