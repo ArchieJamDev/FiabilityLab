@@ -8,6 +8,8 @@ options:
   - name: topic
     type: List
     options:
+      - name: all
+        title: All References
       - name: ctt
         title: Classical Test Theory
       - name: irr

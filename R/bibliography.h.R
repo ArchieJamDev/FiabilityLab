@@ -20,6 +20,7 @@ bibliographyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
                 "topic",
                 topic,
                 options=list(
+                    "all",
                     "ctt",
                     "irr",
                     "gtheory",
@@ -56,7 +57,9 @@ bibliographyResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
     "bibliographyResults",
     inherit = jmvcore::Group,
     active = list(
-        intro = function() private$.items[["intro"]]),
+        intro = function() private$.items[["intro"]],
+        references = function() private$.items[["references"]],
+        notes = function() private$.items[["notes"]]),
     private = list(),
     public=list(
         initialize=function(options) {
@@ -67,7 +70,15 @@ bibliographyResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
             self$add(jmvcore::Html$new(
                 options=options,
                 name="intro",
-                title="Bibliography"))}))
+                title="Bibliography"))
+            self$add(jmvcore::Html$new(
+                options=options,
+                name="references",
+                title="References"))
+            self$add(jmvcore::Html$new(
+                options=options,
+                name="notes",
+                title="Curation Notes"))}))
 
 bibliographyBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
     "bibliographyBase",
@@ -99,6 +110,8 @@ bibliographyBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #' @return A results object containing:
 #' \tabular{llllll}{
 #'   \code{results$intro} \tab \tab \tab \tab \tab a html \cr
+#'   \code{results$references} \tab \tab \tab \tab \tab a html \cr
+#'   \code{results$notes} \tab \tab \tab \tab \tab a html \cr
 #' }
 #'
 #' @export

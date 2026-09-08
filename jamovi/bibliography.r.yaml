@@ -6,4 +6,12 @@ items:
   - name: intro
     type: Html
     title: Bibliography
+
+  - name: references
+    type: Html
+    title: References
+
+  - name: notes
+    type: Html
+    title: Curation Notes
 ...
