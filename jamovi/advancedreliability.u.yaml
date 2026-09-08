@@ -30,25 +30,35 @@ children:
         label: Plot style
         enable: (showPlots)
   - type: VariableSupplier
-    persistentItems: false
+    persistentItems: true
     stretchFactor: 1
+    suggested:
+      - continuous
+      - ordinal
+    permitted:
+      - numeric
     children:
       - type: TargetLayoutBox
         label: Factors
         children:
           - type: ListBox
             name: factors
-            showColumnHeaders: false
-            fullRowSelect: true
-            stretchFactor: 1
-            columns:
-              - name: label
-                stretchFactor: 1
-                template:
-                  type: TextBox
-                  format: string
-              - name: vars
-                stretchFactor: 1
-                template:
-                  type: VariablesListBox
+            height: large
+            addButton: Add New Factor
+            template:
+              type: LayoutBox
+              margin: normal
+              children:
+                - type: TextBox
+                  valueKey: [label]
+                  borderless: true
+                  name: blockName
+                  stretchFactor: 1
+                  margin: normal
+                - type: VariablesListBox
+                  valueFilter: unique
+                  valueKey: [vars]
+                  name: blockList
                   isTarget: true
+                  height: auto
+                  ghostText: drag variables here
