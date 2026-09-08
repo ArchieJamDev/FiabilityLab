@@ -91,6 +91,18 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
         list(topics = "irr", authors = list(c("Gwet", "K. L.")), year = "2014",
              title = "Handbook of inter-rater reliability", edition = "4th ed.",
              is_book = TRUE, publisher = "Advanced Analytics, LLC", ref_type = "book"),
+        list(topics = "irr", authors = list(c("Tukey", "J. W.")), year = "1949",
+             title = "One degree of freedom for non-additivity",
+             journal = "Biometrics", volume = "5", issue = "3", pages = "232-242",
+             doi = "10.2307/3001938", ref_type = "seminal"),
+        list(topics = "irr", authors = list(c("Koo", "T. K."), c("Li", "M. Y.")), year = "2016",
+             title = "A guideline of selecting and reporting intraclass correlation coefficients for reliability research",
+             journal = "Journal of Chiropractic Medicine", volume = "15", issue = "2", pages = "155-163",
+             doi = "10.1016/j.jcm.2016.02.012", ref_type = "methodological"),
+        list(topics = "irr", authors = list(c("Bujang", "M. A."), c("Baharum", "N.")), year = "2017",
+             title = "A simplified guide to determination of sample size requirements for estimating the value of intraclass correlation coefficient: A review",
+             journal = "Archives of Orofacial Sciences", volume = "12", issue = "1", pages = "1-11",
+             ref_type = "methodological"),
 
         list(topics = "gtheory", authors = list(c("Brennan", "R. L.")), year = "2001",
              title = "Generalizability theory", is_book = TRUE, publisher = "Springer", ref_type = "book"),
@@ -129,7 +141,10 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
         "Kuder|1937"    = list(citations = "2018",  source = "OpenAlex", other = "Crossref API (1371)"),
         "Zumbo|2007"    = list(citations = "1030",  source = "OpenAlex", other = "Crossref API (802)"),
         "Cohen|1960"    = list(citations = "42176", source = "OpenAlex", other = "Crossref API (32369)"),
-        "Shrout|1979"   = list(citations = "23299", source = "OpenAlex", other = "Crossref API (19797)")
+        "Shrout|1979"   = list(citations = "23299", source = "OpenAlex", other = "Crossref API (19797)"),
+        "Tukey|1949"    = list(citations = "909",   source = "OpenAlex", other = ""),
+        "Koo|2016"      = list(citations = "29067", source = "OpenAlex", other = ""),
+        "Bujang|2017"   = list(citations = "456",   source = "OpenAlex", other = "")
       )
 
       journal_biblio <- list(
@@ -140,7 +155,10 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
         "Journal of Modern Applied Statistical Methods" = list(
           scopus = TRUE, wos = FALSE,
           other = tr("PsycINFO, EMBASE, ScienceDirect", "PsycINFO, EMBASE, ScienceDirect"),
-          quartile = tr("no current SJR/JCR quartile found", "sin cuartil SJR/JCR vigente encontrado"))
+          quartile = tr("no current SJR/JCR quartile found", "sin cuartil SJR/JCR vigente encontrado")),
+        "Journal of Chiropractic Medicine" = list(scopus = TRUE, wos = FALSE, other = "", quartile = "Q2 (SJR)"),
+        "Archives of Orofacial Sciences" = list(scopus = TRUE, wos = FALSE, other = "",
+          quartile = tr("Q3-Q4 (SJR, varies by subject category)", "Q3-Q4 (SJR, varía según categoría temática)"))
       )
 
       in_text_cite <- function(r) {

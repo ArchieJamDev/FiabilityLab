@@ -30,6 +30,10 @@ children:
     name: icc
     label: Intraclass Correlation (ICC)
   - type: CheckBox
+    name: checkIccAssumptions
+    label: Check ICC assumptions (normality, homoscedasticity, linearity)
+    enable: (icc)
+  - type: CheckBox
     name: kendallW
     label: Kendall's W
   - type: CollapseBox
@@ -41,6 +45,12 @@ children:
       - type: TextBox
         name: bootstrapSamples
         format: number
+  - type: CollapseBox
+    label: Plot Style
+    collapsed: true
+    children:
+      - type: ComboBox
+        name: plotStyle
   - type: CollapseBox
     label: Report Language
     collapsed: false

@@ -12,9 +12,11 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             gwet = TRUE,
             krippendorff = TRUE,
             icc = TRUE,
+            checkIccAssumptions = TRUE,
             kendallW = FALSE,
             bootstrapCi = TRUE,
             bootstrapSamples = 1000,
+            plotStyle = "gray",
             reportLang = NULL, ...) {
 
             super$initialize(
@@ -51,6 +53,10 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 "icc",
                 icc,
                 default=TRUE)
+            private$..checkIccAssumptions <- jmvcore::OptionBool$new(
+                "checkIccAssumptions",
+                checkIccAssumptions,
+                default=TRUE)
             private$..kendallW <- jmvcore::OptionBool$new(
                 "kendallW",
                 kendallW,
@@ -65,6 +71,17 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 default=1000,
                 min=100,
                 max=10000)
+            private$..plotStyle <- jmvcore::OptionList$new(
+                "plotStyle",
+                plotStyle,
+                options=list(
+                    "light",
+                    "gray",
+                    "linedraw",
+                    "greenred",
+                    "purpleorange",
+                    "bluegreen"),
+                default="gray")
             private$..reportLang <- jmvcore::OptionList$new(
                 "reportLang",
                 reportLang,
@@ -78,9 +95,11 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$.addOption(private$..gwet)
             self$.addOption(private$..krippendorff)
             self$.addOption(private$..icc)
+            self$.addOption(private$..checkIccAssumptions)
             self$.addOption(private$..kendallW)
             self$.addOption(private$..bootstrapCi)
             self$.addOption(private$..bootstrapSamples)
+            self$.addOption(private$..plotStyle)
             self$.addOption(private$..reportLang)
         }),
     active = list(
@@ -90,9 +109,11 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         gwet = function() private$..gwet$value,
         krippendorff = function() private$..krippendorff$value,
         icc = function() private$..icc$value,
+        checkIccAssumptions = function() private$..checkIccAssumptions$value,
         kendallW = function() private$..kendallW$value,
         bootstrapCi = function() private$..bootstrapCi$value,
         bootstrapSamples = function() private$..bootstrapSamples$value,
+        plotStyle = function() private$..plotStyle$value,
         reportLang = function() private$..reportLang$value),
     private = list(
         ..ratings = NA,
@@ -101,9 +122,11 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         ..gwet = NA,
         ..krippendorff = NA,
         ..icc = NA,
+        ..checkIccAssumptions = NA,
         ..kendallW = NA,
         ..bootstrapCi = NA,
         ..bootstrapSamples = NA,
+        ..plotStyle = NA,
         ..reportLang = NA)
 )
 
@@ -115,6 +138,8 @@ interRaterResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         mainTable = function() private$.items[["mainTable"]],
         plotComparison = function() private$.items[["plotComparison"]],
         discordanceNote = function() private$.items[["discordanceNote"]],
+        iccAssumptionsTable = function() private$.items[["iccAssumptionsTable"]],
+        iccAssumptionsNote = function() private$.items[["iccAssumptionsNote"]],
         plotDiagnostic = function() private$.items[["plotDiagnostic"]],
         interpretation = function() private$.items[["interpretation"]]),
     private = list(),
@@ -174,6 +199,44 @@ interRaterResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 options=options,
                 name="discordanceNote",
                 title="Coefficient Discordance"))
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="iccAssumptionsTable",
+                title="ICC Assumptions Check",
+                visible="(icc && checkIccAssumptions)",
+                rows=0,
+                columns=list(
+                    list(
+                        `name`="assumption", 
+                        `title`="Assumption", 
+                        `type`="text"),
+                    list(
+                        `name`="test", 
+                        `title`="Test", 
+                        `type`="text"),
+                    list(
+                        `name`="statistic", 
+                        `title`="Statistic", 
+                        `type`="number", 
+                        `format`="zto,digits=3"),
+                    list(
+                        `name`="df", 
+                        `title`="df", 
+                        `type`="text"),
+                    list(
+                        `name`="p_value", 
+                        `title`="p", 
+                        `type`="number", 
+                        `format`="zto,digits=4"),
+                    list(
+                        `name`="verdict", 
+                        `title`="Verdict", 
+                        `type`="text"))))
+            self$add(jmvcore::Html$new(
+                options=options,
+                name="iccAssumptionsNote",
+                title="ICC Assumptions \u2014 What It Means",
+                visible="(icc && checkIccAssumptions)"))
             self$add(jmvcore::Image$new(
                 options=options,
                 name="plotDiagnostic",
@@ -217,9 +280,11 @@ interRaterBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #' @param gwet .
 #' @param krippendorff .
 #' @param icc .
+#' @param checkIccAssumptions .
 #' @param kendallW .
 #' @param bootstrapCi .
 #' @param bootstrapSamples .
+#' @param plotStyle .
 #' @param reportLang .
 #' @return A results object containing:
 #' \tabular{llllll}{
@@ -227,6 +292,8 @@ interRaterBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'   \code{results$mainTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$plotComparison} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$discordanceNote} \tab \tab \tab \tab \tab a html \cr
+#'   \code{results$iccAssumptionsTable} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$iccAssumptionsNote} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$plotDiagnostic} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$interpretation} \tab \tab \tab \tab \tab a html \cr
 #' }
@@ -246,9 +313,11 @@ interRater <- function(
     gwet = TRUE,
     krippendorff = TRUE,
     icc = TRUE,
+    checkIccAssumptions = TRUE,
     kendallW = FALSE,
     bootstrapCi = TRUE,
     bootstrapSamples = 1000,
+    plotStyle = "gray",
     reportLang) {
 
     if ( ! requireNamespace("jmvcore", quietly=TRUE))
@@ -268,9 +337,11 @@ interRater <- function(
         gwet = gwet,
         krippendorff = krippendorff,
         icc = icc,
+        checkIccAssumptions = checkIccAssumptions,
         kendallW = kendallW,
         bootstrapCi = bootstrapCi,
         bootstrapSamples = bootstrapSamples,
+        plotStyle = plotStyle,
         reportLang = reportLang)
 
     analysis <- interRaterClass$new(

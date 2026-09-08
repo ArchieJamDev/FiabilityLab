@@ -116,6 +116,10 @@ children:
         name: plotScree
         label: Scree plot (parallel analysis)
         enable: (showPlots)
+      - type: ComboBox
+        name: plotStyle
+        label: Plot style
+        enable: (showPlots)
   - type: LayoutBox
     margin: large
     children:

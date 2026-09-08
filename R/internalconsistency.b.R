@@ -14,6 +14,31 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             if (identical(self$options$reportLang, "es")) es else en
         },
 
+        # User-selectable plot style (independent of jamovi's own light/
+        # dark theme, which is what the render functions' own `ggtheme`
+        # argument adapts to) -- lets the report's plots match whatever
+        # house style a manuscript/thesis needs. Same option/helper as
+        # interRater's .plot_theme(), for consistency across the module.
+        .plot_theme = function() {
+            style <- self$options$plotStyle
+            switch(style,
+                light    = ggplot2::theme_light(),
+                gray     = ggplot2::theme_gray(),
+                linedraw = ggplot2::theme_linedraw(),
+                ggplot2::theme_minimal())
+        },
+
+        # Same colour-scheme helper as interRater's .plot_colors() -- kept
+        # in sync so the two modules' plot style options behave identically.
+        .plot_colors = function() {
+            style <- self$options$plotStyle
+            switch(style,
+                greenred     = list(primary = "#2E8B57", secondary = "#D6604D"),
+                purpleorange = list(primary = "#8E5FA8", secondary = "#E08214"),
+                bluegreen    = list(primary = "#5B9BD5", secondary = "#66C2A4"),
+                list(primary = "#4E79A7", secondary = "#E15759"))
+        },
+
         # ── Interpretation of reliability coefficient ─────────────────────────
         .interp_rel = function(val) {
             tr <- private$.tr
@@ -663,6 +688,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             k   <- ncol(df)
             nc  <- min(k, 4L)
             nr  <- ceiling(k / nc)
+            cols <- private$.plot_colors()
 
             plots <- lapply(seq_len(k), function(j) {
                 x   <- df[[j]]
@@ -670,9 +696,9 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 colnames(tbl) <- c("val","freq")
                 tbl$val <- as.numeric(tbl$val)
                 ggplot2::ggplot(tbl, ggplot2::aes(x = val, y = freq)) +
-                    ggplot2::geom_bar(stat = "identity", fill = "#4E79A7", alpha = .85, width = .6) +
+                    ggplot2::geom_bar(stat = "identity", fill = cols$primary, alpha = .85, width = .6) +
                     ggplot2::labs(title = names(df)[j], x = NULL, y = NULL) +
-                    ggtheme +
+                    private$.plot_theme() +
                     ggplot2::theme(plot.title = ggplot2::element_text(size = 9, face = "bold"),
                                    axis.text  = ggplot2::element_text(size = 8))
             })
@@ -691,6 +717,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             df   <- private$.df_clean
             if (is.null(citc) || is.null(df)) return(FALSE)
 
+            cols <- private$.plot_colors()
             dat <- data.frame(
                 item = factor(names(df), levels = rev(names(df))),
                 citc = as.numeric(citc))
@@ -698,9 +725,9 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                                                     fill = citc >= .30)) +
                 ggplot2::geom_bar(stat = "identity", width = .6) +
                 ggplot2::geom_hline(yintercept = .30, linetype = "dashed",
-                                    colour = "#E15759", linewidth = .6) +
-                ggplot2::scale_fill_manual(values = c("FALSE" = "#F28E2B",
-                                                       "TRUE"  = "#4E79A7"),
+                                    colour = cols$secondary, linewidth = .6) +
+                ggplot2::scale_fill_manual(values = c("FALSE" = cols$secondary,
+                                                       "TRUE"  = cols$primary),
                                            guide = "none") +
                 ggplot2::coord_flip() +
                 ggplot2::labs(x = NULL,
@@ -708,7 +735,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                                               "r ítem-total corregida"),
                               title = private$.tr("Item–Total Correlations (threshold = .30)",
                                                   "Correlaciones Ítem-Total (umbral = .30)")) +
-                ggtheme
+                private$.plot_theme()
             print(p)
             TRUE
         },
@@ -728,13 +755,31 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             if (is.null(fa_par)) return(FALSE)
 
             ev_fa   <- fa_par$fa.values
+            # fa_par$fa.sim is a matrix (n.iter simulated eigenvalue sets x
+            # n.factor) in the general case, but psych::fa.parallel()
+            # sometimes returns it as a plain vector for a strongly
+            # unidimensional structure -- rowMeans() on a bare vector
+            # throws "'x' must be an array of at least two dimensions",
+            # caught by this session's own render-function verification
+            # pass (a bug the earlier asDF()-only testing never exercised).
+            # ES: fa_par$fa.sim es una matriz (n.iter conjuntos de
+            # autovalores simulados x n.factor) en el caso general, pero
+            # psych::fa.parallel() a veces la retorna como vector simple
+            # para una estructura fuertemente unidimensional -- rowMeans()
+            # sobre un vector simple lanza "'x' must be an array of at
+            # least two dimensions", detectado por la propia verificación
+            # de funciones de render de esta sesión (un bug que las
+            # pruebas anteriores basadas solo en asDF() nunca ejercitaron).
             ev_sim  <- fa_par$fa.sim
             n_fact  <- min(length(ev_fa), 10L)
+            cols    <- private$.plot_colors()
             dat <- data.frame(
                 factor  = seq_len(n_fact),
                 actual  = ev_fa[seq_len(n_fact)],
-                simulated = if (length(ev_sim) >= n_fact)
-                    rowMeans(ev_sim)[seq_len(n_fact)]
+                simulated = if (is.matrix(ev_sim) && nrow(ev_sim) >= 1L && ncol(ev_sim) >= n_fact)
+                    colMeans(ev_sim)[seq_len(n_fact)]
+                else if (!is.matrix(ev_sim) && length(ev_sim) >= n_fact)
+                    ev_sim[seq_len(n_fact)]
                 else rep(1, n_fact))
 
             p <- ggplot2::ggplot(dat, ggplot2::aes(x = factor)) +
@@ -743,13 +788,13 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 ggplot2::geom_line(ggplot2::aes(y = simulated, colour = "Simulated"), linewidth = .7, linetype = "dashed") +
                 ggplot2::scale_colour_manual(
                     name   = NULL,
-                    values = c("Actual" = "#4E79A7", "Simulated" = "#E15759")) +
+                    values = c("Actual" = cols$primary, "Simulated" = cols$secondary)) +
                 ggplot2::labs(
                     x     = private$.tr("Factor", "Factor"),
                     y     = private$.tr("Eigenvalue", "Autovalor"),
                     title = private$.tr("Scree Plot — Parallel Analysis",
                                         "Gráfico de sedimentación — Análisis paralelo")) +
-                ggtheme
+                private$.plot_theme()
             print(p)
             TRUE
         }

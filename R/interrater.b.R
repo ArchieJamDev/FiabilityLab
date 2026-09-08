@@ -29,6 +29,104 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
 
         .tr = function(en, es) if (identical(self$options$reportLang, "es")) es else en,
 
+        # User-selectable plot style (independent of jamovi's own light/
+        # dark theme, which is what the render functions' own `ggtheme`
+        # argument adapts to) -- lets the report's plots match whatever
+        # house style a manuscript/thesis needs.
+        # ES: Estilo de gráfico seleccionable por el usuario (independiente
+        # del tema claro/oscuro propio de jamovi, al que se adapta el
+        # argumento `ggtheme` de las funciones de renderizado) -- permite
+        # que los gráficos del reporte coincidan con el estilo que exija
+        # un manuscrito o tesis.
+        .plot_theme = function() {
+            style <- self$options$plotStyle
+            switch(style,
+                light    = ggplot2::theme_light(),
+                gray     = ggplot2::theme_gray(),
+                linedraw = ggplot2::theme_linedraw(),
+                ggplot2::theme_minimal())
+        },
+
+        # EN: The three colour-scheme styles (green-red, purple-orange,
+        # blue-green light) pick a primary/secondary hex pair used across
+        # every geom in the module's plots, replacing the old fixed blue/
+        # red. The three background-theme styles (light/gray/linedraw)
+        # keep the original blue/red pair so their look is otherwise
+        # unchanged.
+        # ES: Los tres estilos de esquema de color (verde-rojo, morado-
+        # naranja, azul-verde claro) eligen un par primario/secundario de
+        # hex usado en cada geom de los gráficos del módulo, reemplazando
+        # el azul/rojo fijo anterior. Los tres estilos de tema de fondo
+        # (light/gray/linedraw) conservan el par azul/rojo original para
+        # que su aspecto no cambie.
+        .plot_colors = function() {
+            style <- self$options$plotStyle
+            switch(style,
+                greenred     = list(primary = "#2E8B57", secondary = "#D6604D"),
+                purpleorange = list(primary = "#8E5FA8", secondary = "#E08214"),
+                bluegreen    = list(primary = "#5B9BD5", secondary = "#66C2A4"),
+                list(primary = "#4E79A7", secondary = "#E15759"))
+        },
+
+        # ── ICC assumption diagnostics ─────────────────────────────────────
+        # EN: ICC (two-way model) is a variance-partition of the same
+        # subject x rater ANOVA that Shrout & Fleiss (1979) build the
+        # coefficient on, so its point estimate and (F-distribution-based)
+        # CI inherit that model's usual assumptions: normally-distributed
+        # residuals, homogeneous error variance across raters, and an
+        # additive (linear, non-interacting) subject x rater structure.
+        # These three helpers compute the standard diagnostic for each.
+        # ES: El ICC (modelo de dos vías) es una partición de varianza del
+        # mismo ANOVA sujeto x juez sobre el que Shrout & Fleiss (1979)
+        # construyen el coeficiente, así que su valor puntual y su IC
+        # (basado en la distribución F) heredan los supuestos usuales de
+        # ese modelo: residuos normalmente distribuidos, varianza de error
+        # homogénea entre jueces, y una estructura sujeto x juez aditiva
+        # (lineal, sin interacción). Estos tres ayudantes calculan el
+        # diagnóstico estándar de cada uno.
+
+        # Levene (1960): one-way ANOVA F-test on |y - group mean|, testing
+        # equality of error variance across raters (the ICC model's
+        # homoscedasticity assumption). Mean-centered (classic Levene, not
+        # the median-centered Brown-Forsythe variant).
+        .levene_manual = function(y, g) {
+            g <- factor(g)
+            means <- tapply(y, g, mean, na.rm = TRUE)
+            z <- abs(y - means[g])
+            fit <- tryCatch(stats::aov(z ~ g), error = function(e) NULL)
+            if (is.null(fit)) return(list(stat = NA_real_, df1 = NA_integer_, df2 = NA_integer_, p = NA_real_))
+            s <- summary(fit)[[1]]
+            list(stat = s[["F value"]][1], df1 = s[["Df"]][1], df2 = s[["Df"]][2], p = s[["Pr(>F)"]][1])
+        },
+
+        # Tukey (1949): the classic one-degree-of-freedom test for
+        # non-additivity in a two-way layout without replication -- exactly
+        # the subject x rater structure ICC is computed on. Tests whether
+        # the subject and rater effects combine additively (i.e. linearly);
+        # a significant result means at least one rater's scores curve
+        # relative to the others rather than following the same straight-
+        # line relationship the ICC model assumes.
+        .tukey_nonadditivity = function(df_num) {
+            m <- as.matrix(df_num)
+            r <- nrow(m); cc <- ncol(m)
+            row_means <- rowMeans(m); col_means <- colMeans(m); grand <- mean(m)
+            row_dev <- row_means - grand; col_dev <- col_means - grand
+            num   <- sum(outer(row_dev, col_dev) * m)
+            denom <- sum(row_dev^2) * sum(col_dev^2)
+            df_e   <- (r - 1L) * (cc - 1L)
+            df_rem <- df_e - 1L
+            if (!is.finite(denom) || denom <= 0 || df_rem < 1L)
+                return(list(stat = NA_real_, df1 = 1L, df2 = NA_integer_, p = NA_real_))
+            ss_n  <- num^2 / denom
+            resid <- sweep(sweep(m, 1, row_means, "-"), 2, col_means, "-") + grand
+            ss_e   <- sum(resid^2)
+            ss_rem <- ss_e - ss_n
+            if (ss_rem <= 0) return(list(stat = NA_real_, df1 = 1L, df2 = df_rem, p = NA_real_))
+            f_stat <- ss_n / (ss_rem / df_rem)
+            p <- stats::pf(f_stat, 1, df_rem, lower.tail = FALSE)
+            list(stat = f_stat, df1 = 1L, df2 = df_rem, p = p)
+        },
+
         # Landis & Koch (1977) bands -- the field-standard interpretation
         # scale for chance-corrected categorical agreement (Kappa, Gwet,
         # Krippendorff on nominal/ordinal data). Distinct from the
@@ -318,6 +416,110 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 }
             } else if (opt$icc && level != "continuous") {
                 add_row("ICC", NA_real_, tr("Requires continuous ratings", "Requiere calificaciones continuas"))
+            }
+
+            # ── 5d-bis. ICC assumptions check (normality, homoscedasticity,
+            # linearity/additivity) plus a sample-size adequacy note. Only
+            # meaningful for the ANOVA-based ICC -- Kappa/Gwet/Krippendorff/
+            # Kendall's W are rank- or category-based and distribution-free,
+            # so this block (and its "which other coefficients are
+            # affected" paragraph) only runs alongside ICC.
+            # ES: Verificación de supuestos del ICC (normalidad,
+            # homocedasticidad, linealidad/aditividad) más una nota de
+            # adecuación del tamaño muestral. Solo tiene sentido para el
+            # ICC basado en ANOVA -- Kappa/Gwet/Krippendorff/W de Kendall
+            # son de rango o categoría y libres de distribución, por lo que
+            # este bloque (y su párrafo "qué otros coeficientes se afectan")
+            # solo corre junto al ICC.
+            if (opt$icc && isTRUE(opt$checkIccAssumptions) && level == "continuous" && k >= 2L) {
+                long <- data.frame(
+                    value   = as.vector(as.matrix(df_num)),
+                    subject = factor(rep(seq_len(n), times = k)),
+                    rater   = factor(rep(names(df_num), each = n)))
+                fit  <- tryCatch(stats::aov(value ~ subject + rater, data = long), error = function(e) NULL)
+                resd <- if (!is.null(fit)) stats::residuals(fit) else NULL
+
+                sw  <- if (!is.null(resd) && length(resd) >= 3L && length(resd) <= 5000L)
+                    tryCatch(stats::shapiro.test(resd), error = function(e) NULL) else NULL
+                lev <- private$.levene_manual(long$value, long$rater)
+                tuk <- private$.tukey_nonadditivity(df_num)
+
+                verdict <- function(p) {
+                    if (is.null(p) || is.na(p)) tr("N/A", "N/D")
+                    else if (p < .05) tr("Violated", "Violado")
+                    else tr("Met", "Cumplido")
+                }
+
+                assum_rows <- list(
+                    list(assumption = tr("Normality of residuals", "Normalidad de residuos"),
+                         test = "Shapiro-Wilk",
+                         statistic = .clean_na(if (!is.null(sw)) unname(sw$statistic) else NA_real_),
+                         df = "",
+                         p_value = .clean_na(if (!is.null(sw)) sw$p.value else NA_real_),
+                         verdict = verdict(if (!is.null(sw)) sw$p.value else NA_real_)),
+                    list(assumption = tr("Homoscedasticity across raters", "Homocedasticidad entre jueces"),
+                         test = "Levene",
+                         statistic = .clean_na(lev$stat),
+                         df = if (!is.na(lev$df1)) paste0(lev$df1, ", ", lev$df2) else "",
+                         p_value = .clean_na(lev$p),
+                         verdict = verdict(lev$p)),
+                    list(assumption = tr("Linearity (subject × rater additivity)", "Linealidad (aditividad sujeto × juez)"),
+                         test = tr("Tukey's non-additivity", "No aditividad de Tukey"),
+                         statistic = .clean_na(tuk$stat),
+                         df = if (!is.na(tuk$df2)) paste0(tuk$df1, ", ", tuk$df2) else "",
+                         p_value = .clean_na(tuk$p),
+                         verdict = verdict(tuk$p)))
+
+                iat <- self$results$iccAssumptionsTable
+                private$.reset_table(iat, length(assum_rows))
+                for (i in seq_along(assum_rows)) iat$setRow(rowNo = i, values = assum_rows[[i]])
+
+                n_flag <- if (n < 30L)
+                    tr("small (n &lt; 30) — expect wide, imprecise ICC confidence intervals",
+                       "pequeña (n &lt; 30) — espere intervalos de confianza del ICC amplios e imprecisos")
+                else if (n < 50L)
+                    tr("borderline — adequate for a preliminary estimate, but more subjects would tighten the CI for publication",
+                       "límite — adecuada para una estimación preliminar, pero más sujetos estrecharían el IC para publicación")
+                else
+                    tr("adequate for a reasonably precise ICC estimate under common guidelines",
+                       "adecuada para una estimación de ICC razonablemente precisa según las guías comunes")
+
+                sw_bad  <- !is.null(sw)  && !is.na(sw$p.value)  && sw$p.value  < .05
+                lev_bad <- !is.na(lev$p) && lev$p < .05
+                tuk_bad <- !is.na(tuk$p) && tuk$p < .05
+
+                note_html <- paste0("<div style='font-size:13px;line-height:1.6;'>",
+                    "<p>", tr(
+                        "The ICC is a variance-partition of the same subject &times; rater ANOVA that its confidence interval is computed from (Shrout &amp; Fleiss, 1979), so it inherits that model's usual assumptions. Unlike Kappa, Gwet's AC1/AC2, Krippendorff's &alpha;, and Kendall's W above (which are rank- or category-based and distribution-free), the ICC's point estimate and especially its F-distribution-based CI are sensitive to non-normal residuals, unequal error variance across raters, and a non-additive (curvilinear) rater relationship.",
+                        "El ICC es una partición de varianza del mismo ANOVA sujeto &times; juez del que se calcula su intervalo de confianza (Shrout &amp; Fleiss, 1979), por lo que hereda los supuestos usuales de ese modelo. A diferencia del Kappa, el AC1/AC2 de Gwet, el &alpha; de Krippendorff y la W de Kendall de arriba (de rango o categoría y libres de distribución), el valor puntual del ICC y sobre todo su IC basado en la distribución F son sensibles a residuos no normales, varianza de error desigual entre jueces, y una relación entre jueces no aditiva (curvilínea)."
+                    ), "</p>",
+                    "<p>", if (sw_bad) paste0("&#9888; <b>", tr("Normality violated", "Normalidad violada"), ":</b> ",
+                        tr("residuals depart from normality (Shapiro-Wilk p &lt; .05). The ICC point estimate is fairly robust to mild non-normality, but its confidence interval is not — treat the reported CI with caution and prefer the bootstrap CIs already computed above for the other coefficients when reporting precision.",
+                           "los residuos se desvían de la normalidad (Shapiro-Wilk p &lt; .05). El valor puntual del ICC es razonablemente robusto a desviaciones leves de la normalidad, pero su intervalo de confianza no — trate el IC reportado con cautela y prefiera los IC por bootstrap ya calculados arriba para los otros coeficientes al reportar precisión."))
+                        else paste0("&#10003; ", tr("No evidence against normality of residuals (Shapiro-Wilk p &ge; .05).",
+                                                     "No hay evidencia contra la normalidad de los residuos (Shapiro-Wilk p &ge; .05).")), "</p>",
+                    "<p>", if (lev_bad) paste0("&#9888; <b>", tr("Homoscedasticity violated", "Homocedasticidad violada"), ":</b> ",
+                        tr("error variance differs across raters (Levene p &lt; .05) — at least one rater is far more (or less) internally consistent than the others across the score range, which biases the ICC's standard error and can invalidate its CI. Check the Rater Mean Score diagnostic plot above for which rater stands out.",
+                           "la varianza de error difiere entre jueces (Levene p &lt; .05) — al menos un juez es mucho más (o menos) consistente internamente que los demás en el rango de puntajes, lo que sesga el error estándar del ICC y puede invalidar su IC. Revise el gráfico de diagnóstico de Puntaje Medio por Juez arriba para ver qué juez se distingue."))
+                        else paste0("&#10003; ", tr("No evidence against equal error variance across raters (Levene p &ge; .05).",
+                                                     "No hay evidencia contra la igualdad de varianza de error entre jueces (Levene p &ge; .05).")), "</p>",
+                    "<p>", if (tuk_bad) paste0("&#9888; <b>", tr("Linearity/additivity violated", "Linealidad/aditividad violada"), ":</b> ",
+                        tr("Tukey's test detects a subject &times; rater interaction (p &lt; .05): at least one rater's scores curve relative to the others rather than following the same straight-line relationship the ICC model assumes. This is the most severe of the three violations — the ICC will systematically understate true agreement when it happens. Inspect a rater-by-rater scatterplot for a curved (not straight-line) pattern before trusting the ICC value above; Kendall's W, already available in this analysis, is a rank-based alternative that does not assume linearity.",
+                           "la prueba de Tukey detecta una interacción sujeto &times; juez (p &lt; .05): las puntuaciones de al menos un juez se curvan respecto a las de los demás en vez de seguir la misma relación lineal que asume el modelo del ICC. Esta es la más grave de las tres violaciones — el ICC subestimará sistemáticamente el acuerdo real cuando ocurre. Inspeccione un diagrama de dispersión juez contra juez en busca de un patrón curvo (no lineal) antes de confiar en el valor de ICC de arriba; la W de Kendall, ya disponible en este análisis, es una alternativa basada en rangos que no asume linealidad."))
+                        else paste0("&#10003; ", tr("No evidence of a subject &times; rater interaction — the additivity/linearity assumption holds (Tukey p &ge; .05).",
+                                                     "No hay evidencia de interacción sujeto &times; juez — se cumple el supuesto de aditividad/linealidad (Tukey p &ge; .05).")), "</p>",
+                    "<p><b>", tr("Sample size", "Tamaño de muestra"), ":</b> ",
+                    tr(paste0("n = ", n, " subjects rated by k = ", k, " raters — this is "),
+                       paste0("n = ", n, " sujetos calificados por k = ", k, " jueces — esto es ")),
+                    n_flag, ". ",
+                    tr("A larger n is also the best protection against non-normality: with more subjects, F-based inference in the underlying ANOVA becomes more robust to mild departures, though bootstrap CIs remain the safer choice whenever a violation above is flagged (Koo &amp; Li, 2016; Bujang &amp; Baharum, 2017).",
+                       "Un n mayor es también la mejor protección contra la no normalidad: con más sujetos, la inferencia basada en F del ANOVA subyacente se vuelve más robusta a desviaciones leves, aunque los IC por bootstrap siguen siendo la opción más segura cuando se marca una violación arriba (Koo &amp; Li, 2016; Bujang &amp; Baharum, 2017)."),
+                    "</p>",
+                    "</div>")
+                self$results$iccAssumptionsNote$setContent(note_html)
+            } else {
+                self$results$iccAssumptionsTable$setVisible(FALSE)
+                self$results$iccAssumptionsNote$setVisible(FALSE)
             }
 
             # ── 5e. Kendall's W (ordinal rankings / continuous scores) ───────
@@ -629,17 +831,18 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
         .plotComparison = function(image, ggtheme, theme, ...) {
             d <- private$.plot_rows
             if (is.null(d) || nrow(d) == 0L) return(FALSE)
+            cols <- private$.plot_colors()
             d$coefficient <- factor(d$coefficient, levels = rev(d$coefficient))
             lo <- min(0, d$ci_lower, na.rm = TRUE)
             hi <- max(1, d$ci_upper, na.rm = TRUE)
             p <- ggplot2::ggplot(d, ggplot2::aes(x = value, y = coefficient)) +
                 ggplot2::geom_errorbar(ggplot2::aes(xmin = ci_lower, xmax = ci_upper),
-                                       width = .15, orientation = "y", colour = "#4E79A7", linewidth = .6) +
-                ggplot2::geom_point(size = 3.2, colour = "#4E79A7") +
+                                       width = .15, orientation = "y", colour = cols$primary, linewidth = .6) +
+                ggplot2::geom_point(size = 3.2, colour = cols$primary) +
                 ggplot2::coord_cartesian(xlim = c(lo, hi)) +
                 ggplot2::labs(x = private$.tr("Value (95% CI)", "Valor (IC 95%)"), y = NULL,
                               title = private$.tr("Coefficient Comparison", "Comparación de Coeficientes")) +
-                ggtheme
+                private$.plot_theme()
             print(p)
             TRUE
         },
@@ -652,23 +855,24 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             d <- private$.diag_data
             if (is.null(d) || nrow(d) == 0L) return(FALSE)
             tr <- private$.tr
+            cols <- private$.plot_colors()
             if (identical(private$.diag_type, "prevalence")) {
                 d$category <- factor(d$category, levels = rev(d$category))
                 p <- ggplot2::ggplot(d, ggplot2::aes(x = pct, y = category)) +
-                    ggplot2::geom_bar(stat = "identity", fill = "#4E79A7", alpha = .85, width = .6) +
+                    ggplot2::geom_bar(stat = "identity", fill = cols$primary, alpha = .85, width = .6) +
                     ggplot2::labs(x = tr("% of all ratings", "% de todas las calificaciones"), y = NULL,
                                   title = tr("Category Prevalence", "Prevalencia de Categoría")) +
-                    ggtheme
+                    private$.plot_theme()
             } else if (identical(private$.diag_type, "rater_mean")) {
                 grand_mean <- private$.diag_extra
                 p <- ggplot2::ggplot(d, ggplot2::aes(x = rater, y = mean)) +
-                    ggplot2::geom_bar(stat = "identity", fill = "#4E79A7", alpha = .85, width = .6) +
+                    ggplot2::geom_bar(stat = "identity", fill = cols$primary, alpha = .85, width = .6) +
                     ggplot2::geom_hline(yintercept = grand_mean, linetype = "dashed",
-                                        colour = "#E15759", linewidth = .6) +
+                                        colour = cols$secondary, linewidth = .6) +
                     ggplot2::labs(x = NULL, y = tr("Mean score", "Puntaje medio"),
                                   title = tr("Rater Mean Score (dashed = grand mean)",
                                              "Puntaje Medio por Juez (línea punteada = media general)")) +
-                    ggtheme
+                    private$.plot_theme()
             } else return(FALSE)
             print(p)
             TRUE
