@@ -379,7 +379,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
 
                 private$.diag_type <- "prevalence"
                 private$.diag_data <- data.frame(
-                    category = names(prev_tab), pct = unname(prev_tab) * 100,
+                    category = names(prev_tab), pct = as.numeric(unname(prev_tab)) * 100,
                     stringsAsFactors = FALSE)
             } else if (level == "continuous" && k >= 2L) {
                 rater_means <- colMeans(df_num, na.rm = TRUE)
