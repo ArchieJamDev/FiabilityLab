@@ -69,6 +69,10 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
              journal = "Journal of Modern Applied Statistical Methods", volume = "6", issue = "1", pages = "21-29",
              doi = "10.22237/jmasm/1177992180", ref_type = "methodological"),
 
+        list(topics = "irr", authors = list(c("Landis", "J. R."), c("Koch", "G. G.")), year = "1977",
+             title = "The measurement of observer agreement for categorical data",
+             journal = "Biometrics", volume = "33", issue = "1", pages = "159-174",
+             doi = "10.2307/2529310", ref_type = "seminal"),
         list(topics = "irr", authors = list(c("Cohen", "J.")), year = "1960",
              title = "A coefficient of agreement for nominal scales",
              journal = "Educational and Psychological Measurement", volume = "20", issue = "1", pages = "37-46",
@@ -115,6 +119,7 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
       # excluyen de ambas tablas (no aplican datos de indexación bibliográfica).
       # -----------------------------------------------------------------------
       citation_db <- list(
+        "Landis|1977"   = list(citations = "80951", source = "OpenAlex", other = "Crossref API (64279)"),
         "Cronbach|1951" = list(citations = "43876", source = "OpenAlex", other = "Crossref API (30225)"),
         "Kuder|1937"    = list(citations = "2018",  source = "OpenAlex", other = "Crossref API (1371)"),
         "Zumbo|2007"    = list(citations = "1030",  source = "OpenAlex", other = "Crossref API (802)"),
@@ -123,6 +128,7 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
       )
 
       journal_biblio <- list(
+        "Biometrics" = list(scopus = TRUE, wos = TRUE, other = "", quartile = "Q1"),
         "Psychometrika" = list(scopus = TRUE, wos = TRUE, other = "", quartile = "Q1"),
         "Educational and Psychological Measurement" = list(scopus = TRUE, wos = TRUE, other = "", quartile = "Q1"),
         "Psychological Bulletin" = list(scopus = TRUE, wos = TRUE, other = "", quartile = "Q1"),

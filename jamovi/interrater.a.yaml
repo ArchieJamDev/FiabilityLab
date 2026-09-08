@@ -10,30 +10,50 @@ options:
 
   - name: ratings
     type: Variables
+
   - name: dataType
     type: List
     options:
+      - name: auto
+        title: Auto-detect
       - name: nominal
         title: Nominal
       - name: ordinal
         title: Ordinal
       - name: continuous
         title: Continuous
+    default: auto
+
   - name: kappa
     type: Bool
     default: true
+
   - name: gwet
     type: Bool
     default: true
+
   - name: krippendorff
     type: Bool
-    default: false
+    default: true
+
   - name: icc
     type: Bool
-    default: false
+    default: true
+
   - name: kendallW
     type: Bool
     default: false
+
+  - name: bootstrapCi
+    type: Bool
+    default: true
+
+  - name: bootstrapSamples
+    type: Integer
+    default: 1000
+    min: 100
+    max: 10000
+
   - name: reportLang
     type: List
     options:

@@ -17,19 +17,12 @@ children:
   - type: ComboBox
     name: dataType
     label: Data Type
-    options:
-      - title: Nominal
-        name: nominal
-      - title: Ordinal
-        name: ordinal
-      - title: Continuous
-        name: continuous
   - type: CheckBox
     name: kappa
     label: Cohen's / Fleiss' Kappa
   - type: CheckBox
     name: gwet
-    label: Gwet's AC1
+    label: Gwet's AC1 / AC2
   - type: CheckBox
     name: krippendorff
     label: Krippendorff's Alpha
@@ -39,6 +32,15 @@ children:
   - type: CheckBox
     name: kendallW
     label: Kendall's W
+  - type: CollapseBox
+    label: Bootstrap Confidence Intervals
+    collapsed: true
+    children:
+      - type: CheckBox
+        name: bootstrapCi
+      - type: TextBox
+        name: bootstrapSamples
+        format: number
   - type: CollapseBox
     label: Report Language
     collapsed: false

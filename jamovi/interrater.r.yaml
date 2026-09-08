@@ -3,10 +3,14 @@ name: interRater
 title: Inter-Rater Agreement
 jrs: '1.0'
 items:
+  - name: autoDetectNote
+    type: Html
+    title: Data Summary
+
   - name: mainTable
     type: Table
     title: Agreement Coefficients
-    rows: 6
+    rows: 0
     columns:
       - name: coefficient
         title: Coefficient
@@ -14,20 +18,28 @@ items:
       - name: value
         title: Value
         type: number
-        format: xx.xx
+        format: zto,digits=3
+      - name: interpretation
+        title: Interpretation
+        type: text
       - name: ci_lower
         title: CI Lower
         type: number
-        format: xx.xx
+        format: zto,digits=3
       - name: ci_upper
         title: CI Upper
         type: number
-        format: xx.xx
+        format: zto,digits=3
       - name: p_value
-        title: p-value
+        title: p
         type: number
-        format: xx.xxxx
-  - name: recommendations
+        format: zto,digits=4
+
+  - name: discordanceNote
     type: Html
-    title: Recommendations
+    title: Coefficient Discordance
+
+  - name: interpretation
+    type: Html
+    title: Interpretation & Recommendations
 ...

@@ -7,12 +7,14 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
     public = list(
         initialize = function(
             ratings = NULL,
-            dataType = NULL,
+            dataType = "auto",
             kappa = TRUE,
             gwet = TRUE,
-            krippendorff = FALSE,
-            icc = FALSE,
+            krippendorff = TRUE,
+            icc = TRUE,
             kendallW = FALSE,
+            bootstrapCi = TRUE,
+            bootstrapSamples = 1000,
             reportLang = NULL, ...) {
 
             super$initialize(
@@ -28,9 +30,11 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 "dataType",
                 dataType,
                 options=list(
+                    "auto",
                     "nominal",
                     "ordinal",
-                    "continuous"))
+                    "continuous"),
+                default="auto")
             private$..kappa <- jmvcore::OptionBool$new(
                 "kappa",
                 kappa,
@@ -42,15 +46,25 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             private$..krippendorff <- jmvcore::OptionBool$new(
                 "krippendorff",
                 krippendorff,
-                default=FALSE)
+                default=TRUE)
             private$..icc <- jmvcore::OptionBool$new(
                 "icc",
                 icc,
-                default=FALSE)
+                default=TRUE)
             private$..kendallW <- jmvcore::OptionBool$new(
                 "kendallW",
                 kendallW,
                 default=FALSE)
+            private$..bootstrapCi <- jmvcore::OptionBool$new(
+                "bootstrapCi",
+                bootstrapCi,
+                default=TRUE)
+            private$..bootstrapSamples <- jmvcore::OptionInteger$new(
+                "bootstrapSamples",
+                bootstrapSamples,
+                default=1000,
+                min=100,
+                max=10000)
             private$..reportLang <- jmvcore::OptionList$new(
                 "reportLang",
                 reportLang,
@@ -65,6 +79,8 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$.addOption(private$..krippendorff)
             self$.addOption(private$..icc)
             self$.addOption(private$..kendallW)
+            self$.addOption(private$..bootstrapCi)
+            self$.addOption(private$..bootstrapSamples)
             self$.addOption(private$..reportLang)
         }),
     active = list(
@@ -75,6 +91,8 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         krippendorff = function() private$..krippendorff$value,
         icc = function() private$..icc$value,
         kendallW = function() private$..kendallW$value,
+        bootstrapCi = function() private$..bootstrapCi$value,
+        bootstrapSamples = function() private$..bootstrapSamples$value,
         reportLang = function() private$..reportLang$value),
     private = list(
         ..ratings = NA,
@@ -84,6 +102,8 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         ..krippendorff = NA,
         ..icc = NA,
         ..kendallW = NA,
+        ..bootstrapCi = NA,
+        ..bootstrapSamples = NA,
         ..reportLang = NA)
 )
 
@@ -91,8 +111,10 @@ interRaterResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
     "interRaterResults",
     inherit = jmvcore::Group,
     active = list(
+        autoDetectNote = function() private$.items[["autoDetectNote"]],
         mainTable = function() private$.items[["mainTable"]],
-        recommendations = function() private$.items[["recommendations"]]),
+        discordanceNote = function() private$.items[["discordanceNote"]],
+        interpretation = function() private$.items[["interpretation"]]),
     private = list(),
     public=list(
         initialize=function(options) {
@@ -100,11 +122,15 @@ interRaterResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 options=options,
                 name="",
                 title="Inter-Rater Agreement")
+            self$add(jmvcore::Html$new(
+                options=options,
+                name="autoDetectNote",
+                title="Data Summary"))
             self$add(jmvcore::Table$new(
                 options=options,
                 name="mainTable",
                 title="Agreement Coefficients",
-                rows=6,
+                rows=0,
                 columns=list(
                     list(
                         `name`="coefficient", 
@@ -114,26 +140,34 @@ interRaterResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                         `name`="value", 
                         `title`="Value", 
                         `type`="number", 
-                        `format`="xx.xx"),
+                        `format`="zto,digits=3"),
+                    list(
+                        `name`="interpretation", 
+                        `title`="Interpretation", 
+                        `type`="text"),
                     list(
                         `name`="ci_lower", 
                         `title`="CI Lower", 
                         `type`="number", 
-                        `format`="xx.xx"),
+                        `format`="zto,digits=3"),
                     list(
                         `name`="ci_upper", 
                         `title`="CI Upper", 
                         `type`="number", 
-                        `format`="xx.xx"),
+                        `format`="zto,digits=3"),
                     list(
                         `name`="p_value", 
-                        `title`="p-value", 
+                        `title`="p", 
                         `type`="number", 
-                        `format`="xx.xxxx"))))
+                        `format`="zto,digits=4"))))
             self$add(jmvcore::Html$new(
                 options=options,
-                name="recommendations",
-                title="Recommendations"))}))
+                name="discordanceNote",
+                title="Coefficient Discordance"))
+            self$add(jmvcore::Html$new(
+                options=options,
+                name="interpretation",
+                title="Interpretation & Recommendations"))}))
 
 interRaterBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
     "interRaterBase",
@@ -167,11 +201,15 @@ interRaterBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #' @param krippendorff .
 #' @param icc .
 #' @param kendallW .
+#' @param bootstrapCi .
+#' @param bootstrapSamples .
 #' @param reportLang .
 #' @return A results object containing:
 #' \tabular{llllll}{
+#'   \code{results$autoDetectNote} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$mainTable} \tab \tab \tab \tab \tab a table \cr
-#'   \code{results$recommendations} \tab \tab \tab \tab \tab a html \cr
+#'   \code{results$discordanceNote} \tab \tab \tab \tab \tab a html \cr
+#'   \code{results$interpretation} \tab \tab \tab \tab \tab a html \cr
 #' }
 #'
 #' Tables can be converted to data frames with \code{asDF} or \code{\link{as.data.frame}}. For example:
@@ -184,12 +222,14 @@ interRaterBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 interRater <- function(
     data,
     ratings,
-    dataType,
+    dataType = "auto",
     kappa = TRUE,
     gwet = TRUE,
-    krippendorff = FALSE,
-    icc = FALSE,
+    krippendorff = TRUE,
+    icc = TRUE,
     kendallW = FALSE,
+    bootstrapCi = TRUE,
+    bootstrapSamples = 1000,
     reportLang) {
 
     if ( ! requireNamespace("jmvcore", quietly=TRUE))
@@ -210,6 +250,8 @@ interRater <- function(
         krippendorff = krippendorff,
         icc = icc,
         kendallW = kendallW,
+        bootstrapCi = bootstrapCi,
+        bootstrapSamples = bootstrapSamples,
         reportLang = reportLang)
 
     analysis <- interRaterClass$new(
