@@ -201,6 +201,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             }
 
             kappa_val <- gwet_val <- krip_val <- icc_c_val <- icc_a_val <- NA_real_
+            krip_row_idx <- NULL
 
             # ── 5a. Kappa (nominal: Cohen/Fleiss; ordinal: weighted Cohen/Fleiss) ─
             if (opt$kappa && k >= 2L) {
@@ -282,14 +283,22 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 }
                 ka_val <- kfn(dsrc)
                 interp <- if (level == "nominal" || level == "ordinal") private$.interp_kappa(ka_val) else private$.interp_rel(ka_val)
-                krip_name <- tr("Krippendorff's α", "α de Krippendorff")
-                if (level == "continuous") {
-                    krip_name <- paste0(krip_name, tr(" (CI omitted: too costly to bootstrap on near-continuous data)",
-                                                       " (IC omitido: muy costoso de calcular por bootstrap en datos casi continuos)"))
-                    add_row(krip_name, ka_val, interp, c(NA_real_, NA_real_), NA_real_)
-                } else {
-                    add_row(krip_name, ka_val, interp, boot_ci(kfn, max_b = 200L), NA_real_)
-                }
+                # Keep the table/plot label short -- a full explanatory
+                # sentence here once made the table render very wide and
+                # clipped the forest plot's title/axis, since this same
+                # string doubles as its y-axis category label. The reason
+                # is attached as a real jamovi footnote (see step 6 below)
+                # instead of being folded into the label itself.
+                # ES: Mantener la etiqueta de tabla/gráfico corta -- una
+                # oración explicativa completa aquí hacía que la tabla se
+                # viera muy ancha y recortaba el título/eje del forest plot,
+                # ya que este mismo texto también es su etiqueta de
+                # categoría en el eje Y. El motivo se adjunta como una nota
+                # al pie real de jamovi (ver paso 6 abajo) en vez de
+                # incluirse en la etiqueta misma.
+                add_row(tr("Krippendorff's α", "α de Krippendorff"), ka_val, interp,
+                        if (level == "continuous") c(NA_real_, NA_real_) else boot_ci(kfn, max_b = 200L), NA_real_)
+                if (level == "continuous") krip_row_idx <- length(rows)
                 krip_val <- ka_val
             }
 
@@ -316,7 +325,11 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 kw <- tryCatch(irr::kendall(df_num), error = function(e) NULL)
                 if (!is.null(kw)) {
                     note <- if (nzchar(kw$error %||% "")) paste0(" (", tr("ties detected", "empates detectados"), ")") else ""
-                    add_row(paste0("Kendall's W", note), kw$value, private$.interp_rel(kw$value), c(NA_real_, NA_real_), kw$p.value)
+                    # irr::kendall() is cheap per call (~0.03 sec/replicate
+                    # measured), unlike Krippendorff's interval method --
+                    # the full bootstrapSamples cap (200) is fine here.
+                    kwfn <- function(d) tryCatch(irr::kendall(d)$value, error = function(e) NA_real_)
+                    add_row(paste0("Kendall's W", note), kw$value, private$.interp_rel(kw$value), boot_ci(kwfn, max_b = 200L), kw$p.value)
                 }
             } else if (opt$kendallW && level == "nominal") {
                 add_row("Kendall's W", NA_real_, tr("Not applicable to nominal data", "No aplica a datos nominales"))
@@ -326,6 +339,10 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             mt <- self$results$mainTable
             private$.reset_table(mt, length(rows))
             for (i in seq_along(rows)) mt$setRow(rowNo = i, values = rows[[i]])
+            if (!is.null(krip_row_idx))
+                mt$addFootnote(col = "value", rowNo = krip_row_idx, note = tr(
+                    "CI omitted: bootstrapping Krippendorff's α on near-continuous data is too costly to run by default.",
+                    "IC omitido: calcular el IC de α de Krippendorff por bootstrap en datos casi continuos es muy costoso para hacerlo por defecto."))
 
             # Data for .plotComparison: only rows with a real value (skip
             # "not applicable" placeholders like the ICC row on nominal data).
