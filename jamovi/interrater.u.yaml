@@ -1,0 +1,53 @@
+---
+name: interRater
+title: Inter-Rater Agreement
+jus: '3.0'
+compilerMode: tame
+children:
+  - type: VariableSupplier
+    persistentItems: false
+    stretchFactor: 1
+    children:
+      - type: TargetLayoutBox
+        label: Ratings
+        children:
+          - type: VariablesListBox
+            name: ratings
+            isTarget: true
+  - type: ComboBox
+    name: dataType
+    label: Data Type
+    options:
+      - title: Nominal
+        name: nominal
+      - title: Ordinal
+        name: ordinal
+      - title: Continuous
+        name: continuous
+  - type: CheckBox
+    name: kappa
+    label: Cohen's / Fleiss' Kappa
+  - type: CheckBox
+    name: gwet
+    label: Gwet's AC1
+  - type: CheckBox
+    name: krippendorff
+    label: Krippendorff's Alpha
+  - type: CheckBox
+    name: icc
+    label: Intraclass Correlation (ICC)
+  - type: CheckBox
+    name: kendallW
+    label: Kendall's W
+  - type: CollapseBox
+    label: Report Language
+    collapsed: false
+    children:
+      - type: ComboBox
+        name: reportLang
+        options:
+          - title: English
+            name: en
+          - title: Español
+            name: es
+...

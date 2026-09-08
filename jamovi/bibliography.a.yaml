@@ -1,0 +1,35 @@
+---
+name: bibliography
+title: Bibliography
+menuGroup: FiabilityLab
+version: '1.0.0'
+jas: '1.2'
+options:
+  - name: topic
+    type: List
+    options:
+      - name: ctt
+        title: Classical Test Theory
+      - name: irr
+        title: Inter-Rater Reliability
+      - name: gtheory
+        title: Generalizability Theory
+      - name: irt
+        title: Item Response Theory
+  - name: citationStyle
+    type: List
+    options:
+      - name: apa
+        title: APA 7th
+      - name: vancouver
+        title: Vancouver
+      - name: ieee
+        title: IEEE
+  - name: reportLang
+    type: List
+    options:
+      - name: en
+        title: English
+      - name: es
+        title: Español
+...

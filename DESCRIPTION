@@ -1,0 +1,19 @@
+Package: fiabilitylab
+Type: Package
+Title: FiabilityLab: Comprehensive Reliability and Agreement Analysis
+Version: 1.0.0
+Authors@R: person("A.", "Chacon", email = "arquimedes.chacon@cemergy.com", role = c("aut", "cre"))
+Author: Chacon, A.
+Maintainer: Chacon, A. <arquimedes.chacon@cemergy.com>
+Description: FiabilityLab is a pedagogical jamovi module for evaluating reliability, 
+    internal consistency, and inter-rater agreement. It integrates a Library and 
+    Bibliography system to teach the theoretical foundations and assumptions behind 
+    each statistic. Designed for academic, applied, and pedagogical use, with bilingual 
+    reporting (English/Español) and interpretable diagnostic guidance.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Jas: '1.2'
+Jmv: '2.0.0'
+Imports: jmvcore (>= 0.8.5), R6, psych, ggplot2
+Suggests: gridExtra, irr, irrCAC, lavaan, semTools

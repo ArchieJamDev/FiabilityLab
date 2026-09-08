@@ -1,0 +1,124 @@
+title: Internal Consistency
+name: internalConsistency
+jus: '3.0'
+stage: 0
+compilerMode: tame
+children:
+  - type: VariableSupplier
+    persistentItems: false
+    stretchFactor: 1
+    children:
+      - type: TargetLayoutBox
+        label: Scale Items
+        children:
+          - type: VariablesListBox
+            name: items
+            isTarget: true
+  - type: CollapseBox
+    label: Report Language
+    collapsed: false
+    children:
+      - type: ComboBox
+        name: reportLang
+  - type: CollapseBox
+    label: Measurement Level
+    collapsed: false
+    children:
+      - type: ComboBox
+        name: measureLevel
+      - type: Label
+        label: >-
+          Auto-detect inspects each item's unique values. Override when needed
+          (e.g., 0/1 coded Likert vs. true dichotomous).
+  - type: CollapseBox
+    label: Reliability Statistics
+    collapsed: false
+    children:
+      - type: CollapseBox
+        label: Polytomous (Likert / rating scales)
+        collapsed: false
+        children:
+          - type: CheckBox
+            name: alpha
+            label: Cronbach's Alpha
+          - type: CheckBox
+            name: ordinalAlpha
+            label: Ordinal Alpha (polychoric)
+          - type: CheckBox
+            name: omega
+            label: McDonald's Omega (total)
+          - type: CheckBox
+            name: omegaHierarchical
+            label: Omega Hierarchical (multidimensional)
+          - type: CheckBox
+            name: glb
+            label: Greatest Lower Bound (GLB)
+          - type: CheckBox
+            name: splitHalf
+            label: Split-half (Spearman-Brown)
+          - type: CheckBox
+            name: guttman
+            label: Guttman's Lambda (λ2–λ6)
+      - type: CollapseBox
+        label: Dichotomous (0/1 items)
+        collapsed: false
+        children:
+          - type: CheckBox
+            name: kr20
+            label: KR-20 (Kuder-Richardson)
+          - type: CheckBox
+            name: kr21
+            label: KR-21
+  - type: CollapseBox
+    label: Item Analysis
+    collapsed: false
+    children:
+      - type: CheckBox
+        name: itemAnalysis
+        label: Item analysis table (mean, SD, r item-total, α if deleted)
+      - type: CheckBox
+        name: normality
+        label: Item normality tests (Shapiro-Wilk, skewness, kurtosis)
+  - type: CollapseBox
+    label: Dimensionality
+    collapsed: false
+    children:
+      - type: CheckBox
+        name: checkDimensionality
+        label: Check dimensionality via parallel analysis
+      - type: Label
+        label: >-
+          If multiple dimensions are detected, consider computing Alpha/Omega
+          per subscale and reporting Omega Hierarchical overall.
+  - type: CollapseBox
+    label: Bootstrap Confidence Intervals
+    collapsed: false
+    children:
+      - type: CheckBox
+        name: bootstrapCi
+        label: Compute bootstrap CIs (95%)
+  - type: CollapseBox
+    label: Diagnostic Plots
+    collapsed: true
+    children:
+      - type: CheckBox
+        name: showPlots
+        label: Show plots
+      - type: CheckBox
+        name: plotItemDist
+        label: Item score distributions
+        enable: (showPlots)
+      - type: CheckBox
+        name: plotItemTotal
+        label: Item-total correlation chart
+        enable: (showPlots)
+      - type: CheckBox
+        name: plotScree
+        label: Scree plot (parallel analysis)
+        enable: (showPlots)
+  - type: LayoutBox
+    margin: large
+    children:
+      - type: TextBox
+        name: bootstrapSamples
+        format: number

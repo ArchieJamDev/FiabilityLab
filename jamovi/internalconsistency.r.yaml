@@ -1,0 +1,177 @@
+---
+name: internalConsistency
+title: Internal Consistency
+jrs: '1.0'
+items:
+
+  - name: autoDetectNote
+    type: Html
+    title: Data Summary
+
+  - name: sampleAdequacy
+    type: Html
+    title: Sample & Data Quality
+
+  - name: mainTable
+    type: Table
+    title: Reliability Coefficients
+    rows: 0
+    columns:
+      - name: coefficient
+        title: Coefficient
+        type: text
+      - name: value
+        title: Estimate
+        type: number
+        format: zto,digits=3
+      - name: interpretation
+        title: Interpretation
+        type: text
+      - name: applicability
+        title: Conditions
+        type: text
+
+  - name: bootstrapTable
+    type: Table
+    title: Bootstrap Confidence Intervals (95%)
+    visible: (bootstrapCi)
+    rows: 0
+    columns:
+      - name: coefficient
+        title: Coefficient
+        type: text
+      - name: estimate
+        title: Estimate
+        type: number
+        format: zto,digits=3
+      - name: ci_lower
+        title: CI Lower
+        type: number
+        format: zto,digits=3
+      - name: ci_upper
+        title: CI Upper
+        type: number
+        format: zto,digits=3
+      - name: se_boot
+        title: Boot SE
+        type: number
+        format: zto,digits=3
+
+  - name: normalityTable
+    type: Table
+    title: Item Normality (Shapiro-Wilk)
+    visible: (normality)
+    rows: 0
+    columns:
+      - name: item
+        title: Item
+        type: text
+      - name: W
+        title: W
+        type: number
+        format: zto,digits=4
+      - name: p
+        title: p
+        type: number
+        format: zto,pvalue
+      - name: sig
+        title: ''
+        type: text
+      - name: skewness
+        title: Skewness
+        type: number
+        format: zto,digits=3
+      - name: kurtosis
+        title: Kurtosis
+        type: number
+        format: zto,digits=3
+      - name: decision
+        title: Decision
+        type: text
+
+  - name: dimensionalityNote
+    type: Html
+    title: Dimensionality Check
+    visible: (checkDimensionality)
+
+  - name: itemTable
+    type: Table
+    title: Item Analysis
+    visible: (itemAnalysis)
+    rows: 0
+    columns:
+      - name: item
+        title: Item
+        type: text
+      - name: mean
+        title: Mean
+        type: number
+        format: zto,digits=3
+      - name: sd
+        title: SD
+        type: number
+        format: zto,digits=3
+      - name: skewness
+        title: Skew
+        type: number
+        format: zto,digits=3
+      - name: n_unique
+        title: Options
+        type: integer
+      - name: citc
+        title: r(item-total)
+        type: number
+        format: zto,digits=3
+      - name: alpha_drop
+        title: α if deleted
+        type: number
+        format: zto,digits=3
+      - name: loading
+        title: Factor load.
+        type: number
+        format: zto,digits=3
+
+  - name: plotItemDist
+    type: Image
+    title: Item Score Distributions
+    visible: (showPlots && plotItemDist)
+    width: 900
+    height: 500
+    renderFun: .plotItemDist
+    clearWith:
+      - items
+      - showPlots
+      - plotItemDist
+
+  - name: plotItemTotal
+    type: Image
+    title: Item–Total Correlations
+    visible: (showPlots && plotItemTotal)
+    width: 700
+    height: 400
+    renderFun: .plotItemTotal
+    clearWith:
+      - items
+      - showPlots
+      - plotItemTotal
+
+  - name: plotScree
+    type: Image
+    title: Scree Plot (Parallel Analysis)
+    visible: (showPlots && plotScree)
+    width: 600
+    height: 400
+    renderFun: .plotScree
+    clearWith:
+      - items
+      - showPlots
+      - plotScree
+
+  - name: interpretation
+    type: Html
+    title: Interpretation & Recommendations
+
+  - name: references
+    type: Html
+    title: References (APA 7th)
+...

@@ -1,0 +1,123 @@
+---
+name: internalConsistency
+title: Internal Consistency
+menuGroup: FiabilityLab
+version: '1.0.0'
+jas: '1.2'
+options:
+
+  - name: data
+    type: Data
+
+  # ── Variables ────────────────────────────────────────────────────────────
+  - name: items
+    type: Variables
+    suggested:
+      - continuous
+      - ordinal
+    permitted:
+      - numeric
+
+  # ── Language ─────────────────────────────────────────────────────────────
+  - name: reportLang
+    type: List
+    options:
+      - name: en
+        title: English
+      - name: es
+        title: Español
+    default: en
+
+  # ── Measurement level ─────────────────────────────────────────────────────
+  - name: measureLevel
+    type: List
+    options:
+      - name: auto
+        title: Auto-detect
+      - name: dichotomous
+        title: Dichotomous (0/1)
+      - name: polytomous
+        title: Polytomous (Likert / rating)
+    default: auto
+
+  # ── Statistics — Polytomous ───────────────────────────────────────────────
+  - name: alpha
+    type: Bool
+    default: true
+
+  - name: ordinalAlpha
+    type: Bool
+    default: false
+
+  - name: omega
+    type: Bool
+    default: true
+
+  - name: omegaHierarchical
+    type: Bool
+    default: false
+
+  - name: glb
+    type: Bool
+    default: false
+
+  - name: splitHalf
+    type: Bool
+    default: false
+
+  - name: guttman
+    type: Bool
+    default: false
+
+  # ── Statistics — Dichotomous ──────────────────────────────────────────────
+  - name: kr20
+    type: Bool
+    default: true
+
+  - name: kr21
+    type: Bool
+    default: true
+
+  # ── Item analysis ─────────────────────────────────────────────────────────
+  - name: itemAnalysis
+    type: Bool
+    default: true
+
+  # ── Normality ─────────────────────────────────────────────────────────────
+  - name: normality
+    type: Bool
+    default: true
+
+  # ── Bootstrap CIs ─────────────────────────────────────────────────────────
+  - name: bootstrapCi
+    type: Bool
+    default: true
+
+  - name: bootstrapSamples
+    type: Integer
+    default: 1000
+    min: 100
+    max: 10000
+
+  # ── Dimensionality ────────────────────────────────────────────────────────
+  - name: checkDimensionality
+    type: Bool
+    default: true
+
+  # ── Plots ─────────────────────────────────────────────────────────────────
+  - name: showPlots
+    type: Bool
+    default: false
+
+  - name: plotItemDist
+    type: Bool
+    default: true
+
+  - name: plotItemTotal
+    type: Bool
+    default: true
+
+  - name: plotScree
+    type: Bool
+    default: false
+...

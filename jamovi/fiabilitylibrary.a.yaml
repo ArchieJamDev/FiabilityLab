@@ -1,0 +1,31 @@
+---
+name: fiabilityLibrary
+title: Fiability Library
+menuGroup: FiabilityLab
+version: '1.0.0'
+jas: '1.2'
+options:
+  - name: category
+    type: List
+    options:
+      - name: concepts
+        title: Concepts
+      - name: theories
+        title: Theories
+      - name: errors
+        title: Common Errors
+  - name: detail
+    type: List
+    options:
+      - name: summary
+        title: Summary
+      - name: full
+        title: Full
+  - name: reportLang
+    type: List
+    options:
+      - name: en
+        title: English
+      - name: es
+        title: Español
+...

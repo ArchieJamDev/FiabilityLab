@@ -1,0 +1,9 @@
+---
+name: fiabilityLibrary
+title: Fiability Library
+jrs: '1.0'
+items:
+  - name: intro
+    type: Html
+    title: Introduction
+...

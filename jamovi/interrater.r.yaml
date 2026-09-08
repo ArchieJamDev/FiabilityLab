@@ -1,0 +1,33 @@
+---
+name: interRater
+title: Inter-Rater Agreement
+jrs: '1.0'
+items:
+  - name: mainTable
+    type: Table
+    title: Agreement Coefficients
+    rows: 6
+    columns:
+      - name: coefficient
+        title: Coefficient
+        type: text
+      - name: value
+        title: Value
+        type: number
+        format: xx.xx
+      - name: ci_lower
+        title: CI Lower
+        type: number
+        format: xx.xx
+      - name: ci_upper
+        title: CI Upper
+        type: number
+        format: xx.xx
+      - name: p_value
+        title: p-value
+        type: number
+        format: xx.xxxx
+  - name: recommendations
+    type: Html
+    title: Recommendations
+...

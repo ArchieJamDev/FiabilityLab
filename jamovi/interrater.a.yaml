@@ -1,0 +1,44 @@
+---
+name: interRater
+title: Inter-Rater Agreement
+menuGroup: FiabilityLab
+version: '1.0.0'
+jas: '1.2'
+options:
+  - name: data
+    type: Data
+
+  - name: ratings
+    type: Variables
+  - name: dataType
+    type: List
+    options:
+      - name: nominal
+        title: Nominal
+      - name: ordinal
+        title: Ordinal
+      - name: continuous
+        title: Continuous
+  - name: kappa
+    type: Bool
+    default: true
+  - name: gwet
+    type: Bool
+    default: true
+  - name: krippendorff
+    type: Bool
+    default: false
+  - name: icc
+    type: Bool
+    default: false
+  - name: kendallW
+    type: Bool
+    default: false
+  - name: reportLang
+    type: List
+    options:
+      - name: en
+        title: English
+      - name: es
+        title: Español
+...

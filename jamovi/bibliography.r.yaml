@@ -1,0 +1,9 @@
+---
+name: bibliography
+title: Bibliography
+jrs: '1.0'
+items:
+  - name: intro
+    type: Html
+    title: Bibliography
+...

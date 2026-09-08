@@ -1,0 +1,40 @@
+---
+name: bibliography
+title: Bibliography
+jus: '3.0'
+compilerMode: tame
+children:
+  - type: ComboBox
+    name: topic
+    label: Topic
+    options:
+      - title: Classical Test Theory
+        name: ctt
+      - title: Inter-Rater Reliability
+        name: irr
+      - title: Generalizability Theory
+        name: gtheory
+      - title: Item Response Theory
+        name: irt
+  - type: ComboBox
+    name: citationStyle
+    label: Citation Style
+    options:
+      - title: APA 7th
+        name: apa
+      - title: Vancouver
+        name: vancouver
+      - title: IEEE
+        name: ieee
+  - type: CollapseBox
+    label: Report Language
+    collapsed: false
+    children:
+      - type: ComboBox
+        name: reportLang
+        options:
+          - title: English
+            name: en
+          - title: Español
+            name: es
+...

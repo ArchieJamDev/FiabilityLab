@@ -1,0 +1,20 @@
+# Archivos y carpetas de compilación de Jamovi / R
+*.jmo
+build/
+dist/
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+*.Rcheck/
+.cache/
+Rplots.pdf
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Scripts locales de desarrollo y compilación
+Compilar_FiabilityLab.sh
+compile_log.txt
+DESCRIPTION.backup

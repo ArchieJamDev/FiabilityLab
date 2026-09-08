@@ -1,0 +1,57 @@
+---
+title: Fiability Lab
+name: fiabilitylab
+version: 1.0.0
+jas: '1.2'
+analyses:
+  - name: fiabilityLibrary
+    title: Fiability Library
+    menuSubgroup: library
+    ns: fiabilitylab
+    category: analyses
+    menuGroup: FiabilityLab
+    menuTitle: Fiability Library
+  - name: bibliography
+    title: Bibliography
+    menuSubgroup: library
+    ns: fiabilitylab
+    category: analyses
+    menuGroup: FiabilityLab
+    menuTitle: Bibliography
+  - name: internalConsistency
+    title: Internal Consistency
+    menuSubgroup: analysis
+    ns: fiabilitylab
+    category: analyses
+    menuGroup: FiabilityLab
+    menuTitle: Internal Consistency
+  - name: interRater
+    title: Inter-Rater Agreement
+    menuSubgroup: analysis
+    ns: fiabilitylab
+    category: analyses
+    menuGroup: FiabilityLab
+    menuTitle: Inter-Rater Agreement
+menu:
+  - title: Fiability Lab
+    menu:
+      - title: Library
+        menu:
+          - analysis: fiabilityLibrary
+          - analysis: bibliography
+      - title: Analysis
+        menu:
+          - analysis: internalConsistency
+          - analysis: interRater
+datasets:
+  - name: FiabilityLab Test Dataset (n=450)
+    path: fiabilitylab_test_data.csv
+    description: >-
+      Simulated data covering every FiabilityLab design: dichotomous parallel
+      test forms, a hierarchical Likert scale, multi-rater nominal/ordinal/
+      continuous agreement, and a test-retest block — see data/README.md
+jms: '1.0'
+usesNative: true
+minApp: 1.0.8
+
+...

@@ -1,0 +1,36 @@
+---
+name: fiabilityLibrary
+title: Fiability Library
+jus: '3.0'
+compilerMode: tame
+children:
+  - type: ComboBox
+    name: category
+    label: Category
+    options:
+      - title: Concepts
+        name: concepts
+      - title: Theories
+        name: theories
+      - title: Common Errors
+        name: errors
+  - type: ComboBox
+    name: detail
+    label: Detail Level
+    options:
+      - title: Summary
+        name: summary
+      - title: Full
+        name: full
+  - type: CollapseBox
+    label: Report Language
+    collapsed: false
+    children:
+      - type: ComboBox
+        name: reportLang
+        options:
+          - title: English
+            name: en
+          - title: Español
+            name: es
+...
