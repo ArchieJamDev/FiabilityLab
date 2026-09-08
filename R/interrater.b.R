@@ -156,10 +156,28 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                     ci_lower = ci[1], ci_upper = ci[2], p_value = p)
             }
 
+            # max_b caps replicate count independently of the user's
+            # bootstrapSamples for statistics too slow per-call to bootstrap
+            # at the full default (1000) without risking the real jamovi
+            # engine's resource watchdog -- kappam.fleiss/kripp.alpha each
+            # measured ~0.12 sec/replicate on a 450-row x 4-rater nominal
+            # table, so 1000 replicates of EACH (run sequentially) is ~4
+            # minutes just for these two CIs. Mirrors the same fix already
+            # applied to internalConsistency's Omega bootstrap.
+            # ES: max_b limita las réplicas independientemente de
+            # bootstrapSamples para estadísticos demasiado lentos por
+            # llamada como para hacer bootstrap con el valor completo por
+            # defecto (1000) sin arriesgar el vigilante de recursos del
+            # motor real de jamovi -- kappam.fleiss/kripp.alpha midieron
+            # ~0.12 seg/réplica en una tabla nominal de 450 filas x 4
+            # jueces, así que 1000 réplicas de CADA UNO (secuencial) son
+            # ~4 minutos solo para estos dos IC. Replica el mismo arreglo
+            # ya aplicado al bootstrap del Omega en internalConsistency.
             B <- if (isTRUE(opt$bootstrapCi)) opt$bootstrapSamples else 0L
-            boot_ci <- function(stat_fn) {
+            boot_ci <- function(stat_fn, max_b = NULL) {
                 if (B <= 0L) return(c(NA_real_, NA_real_))
-                bt <- private$.bootstrap(df, stat_fn, B)
+                B_i <- if (!is.null(max_b)) min(B, max_b) else B
+                bt <- private$.bootstrap(df, stat_fn, B_i)
                 c(bt$lo, bt$hi)
             }
 
@@ -185,7 +203,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                     }
                     if (!is.null(kres)) {
                         kappa_val <- kres$value
-                        add_row(kname, kappa_val, private$.interp_kappa(kappa_val), boot_ci(kfn), kres$p.value)
+                        add_row(kname, kappa_val, private$.interp_kappa(kappa_val), boot_ci(kfn, max_b = 200L), kres$p.value)
                     }
                 }
             }
@@ -216,7 +234,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 }
                 ka_val <- kfn(dsrc)
                 interp <- if (level == "nominal" || level == "ordinal") private$.interp_kappa(ka_val) else private$.interp_rel(ka_val)
-                add_row(tr("Krippendorff's α", "α de Krippendorff"), ka_val, interp, boot_ci(kfn), NA_real_)
+                add_row(tr("Krippendorff's α", "α de Krippendorff"), ka_val, interp, boot_ci(kfn, max_b = 200L), NA_real_)
                 krip_val <- ka_val
             }
 
