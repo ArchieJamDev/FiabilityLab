@@ -1,0 +1,211 @@
+---
+name: advancedReliability
+title: Advanced Reliability (SEM)
+jrs: '1.0'
+items:
+
+  - name: fitTable
+    type: Table
+    title: Confirmatory Factor Model Fit
+    rows: 0
+    columns:
+      - name: model
+        title: Model
+        type: text
+      - name: chisq
+        title: χ²
+        type: number
+        format: zto,digits=2
+      - name: df
+        title: df
+        type: integer
+      - name: pvalue
+        title: p
+        type: number
+        format: zto,pvalue
+      - name: cfi
+        title: CFI
+        type: number
+        format: zto,digits=3
+      - name: tli
+        title: TLI
+        type: number
+        format: zto,digits=3
+      - name: rmsea
+        title: RMSEA
+        type: number
+        format: zto,digits=3
+      - name: rmsea_ci
+        title: RMSEA 90% CI
+        type: text
+      - name: srmr
+        title: SRMR
+        type: number
+        format: zto,digits=3
+      - name: verdict
+        title: Fit
+        type: text
+
+  - name: fitNote
+    type: Html
+    title: Model Fit — What It Means
+
+  - name: modelComparisonTable
+    type: Table
+    title: 'Model Comparison: Second-Order vs. Correlated Factors (Likelihood-Ratio Test)'
+    visible: (secondOrder)
+    rows: 0
+    columns:
+      - name: comparison
+        title: Comparison
+        type: text
+      - name: dchisq
+        title: Δχ²
+        type: number
+        format: zto,digits=2
+      - name: ddf
+        title: Δdf
+        type: integer
+      - name: pvalue
+        title: p
+        type: number
+        format: zto,pvalue
+      - name: verdict
+        title: Verdict
+        type: text
+
+  - name: modelComparisonNote
+    type: Html
+    title: Model Comparison — What It Means
+    visible: (secondOrder)
+
+  - name: plotFitComparison
+    type: Image
+    title: Model Fit Comparison
+    width: 500
+    height: 350
+    renderFun: .plotFitComparison
+    visible: (showPlots && secondOrder)
+
+  - name: plotFitComparisonNote
+    type: Html
+    title: Model Fit Comparison — What It Means
+    visible: (showPlots && secondOrder)
+
+  - name: reliabilityTable
+    type: Table
+    title: Reliability by Factor
+    rows: 0
+    columns:
+      - name: factor
+        title: Factor
+        type: text
+      - name: items
+        title: Items
+        type: integer
+      - name: cr
+        title: CR / ω
+        type: number
+        format: zto,digits=3
+      - name: ave
+        title: AVE
+        type: number
+        format: zto,digits=3
+      - name: h
+        title: H
+        type: number
+        format: zto,digits=3
+      - name: rel_g
+        title: Reliability due to G
+        type: number
+        format: zto,digits=3
+      - name: interpretation
+        title: Interpretation
+        type: text
+
+  - name: reliabilityNote
+    type: Html
+    title: Reliability by Factor — What It Means
+
+  - name: plotComparison
+    type: Image
+    title: Reliability Comparison
+    width: 600
+    height: 350
+    renderFun: .plotComparison
+    visible: (showPlots)
+
+  - name: plotComparisonNote
+    type: Html
+    title: Reliability Comparison — What It Means
+    visible: (showPlots)
+
+  - name: plotLoadings
+    type: Image
+    title: Standardized Loadings by Factor
+    width: 700
+    height: 450
+    renderFun: .plotLoadings
+    visible: (showPlots)
+
+  - name: plotLoadingsNote
+    type: Html
+    title: Standardized Loadings — What It Means
+    visible: (showPlots)
+
+  - name: htmtTable
+    type: Table
+    title: Discriminant Validity (HTMT)
+    rows: 0
+    columns:
+      - name: factor_a
+        title: Factor A
+        type: text
+      - name: factor_b
+        title: Factor B
+        type: text
+      - name: htmt
+        title: HTMT
+        type: number
+        format: zto,digits=3
+      - name: verdict
+        title: Verdict
+        type: text
+
+  - name: htmtNote
+    type: Html
+    title: Discriminant Validity — What It Means
+
+  - name: omegaHNote
+    type: Html
+    title: Second-Order Omega Hierarchical
+    visible: (secondOrder)
+
+  - name: modificationIndicesTable
+    type: Table
+    title: Modification Indices (interpret through theory, not automatically)
+    rows: 0
+    columns:
+      - name: suggestion
+        title: Suggested parameter
+        type: text
+      - name: type
+        title: Type
+        type: text
+      - name: mi
+        title: MI
+        type: number
+        format: zto,digits=2
+      - name: epc
+        title: Expected Change
+        type: number
+        format: zto,digits=3
+
+  - name: modificationIndicesNote
+    type: Html
+    title: Modification Indices — What It Means
+
+  - name: interpretation
+    type: Html
+    title: Interpretation & Recommendations
+...

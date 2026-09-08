@@ -131,7 +131,11 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
         list(topics = "sem", authors = list(c("Hu", "L."), c("Bentler", "P. M.")), year = "1999",
              title = "Cutoff criteria for fit indexes in covariance structure analysis: Conventional criteria versus new alternatives",
              journal = "Structural Equation Modeling", volume = "6", issue = "1", pages = "1-55",
-             doi = "10.1080/10705519909540118", ref_type = "methodological")
+             doi = "10.1080/10705519909540118", ref_type = "methodological"),
+        list(topics = "sem", authors = list(c("MacCallum", "R. C."), c("Roznowski", "M."), c("Necowitz", "L. B.")), year = "1992",
+             title = "Model modifications in covariance structure analysis: The problem of capitalization on chance",
+             journal = "Psychological Bulletin", volume = "111", issue = "3", pages = "490-504",
+             doi = "10.1037/0033-2909.111.3.490", ref_type = "methodological")
       )
 
       # -----------------------------------------------------------------------
@@ -165,7 +169,8 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
         "Bujang|2017"   = list(citations = "456",   source = "OpenAlex", other = ""),
         "Fornell|1981"  = list(citations = "70924", source = "OpenAlex", other = ""),
         "Henseler|2015" = list(citations = "36358", source = "OpenAlex", other = ""),
-        "Hu|1999"       = list(citations = "108216", source = "OpenAlex", other = "")
+        "Hu|1999"       = list(citations = "108216", source = "OpenAlex", other = ""),
+        "MacCallum|1992" = list(citations = "1586",  source = "OpenAlex", other = "")
       )
 
       journal_biblio <- list(

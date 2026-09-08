@@ -32,6 +32,12 @@ analyses:
     category: analyses
     menuGroup: FiabilityLab
     menuTitle: Inter-Rater Agreement
+  - title: Advanced Reliability (SEM)
+    name: advancedReliability
+    ns: fiabilitylab
+    category: analyses
+    menuGroup: FiabilityLab
+    menuTitle: Advanced Reliability (SEM)
 menu:
   - title: Fiability Lab
     menu:

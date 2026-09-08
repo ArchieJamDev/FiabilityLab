@@ -1,0 +1,68 @@
+---
+name: advancedReliability
+title: Advanced Reliability (SEM)
+menuGroup: FiabilityLab
+version: '1.0.0'
+jas: '1.2'
+options:
+
+  - name: data
+    type: Data
+
+  - name: secondOrder
+    type: Bool
+    default: false
+
+  # Same Array/Group option pattern as jamovi's own built-in Confirmatory
+  # Factor Analysis: an unlimited, user-extendable list of named factors,
+  # each with its own set of assigned items (paired with the ListBox +
+  # addButton UI in the .u.yaml), instead of a fixed number of slots.
+  - name: factors
+    title: Factors
+    type: Array
+    default:
+      - label: Factor 1
+        vars: []
+    template:
+      type: Group
+      elements:
+        - name: label
+          type: String
+        - name: vars
+          type: Variables
+          suggested:
+            - continuous
+            - ordinal
+          permitted:
+            - numeric
+
+  - name: showPlots
+    type: Bool
+    default: true
+
+  - name: plotStyle
+    type: List
+    options:
+      - name: light
+        title: Light
+      - name: gray
+        title: Gray (default)
+      - name: linedraw
+        title: Line Draw
+      - name: greenred
+        title: Green-Red
+      - name: purpleorange
+        title: Purple-Orange
+      - name: bluegreen
+        title: Blue-Green Light
+    default: gray
+
+  - name: reportLang
+    type: List
+    options:
+      - name: en
+        title: English
+      - name: es
+        title: Español
+    default: en
+...

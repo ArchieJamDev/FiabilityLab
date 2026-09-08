@@ -325,8 +325,12 @@ Defines
 
 • visibility
 
-• interface organization, including advanced/collapsible tabs (e.g., the
-  Classical vs. SEM-based Advanced tab inside Internal Consistency)
+• interface organization, including collapsible option sections within a
+  single analysis (e.g., Internal Consistency's Plot Style box) and, when
+  a feature's own options grow too large for that (e.g., defining up to 5
+  named factors for confirmatory analysis), a separate menu analysis
+  instead (Advanced Reliability (SEM), split out from an originally-planned
+  embedded tab)
 
 -------------------------------------------------------------------------------
 
@@ -753,15 +757,18 @@ agreement, Standard Error of Measurement (SEM), Reliable Change Index
 (RCI, Jacobson-Truax) — plus coefficient discordance panels extended to
 Internal Consistency and Inter-Rater.
 
-**Phase 3 — Internal Consistency, Advanced (SEM) tab + Classification
-Consistency**
-Advanced tab inside Internal Consistency (not a separate module): AVE,
-Composite Reliability (CR), Hancock & Mueller's H coefficient, omega
-generalized to second-order/hierarchical factor structures, HTMT — fit via
-`lavaan`/`semTools` once the user specifies a factor structure
-(items→subscales, subscales→second-order factor). Alongside it,
-Classification/Decision Consistency (Livingston-Lewis, Subkoviak) for
-cut-score-based instruments.
+**Phase 3 — Advanced Reliability (SEM) + Classification Consistency**
+Implemented as `advancedReliability`, its own FiabilityLab menu analysis
+(revised from the original plan of an embedded tab inside Internal
+Consistency, once a point-and-click factor-definition UI with up to 5
+factors made a nested collapse box too cluttered): AVE, Composite
+Reliability (CR), Hancock & Mueller's H coefficient, omega generalized to
+second-order/hierarchical factor structures, HTMT, and modification-index
+diagnostics (interpreted through theory, never applied automatically,
+per MacCallum, Roznowski & Necowitz, 1992) — fit via `lavaan`/`semTools`
+once the user specifies a factor structure (items→subscales,
+subscales→second-order factor). Alongside it, Classification/Decision
+Consistency (Livingston-Lewis, Subkoviak) for cut-score-based instruments.
 
 **Phase 4 — Generalizability Theory (exploratory, no committed date)**
 G-study/D-study variance-components decomposition.
@@ -775,10 +782,12 @@ the Library/Bibliography admission contract.
 
 La escalabilidad constituye un principio fundamental del proyecto.
 
-La pestaña avanzada de confiabilidad compuesta vive dentro de Internal
-Consistency, no como módulo aparte: es la misma pregunta de investigación
-(¿qué tan confiable es este instrumento?) resuelta con un motor distinto
-(modelo de medida en vez de estadística directa sobre datos crudos).
+Advanced Reliability (SEM) es la misma pregunta de investigación que
+Internal Consistency (¿qué tan confiable es este instrumento?) resuelta con
+un motor distinto (modelo de medida confirmatorio en vez de estadística
+directa sobre datos crudos), pero vive como su propio análisis de menú:
+definir hasta 5 factores nombrados con su propia lista de ítems no cabía
+bien como una sección más dentro de las opciones de Internal Consistency.
 
 -------------------------------------------------------------------------------
 
