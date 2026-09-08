@@ -23,6 +23,7 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
             bootstrapCi = TRUE,
             bootstrapSamples = 1000,
             checkDimensionality = TRUE,
+            checkReliabilityAssumptions = TRUE,
             showPlots = FALSE,
             plotItemDist = TRUE,
             plotItemTotal = TRUE,
@@ -116,6 +117,10 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
                 "checkDimensionality",
                 checkDimensionality,
                 default=TRUE)
+            private$..checkReliabilityAssumptions <- jmvcore::OptionBool$new(
+                "checkReliabilityAssumptions",
+                checkReliabilityAssumptions,
+                default=TRUE)
             private$..showPlots <- jmvcore::OptionBool$new(
                 "showPlots",
                 showPlots,
@@ -161,6 +166,7 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
             self$.addOption(private$..bootstrapCi)
             self$.addOption(private$..bootstrapSamples)
             self$.addOption(private$..checkDimensionality)
+            self$.addOption(private$..checkReliabilityAssumptions)
             self$.addOption(private$..showPlots)
             self$.addOption(private$..plotItemDist)
             self$.addOption(private$..plotItemTotal)
@@ -185,6 +191,7 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
         bootstrapCi = function() private$..bootstrapCi$value,
         bootstrapSamples = function() private$..bootstrapSamples$value,
         checkDimensionality = function() private$..checkDimensionality$value,
+        checkReliabilityAssumptions = function() private$..checkReliabilityAssumptions$value,
         showPlots = function() private$..showPlots$value,
         plotItemDist = function() private$..plotItemDist$value,
         plotItemTotal = function() private$..plotItemTotal$value,
@@ -208,6 +215,7 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
         ..bootstrapCi = NA,
         ..bootstrapSamples = NA,
         ..checkDimensionality = NA,
+        ..checkReliabilityAssumptions = NA,
         ..showPlots = NA,
         ..plotItemDist = NA,
         ..plotItemTotal = NA,
@@ -222,7 +230,11 @@ internalConsistencyResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
         autoDetectNote = function() private$.items[["autoDetectNote"]],
         sampleAdequacy = function() private$.items[["sampleAdequacy"]],
         mainTable = function() private$.items[["mainTable"]],
+        plotComparison = function() private$.items[["plotComparison"]],
+        discordanceNote = function() private$.items[["discordanceNote"]],
         bootstrapTable = function() private$.items[["bootstrapTable"]],
+        reliabilityAssumptionsTable = function() private$.items[["reliabilityAssumptionsTable"]],
+        reliabilityAssumptionsNote = function() private$.items[["reliabilityAssumptionsNote"]],
         normalityTable = function() private$.items[["normalityTable"]],
         dimensionalityNote = function() private$.items[["dimensionalityNote"]],
         itemTable = function() private$.items[["itemTable"]],
@@ -268,6 +280,17 @@ internalConsistencyResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
                         `name`="applicability", 
                         `title`="Conditions", 
                         `type`="text"))))
+            self$add(jmvcore::Image$new(
+                options=options,
+                name="plotComparison",
+                title="Coefficient Comparison",
+                width=600,
+                height=350,
+                renderFun=".plotComparison"))
+            self$add(jmvcore::Html$new(
+                options=options,
+                name="discordanceNote",
+                title="Coefficient Discordance"))
             self$add(jmvcore::Table$new(
                 options=options,
                 name="bootstrapTable",
@@ -299,6 +322,44 @@ internalConsistencyResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
                         `title`="Boot SE", 
                         `type`="number", 
                         `format`="zto,digits=3"))))
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="reliabilityAssumptionsTable",
+                title="Reliability Assumptions Check",
+                visible="(alpha && checkReliabilityAssumptions)",
+                rows=0,
+                columns=list(
+                    list(
+                        `name`="assumption", 
+                        `title`="Assumption", 
+                        `type`="text"),
+                    list(
+                        `name`="test", 
+                        `title`="Test", 
+                        `type`="text"),
+                    list(
+                        `name`="statistic", 
+                        `title`="Statistic", 
+                        `type`="number", 
+                        `format`="zto,digits=3"),
+                    list(
+                        `name`="df", 
+                        `title`="df", 
+                        `type`="text"),
+                    list(
+                        `name`="p_value", 
+                        `title`="p", 
+                        `type`="number", 
+                        `format`="zto,digits=4"),
+                    list(
+                        `name`="verdict", 
+                        `title`="Verdict", 
+                        `type`="text"))))
+            self$add(jmvcore::Html$new(
+                options=options,
+                name="reliabilityAssumptionsNote",
+                title="Reliability Assumptions \u2014 What It Means",
+                visible="(alpha && checkReliabilityAssumptions)"))
             self$add(jmvcore::Table$new(
                 options=options,
                 name="normalityTable",
@@ -471,6 +532,7 @@ internalConsistencyBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
 #' @param bootstrapCi .
 #' @param bootstrapSamples .
 #' @param checkDimensionality .
+#' @param checkReliabilityAssumptions .
 #' @param showPlots .
 #' @param plotItemDist .
 #' @param plotItemTotal .
@@ -481,7 +543,11 @@ internalConsistencyBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
 #'   \code{results$autoDetectNote} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$sampleAdequacy} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$mainTable} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$plotComparison} \tab \tab \tab \tab \tab an image \cr
+#'   \code{results$discordanceNote} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$bootstrapTable} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$reliabilityAssumptionsTable} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$reliabilityAssumptionsNote} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$normalityTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$dimensionalityNote} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$itemTable} \tab \tab \tab \tab \tab a table \cr
@@ -517,6 +583,7 @@ internalConsistency <- function(
     bootstrapCi = TRUE,
     bootstrapSamples = 1000,
     checkDimensionality = TRUE,
+    checkReliabilityAssumptions = TRUE,
     showPlots = FALSE,
     plotItemDist = TRUE,
     plotItemTotal = TRUE,
@@ -551,6 +618,7 @@ internalConsistency <- function(
         bootstrapCi = bootstrapCi,
         bootstrapSamples = bootstrapSamples,
         checkDimensionality = checkDimensionality,
+        checkReliabilityAssumptions = checkReliabilityAssumptions,
         showPlots = showPlots,
         plotItemDist = plotItemDist,
         plotItemTotal = plotItemTotal,

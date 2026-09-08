@@ -31,6 +31,17 @@ items:
         title: Conditions
         type: text
 
+  - name: plotComparison
+    type: Image
+    title: Coefficient Comparison
+    width: 600
+    height: 350
+    renderFun: .plotComparison
+
+  - name: discordanceNote
+    type: Html
+    title: Coefficient Discordance
+
   - name: bootstrapTable
     type: Table
     title: Bootstrap Confidence Intervals (95%)
@@ -56,6 +67,38 @@ items:
         title: Boot SE
         type: number
         format: zto,digits=3
+
+  - name: reliabilityAssumptionsTable
+    type: Table
+    title: Reliability Assumptions Check
+    visible: (alpha && checkReliabilityAssumptions)
+    rows: 0
+    columns:
+      - name: assumption
+        title: Assumption
+        type: text
+      - name: test
+        title: Test
+        type: text
+      - name: statistic
+        title: Statistic
+        type: number
+        format: zto,digits=3
+      - name: df
+        title: df
+        type: text
+      - name: p_value
+        title: p
+        type: number
+        format: zto,digits=4
+      - name: verdict
+        title: Verdict
+        type: text
+
+  - name: reliabilityAssumptionsNote
+    type: Html
+    title: Reliability Assumptions — What It Means
+    visible: (alpha && checkReliabilityAssumptions)
 
   - name: normalityTable
     type: Table

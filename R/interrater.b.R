@@ -27,7 +27,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
         .diag_data = NULL,   # data.frame backing .plotDiagnostic
         .diag_extra = NULL,  # scalar backing .plotDiagnostic (e.g. grand mean)
 
-        .tr = function(en, es) if (identical(self$options$reportLang, "es")) es else en,
+        .tr = function(en, es) .fl_tr(en, es, self$options$reportLang),
 
         # User-selectable plot style (independent of jamovi's own light/
         # dark theme, which is what the render functions' own `ggtheme`
@@ -135,35 +135,11 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
         # Mallery, 2003) -- already curated in Bibliography, and this is
         # the same underlying question (proportion of variance/agreement),
         # not a chance-corrected categorical statistic.
-        .interp_rel = function(val) {
-            tr <- private$.tr
-            if (is.na(val) || !is.finite(val)) return(tr("N/A", "N/D"))
-            if (val >= .95) return(tr("Excellent",    "Excelente"))
-            if (val >= .90) return(tr("Good",         "Bueno"))
-            if (val >= .80) return(tr("Acceptable",   "Aceptable"))
-            if (val >= .70) return(tr("Questionable", "Cuestionable"))
-            if (val >= .60) return(tr("Poor",         "Pobre"))
-            return(tr("Unacceptable", "Inaceptable"))
-        },
+        .interp_rel = function(val) .fl_interp_rel(val, private$.tr),
 
-        .bootstrap = function(df, stat_fn, B = 1000L) {
-            n <- nrow(df)
-            vals <- numeric(B)
-            for (b in seq_len(B)) {
-                idx <- sample.int(n, n, replace = TRUE)
-                vals[b] <- tryCatch(stat_fn(df[idx, , drop = FALSE]), error = function(e) NA_real_)
-            }
-            vals <- vals[is.finite(vals)]
-            if (length(vals) < 10L) return(list(lo = NA_real_, hi = NA_real_))
-            list(lo = unname(quantile(vals, .025)), hi = unname(quantile(vals, .975)))
-        },
+        .bootstrap = function(df, stat_fn, B = 1000L) .fl_bootstrap(df, stat_fn, B),
 
-        .reset_table = function(table, n_rows) {
-            table$deleteRows()
-            if (n_rows > 0L)
-                for (i in seq_len(n_rows)) table$addRow(rowKey = i)
-            invisible(table)
-        },
+        .reset_table = function(table, n_rows) .fl_reset_table(table, n_rows),
 
         .run = function() {
             tr  <- private$.tr
@@ -252,7 +228,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             # NA is the pattern already used elsewhere in the Lab suite for
             # "not computable" numeric table cells (e.g. AssumptionsLab's
             # multcheck.b.R).
-            .clean_na <- function(x) if (is.na(x)) NA else x
+            .clean_na <- .fl_clean_na
             add_row <- function(name, val, interp, ci = c(NA_real_, NA_real_), p = NA_real_) {
                 rows[[length(rows) + 1L]] <<- list(
                     coefficient = name, value = .clean_na(val), interpretation = interp,

@@ -91,6 +91,19 @@ children:
           If multiple dimensions are detected, consider computing Alpha/Omega
           per subscale and reporting Omega Hierarchical overall.
   - type: CollapseBox
+    label: Reliability Assumptions
+    collapsed: false
+    children:
+      - type: CheckBox
+        name: checkReliabilityAssumptions
+        label: Check Alpha's assumptions (tau-equivalence, unidimensionality, normality)
+        enable: (alpha)
+      - type: Label
+        label: >-
+          Tau-equivalence is tested via a CFA likelihood-ratio test (requires
+          the lavaan package); unidimensionality and normality reuse the
+          Dimensionality and Item Analysis checks above.
+  - type: CollapseBox
     label: Bootstrap Confidence Intervals
     collapsed: false
     children:

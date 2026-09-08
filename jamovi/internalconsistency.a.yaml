@@ -104,6 +104,12 @@ options:
     type: Bool
     default: true
 
+  # ── Reliability assumptions (tau-equivalence, unidimensionality,
+  # normality -- Cronbach's alpha's own core assumptions) ──────────────────
+  - name: checkReliabilityAssumptions
+    type: Bool
+    default: true
+
   # ── Plots ─────────────────────────────────────────────────────────────────
   - name: showPlots
     type: Bool

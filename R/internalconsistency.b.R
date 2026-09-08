@@ -8,11 +8,10 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
         .citc_vals = NULL,
         .alpha_drop= NULL,
         .fa_result = NULL,
+        .plot_rows = NULL,   # data.frame: coefficient, value, ci_lower, ci_upper
 
         # ── Translation helper ────────────────────────────────────────────────
-        .tr = function(en, es) {
-            if (identical(self$options$reportLang, "es")) es else en
-        },
+        .tr = function(en, es) .fl_tr(en, es, self$options$reportLang),
 
         # User-selectable plot style (independent of jamovi's own light/
         # dark theme, which is what the render functions' own `ggtheme`
@@ -23,16 +22,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
         .plot_colors = function() .fl_plot_colors(self$options$plotStyle),
 
         # ── Interpretation of reliability coefficient ─────────────────────────
-        .interp_rel = function(val) {
-            tr <- private$.tr
-            if (is.na(val) || !is.finite(val)) return(tr("N/A", "N/D"))
-            if (val >= .95) return(tr("Excellent",    "Excelente"))
-            if (val >= .90) return(tr("Good",         "Bueno"))
-            if (val >= .80) return(tr("Acceptable",   "Aceptable"))
-            if (val >= .70) return(tr("Questionable", "Cuestionable"))
-            if (val >= .60) return(tr("Poor",         "Pobre"))
-            return(tr("Unacceptable", "Inaceptable"))
-        },
+        .interp_rel = function(val) .fl_interp_rel(val, private$.tr),
 
         # ── Significance stars ────────────────────────────────────────────────
         .sig = function(p) {
@@ -43,30 +33,55 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             return("")
         },
 
-        # ── Bootstrap a scalar stat ───────────────────────────────────────────
-        .bootstrap = function(df, stat_fn, B = 1000L) {
-            n <- nrow(df)
-            vals <- numeric(B)
-            for (b in seq_len(B)) {
-                idx     <- sample.int(n, n, replace = TRUE)
-                vals[b] <- tryCatch(stat_fn(df[idx, , drop=FALSE]), error=function(e) NA_real_)
-            }
-            vals <- vals[is.finite(vals)]
-            if (length(vals) < 10L) return(list(se=NA, lo=NA, hi=NA))
-            list(se = sd(vals),
-                 lo = quantile(vals, .025, names=FALSE),
-                 hi = quantile(vals, .975, names=FALSE))
+        # ── Tau-equivalence test (Cronbach's α's core assumption) ────────────
+        # EN: α equals the true reliability only when items are tau-
+        # equivalent -- equal true-score loadings on a single common factor
+        # (Cronbach, 1951; Zumbo, Gadermann & Zeisser, 2007). Formally
+        # testable as a likelihood-ratio comparison between a congeneric
+        # single-factor CFA (loadings free) and a tau-equivalent one
+        # (loadings constrained equal): a significant difference rejects
+        # tau-equivalence. Computed from each model's own chi-square/df
+        # (lavaan::fitMeasures(), stable field names across versions) rather
+        # than parsing lavaan::lavTestLRT()'s printed comparison table,
+        # whose column names have changed between lavaan releases.
+        # ES: El α equivale a la confiabilidad verdadera solo cuando los
+        # ítems son tau-equivalentes -- iguales cargas de puntaje verdadero
+        # sobre un único factor común (Cronbach, 1951; Zumbo, Gadermann &
+        # Zeisser, 2007). Formalmente comprobable como una comparación de
+        # razón de verosimilitud entre un AFC congenérico de un factor
+        # (cargas libres) y uno tau-equivalente (cargas restringidas a ser
+        # iguales): una diferencia significativa rechaza la tau-
+        # equivalencia. Se calcula a partir del chi-cuadrado/gl propios de
+        # cada modelo (lavaan::fitMeasures(), nombres de campo estables
+        # entre versiones) en vez de parsear la tabla de comparación
+        # impresa de lavaan::lavTestLRT(), cuyos nombres de columna han
+        # cambiado entre versiones de lavaan.
+        .tau_equivalence_test = function(df) {
+            if (!requireNamespace("lavaan", quietly = TRUE))
+                return(list(stat = NA_real_, df = NA_integer_, p = NA_real_, available = FALSE))
+            items <- names(df)
+            syn_c <- paste0("f =~ ", paste(items, collapse = " + "))
+            syn_t <- paste0("f =~ ", paste0("a*", items, collapse = " + "))
+            fit_c <- tryCatch(lavaan::cfa(syn_c, data = df, std.lv = TRUE), error = function(e) NULL)
+            fit_t <- tryCatch(lavaan::cfa(syn_t, data = df, std.lv = TRUE), error = function(e) NULL)
+            ok <- function(f) !is.null(f) && isTRUE(tryCatch(lavaan::lavInspect(f, "converged"), error = function(e) FALSE))
+            if (!ok(fit_c) || !ok(fit_t))
+                return(list(stat = NA_real_, df = NA_integer_, p = NA_real_, available = TRUE))
+            fm_c <- lavaan::fitMeasures(fit_c, c("chisq", "df"))
+            fm_t <- lavaan::fitMeasures(fit_t, c("chisq", "df"))
+            d_chisq <- unname(fm_t["chisq"] - fm_c["chisq"])
+            d_df    <- unname(fm_t["df"]    - fm_c["df"])
+            if (!is.finite(d_chisq) || !is.finite(d_df) || d_df <= 0)
+                return(list(stat = NA_real_, df = NA_integer_, p = NA_real_, available = TRUE))
+            p <- stats::pchisq(d_chisq, d_df, lower.tail = FALSE)
+            list(stat = d_chisq, df = d_df, p = p, available = TRUE)
         },
 
+        # ── Bootstrap a scalar stat ───────────────────────────────────────────
+        .bootstrap = function(df, stat_fn, B = 1000L) .fl_bootstrap(df, stat_fn, B),
+
         # ── Reset a Jamovi table to a requested number of rows ───────────────
-        .reset_table = function(table, n_rows) {
-            table$deleteRows()
-            if (n_rows > 0L) {
-                for (row_no in seq_len(n_rows))
-                    table$addRow(rowKey = row_no)
-            }
-            invisible(table)
-        },
+        .reset_table = function(table, n_rows) .fl_reset_table(table, n_rows),
 
         # ── Main run ─────────────────────────────────────────────────────────
         .run = function() {
@@ -441,6 +456,103 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 }
             }
 
+            # ── 8g. Reliability assumptions check (tau-equivalence,
+            # unidimensionality, normality) -- same purpose as interRater's
+            # ICC assumptions check: α is the most commonly reported
+            # coefficient and the most assumption-laden one, so testing
+            # these formally (not just inferring tau-equivalence from an
+            # α-vs-ω gap, as the discordance panel above already does)
+            # lets the report say definitively whether α is trustworthy
+            # here.
+            # ES: Verificación de supuestos de confiabilidad (tau-
+            # equivalencia, unidimensionalidad, normalidad) -- mismo
+            # propósito que la verificación de supuestos del ICC en
+            # interRater: el α es el coeficiente más reportado y el más
+            # cargado de supuestos, así que probarlos formalmente (no solo
+            # inferir la tau-equivalencia de una brecha α-vs-ω, como ya
+            # hace el panel de discordancia de arriba) permite que el
+            # reporte diga con certeza si el α es confiable aquí.
+            if (opt$alpha && isTRUE(opt$checkReliabilityAssumptions) && k >= 3L) {
+                tau <- private$.tau_equivalence_test(df)
+
+                verdict <- function(p) {
+                    if (is.null(p) || is.na(p)) tr("N/A", "N/D")
+                    else if (p < .05) tr("Violated", "Violado")
+                    else tr("Met", "Cumplido")
+                }
+
+                n_fact_assump <- if (!is.null(fa_par)) fa_par$nfact else NA_integer_
+                uni_verdict <- if (is.na(n_fact_assump)) tr("N/A", "N/D")
+                               else if (n_fact_assump <= 1L) tr("Met", "Cumplido")
+                               else tr("Violated", "Violado")
+
+                norm_verdict <- if (!opt$normality) tr("N/A", "N/D")
+                                else if (nonnormal_count > 0L) tr("Violated", "Violado")
+                                else tr("Met", "Cumplido")
+
+                assum_rows <- list(
+                    list(assumption = tr("Tau-equivalence", "Tau-equivalencia"),
+                         test = tr("CFA likelihood-ratio test", "Prueba de razón de verosimilitud AFC"),
+                         statistic = .fl_clean_na(tau$stat),
+                         df = if (!is.na(tau$df)) as.character(tau$df) else "",
+                         p_value = .fl_clean_na(tau$p),
+                         verdict = if (!tau$available) tr("lavaan not installed", "lavaan no instalado") else verdict(tau$p)),
+                    list(assumption = tr("Unidimensionality", "Unidimensionalidad"),
+                         test = tr("Parallel analysis (factors suggested)", "Análisis paralelo (factores sugeridos)"),
+                         statistic = .fl_clean_na(as.numeric(n_fact_assump)),
+                         df = "",
+                         p_value = NA,
+                         verdict = uni_verdict),
+                    list(assumption = tr("Normality of items", "Normalidad de ítems"),
+                         test = tr("Shapiro-Wilk (items failing)", "Shapiro-Wilk (ítems que fallan)"),
+                         statistic = .fl_clean_na(as.numeric(nonnormal_count)),
+                         df = "",
+                         p_value = NA,
+                         verdict = norm_verdict))
+
+                rat <- self$results$reliabilityAssumptionsTable
+                private$.reset_table(rat, length(assum_rows))
+                for (i in seq_along(assum_rows)) rat$setRow(rowNo = i, values = assum_rows[[i]])
+
+                tau_bad  <- tau$available && !is.na(tau$p) && tau$p < .05
+                uni_bad  <- !is.na(n_fact_assump) && n_fact_assump > 1L
+                norm_bad <- opt$normality && nonnormal_count > 0L
+
+                note_html <- paste0(.fl_prose_open(),
+                    "<p>", tr(
+                        "Cronbach's &alpha; is the most commonly reported reliability coefficient and also the most assumption-laden: it equals the true reliability only when items are tau-equivalent (equal true-score loadings on a single common factor) (Cronbach, 1951; Zumbo, Gadermann &amp; Zeisser, 2007). Unlike McDonald's &omega;, GLB, or the Guttman &lambda; family above (none of which require tau-equivalence), &alpha; is biased -- usually downward -- whenever this assumption fails.",
+                        "El Alfa de Cronbach es el coeficiente de confiabilidad más reportado y también el más cargado de supuestos: equivale a la confiabilidad verdadera solo cuando los ítems son tau-equivalentes (iguales cargas de puntaje verdadero sobre un único factor común) (Cronbach, 1951; Zumbo, Gadermann &amp; Zeisser, 2007). A diferencia del Omega de McDonald, el GLB o la familia &lambda; de Guttman de arriba (ninguno de los cuales requiere tau-equivalencia), el &alpha; está sesgado -- usualmente a la baja -- cuando este supuesto falla."
+                    ), "</p>",
+                    if (!tau$available) paste0("<p>&#9888; ", tr(
+                            "The tau-equivalence test requires the lavaan package, which is not installed here -- install it for a direct statistical test; in the meantime, the discordance panel above (&alpha; vs. &omega;) is an indirect signal of the same thing.",
+                            "La prueba de tau-equivalencia requiere el paquete lavaan, que no está instalado aquí -- instálelo para obtener una prueba estadística directa; mientras tanto, el panel de discordancia de arriba (&alpha; vs. &omega;) es una señal indirecta de lo mismo."), "</p>")
+                    else if (is.na(tau$p)) paste0("<p>&#9888; ", tr(
+                            "The tau-equivalence models did not converge on this data -- no formal verdict available; rely on the discordance panel above instead.",
+                            "Los modelos de tau-equivalencia no convergieron con estos datos -- no hay veredicto formal disponible; use el panel de discordancia de arriba en su lugar."), "</p>")
+                    else if (tau_bad) paste0("<p>&#9888; <b>", tr("Tau-equivalence violated", "Tau-equivalencia violada"), ":</b> ",
+                        tr("a congeneric model (free item loadings) fits significantly better than a tau-equivalent model (equal loadings) (p &lt; .05). Items load unequally on the underlying factor, so &alpha; is likely biased here -- report McDonald's &omega; instead, which does not require this assumption.",
+                           "un modelo congenérico (cargas de ítem libres) ajusta significativamente mejor que un modelo tau-equivalente (cargas iguales) (p &lt; .05). Los ítems cargan de forma desigual sobre el factor subyacente, así que el &alpha; probablemente esté sesgado aquí -- reporte el Omega de McDonald en su lugar, que no requiere este supuesto."), "</p>")
+                    else paste0("<p>&#10003; ", tr("No evidence against tau-equivalence -- the congeneric and tau-equivalent models fit comparably well, so &alpha;'s assumption looks reasonable here.",
+                                                    "No hay evidencia contra la tau-equivalencia -- los modelos congenérico y tau-equivalente ajustan de forma comparable, así que el supuesto del &alpha; parece razonable aquí."), "</p>"),
+                    "<p>", if (uni_bad) paste0("&#9888; <b>", tr("Unidimensionality violated", "Unidimensionalidad violada"), ":</b> ",
+                        tr(paste0("parallel analysis suggests ", n_fact_assump, " factors. A single overall &alpha; mixes distinct dimensions into one number; see the Dimensionality Check panel below for what to do about it."),
+                           paste0("el análisis paralelo sugiere ", n_fact_assump, " factores. Un &alpha; global único mezcla dimensiones distintas en un solo número; vea el panel de Verificación de Dimensionalidad abajo para saber qué hacer al respecto.")))
+                        else paste0("&#10003; ", tr("Parallel analysis supports a single underlying factor -- consistent with what a single overall &alpha; is meant to measure.",
+                                                     "El análisis paralelo respalda un solo factor subyacente -- consistente con lo que un &alpha; global único pretende medir.")), "</p>",
+                    "<p>", if (norm_bad) paste0("&#9888; <b>", tr("Item normality violated", "Normalidad de ítems violada"), ":</b> ",
+                        tr(paste0(nonnormal_count, " item(s) fail Shapiro-Wilk (see the Item Normality table below); &alpha;'s standard-error formula assumes multivariate normality, so treat its confidence interval as approximate and prefer Ordinal &alpha; or the bootstrap CI above."),
+                           paste0(nonnormal_count, " ítem(s) fallan Shapiro-Wilk (vea la tabla de Normalidad de Ítems abajo); la fórmula del error estándar del &alpha; asume normalidad multivariada, así que trate su intervalo de confianza como aproximado y prefiera el Alfa Ordinal o el IC por bootstrap de arriba.")))
+                        else if (opt$normality) paste0("&#10003; ", tr("All items pass the normality check -- &alpha; is not at a distributional disadvantage here.",
+                                                                        "Todos los ítems pasan la prueba de normalidad -- el &alpha; no está en desventaja distribucional aquí."))
+                        else tr("Normality testing is off (enable it in Item Analysis to check this).", "La prueba de normalidad está desactivada (actívela en Análisis de Ítems para revisar esto)."),
+                    "</p>",
+                    .fl_prose_close())
+                self$results$reliabilityAssumptionsNote$setContent(note_html)
+            } else {
+                self$results$reliabilityAssumptionsTable$setVisible(FALSE)
+                self$results$reliabilityAssumptionsNote$setVisible(FALSE)
+            }
+
             # ── 9. Fill main table ────────────────────────────────────────────
             main_tab <- self$results$mainTable
             private$.reset_table(main_tab, length(rows))
@@ -450,6 +562,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             }
 
             # ── 10. Bootstrap CIs ─────────────────────────────────────────────
+            ci_by_name <- list()
             if (opt$bootstrapCi && length(boot_rows) > 0L) {
                 B       <- as.integer(opt$bootstrapSamples)
                 bt_tab  <- self$results$bootstrapTable
@@ -464,7 +577,41 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                         ci_lower    = ci$lo,
                         ci_upper    = ci$hi,
                         se_boot     = ci$se))
+                    ci_by_name[[r$name]] <- ci
                 }
+            }
+
+            # ── 10b. Coefficient Comparison plot data ─────────────────────────
+            # EN: Same idea as interRater's .plotComparison -- one point +
+            # CI whisker per computed coefficient on the same 0-1 scale, so
+            # an α-vs-ω (or GLB-vs-α) gap that reads as a sentence in the
+            # discordance panel is immediately visible as two dots sitting
+            # apart. Coefficients without a bootstrap CI (or with
+            # bootstrapCi off) plot as a point with no visible whisker,
+            # matching interRater's own fallback.
+            # ES: Misma idea que .plotComparison de interRater -- un punto +
+            # barra de error por coeficiente calculado en la misma escala
+            # 0-1, para que una brecha α-vs-ω (o GLB-vs-α) que se lee como
+            # una oración en el panel de discordancia sea inmediatamente
+            # visible como dos puntos separados. Los coeficientes sin IC por
+            # bootstrap (o con bootstrapCi desactivado) se grafican como un
+            # punto sin barra visible, igual que el respaldo de interRater.
+            plot_rows <- Filter(function(r) !is.na(r$value), rows)
+            if (length(plot_rows) > 0L) {
+                private$.plot_rows <- data.frame(
+                    coefficient = vapply(plot_rows, function(r) r$coefficient, character(1)),
+                    value       = vapply(plot_rows, function(r) r$value, numeric(1)),
+                    ci_lower    = vapply(plot_rows, function(r) {
+                        ci <- ci_by_name[[r$coefficient]]
+                        if (is.null(ci) || is.na(ci$lo)) r$value else ci$lo
+                    }, numeric(1)),
+                    ci_upper    = vapply(plot_rows, function(r) {
+                        ci <- ci_by_name[[r$coefficient]]
+                        if (is.null(ci) || is.na(ci$hi)) r$value else ci$hi
+                    }, numeric(1)),
+                    stringsAsFactors = FALSE)
+            } else {
+                self$results$plotComparison$setVisible(FALSE)
             }
 
             # ── 11. Dimensionality (parallel analysis) ────────────────────────
@@ -546,6 +693,8 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                                           "Ningún ítem está por debajo del umbral r(ítem-total) ≥ .30."), "</p>")
             }
 
+            # ── Discordance panel (standalone result, matching interRater's
+            # own discordanceNote) ────────────────────────────────────────────
             discord_html <- if (!is.na(best_val) && !is.na(ot) && abs(best_val - ot) > .04) {
                 paste0("<p>&#9888; <b>", tr("Coefficients disagree", "Los coeficientes no coinciden"), ":</b> ",
                        tr(paste0("Cronbach's α (", round(best_val,3), ") and McDonald's ω (", round(ot,3),
@@ -559,6 +708,8 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 paste0("<p>&#10003; ", tr("Cronbach's α and McDonald's ω agree closely — the τ-equivalence assumption behind α looks reasonable here.",
                                           "El Alfa de Cronbach y el Omega de McDonald coinciden de cerca — el supuesto de τ-equivalencia detrás del α parece razonable aquí."), "</p>")
             } else ""
+            self$results$discordanceNote$setContent(if (nzchar(discord_html)) .fl_prose(discord_html) else discord_html)
+            if (!nzchar(discord_html)) self$results$discordanceNote$setVisible(FALSE)
 
             normality_html <- if (opt$normality && k > 0L) {
                 if (nonnormal_count > 0L) {
@@ -635,7 +786,6 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                            round(best_val, 3), "</b> (", interp_lbl, ")."),
                     paste0("La estimación primaria de confiabilidad para esta escala es <b>",
                            round(best_val, 3), "</b> (", interp_lbl, ").")), "</p>",
-                discord_html,
 
                 "<h4>", tr("Why", "Por qué"), "</h4>",
                 weak_html, normality_html, dim_summary_html,
@@ -666,6 +816,28 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 "</p>",
                 "</div>")
             self$results$interpretation$setContent(rec_html)
+        },
+
+        # ── Plot: coefficient comparison (forest-plot style) ────────────────
+        # Same construction as interRater's .plotComparison -- see the note
+        # at private$.plot_rows' construction (step 10b) for why.
+        .plotComparison = function(image, ggtheme, theme, ...) {
+            d <- private$.plot_rows
+            if (is.null(d) || nrow(d) == 0L) return(FALSE)
+            cols <- private$.plot_colors()
+            d$coefficient <- factor(d$coefficient, levels = rev(d$coefficient))
+            lo <- min(0, d$ci_lower, na.rm = TRUE)
+            hi <- max(1, d$ci_upper, na.rm = TRUE)
+            p <- ggplot2::ggplot(d, ggplot2::aes(x = value, y = coefficient)) +
+                ggplot2::geom_errorbar(ggplot2::aes(xmin = ci_lower, xmax = ci_upper),
+                                       width = .15, orientation = "y", colour = cols$primary, linewidth = .6) +
+                ggplot2::geom_point(size = 3.2, colour = cols$primary) +
+                ggplot2::coord_cartesian(xlim = c(lo, hi)) +
+                ggplot2::labs(x = private$.tr("Value (95% CI)", "Valor (IC 95%)"), y = NULL,
+                              title = private$.tr("Coefficient Comparison", "Comparación de Coeficientes")) +
+                private$.plot_theme()
+            print(p)
+            TRUE
         },
 
         # ── Plot: item score distributions ────────────────────────────────────

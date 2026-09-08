@@ -59,3 +59,89 @@
 .fl_prose <- function(...) paste0(.fl_prose_open(), paste0(...), .fl_prose_close())
 
 .fl_footnote <- function(...) paste0("<p style='font-size:0.85em;color:#666;'>", paste0(...), "</p>")
+
+# ── Bilingual translation ────────────────────────────────────────────────────
+# EN: Every analysis class defines its own `.tr = function(en, es) ...`
+# private method reading `self$options$reportLang`; the body was byte-
+# identical in interRater and internalConsistency. This pure version takes
+# the already-read option value so each class's `.tr` stays a one-line call.
+# ES: Cada clase de análisis define su propio método privado
+# `.tr = function(en, es) ...` que lee `self$options$reportLang`; el cuerpo
+# era idéntico letra por letra en interRater e internalConsistency. Esta
+# versión pura toma el valor de la opción ya leído para que el `.tr` de cada
+# clase quede en una sola línea.
+.fl_tr <- function(en, es, report_lang) if (identical(report_lang, "es")) es else en
+
+# ── Reliability/agreement interpretation bands (Kline, 2000; George &
+# Mallery, 2003) ─────────────────────────────────────────────────────────────
+# EN: Used by internalConsistency for every CTT coefficient (α, ω, GLB,
+# split-half, Guttman λ, KR-20/21) and by interRater for ICC and
+# Krippendorff's α on continuous data -- the same "proportion of variance/
+# agreement" question, not the chance-corrected categorical scale Landis &
+# Koch (1977) covers. `tr` is the caller's own translation closure (its
+# `private$.tr`), so this stays independent of any one class's option access.
+# ES: Usado por internalConsistency para cada coeficiente TCT (α, ω, GLB,
+# mitades partidas, λ de Guttman, KR-20/21) y por interRater para el ICC y el
+# α de Krippendorff en datos continuos -- la misma pregunta de "proporción de
+# varianza/acuerdo", no la escala categórica corregida por azar de Landis &
+# Koch (1977). `tr` es la propia función de traducción del llamador (su
+# `private$.tr`), así que esto no depende del acceso a opciones de una clase.
+.fl_interp_rel <- function(val, tr) {
+    if (is.na(val) || !is.finite(val)) return(tr("N/A", "N/D"))
+    if (val >= .95) return(tr("Excellent",    "Excelente"))
+    if (val >= .90) return(tr("Good",         "Bueno"))
+    if (val >= .80) return(tr("Acceptable",   "Aceptable"))
+    if (val >= .70) return(tr("Questionable", "Cuestionable"))
+    if (val >= .60) return(tr("Poor",         "Pobre"))
+    tr("Unacceptable", "Inaceptable")
+}
+
+# ── jamovi Table helpers ─────────────────────────────────────────────────────
+.fl_reset_table <- function(table, n_rows) {
+    table$deleteRows()
+    if (n_rows > 0L)
+        for (i in seq_len(n_rows)) table$addRow(rowKey = i)
+    invisible(table)
+}
+
+# ── Nonparametric bootstrap for a scalar statistic ──────────────────────────
+# EN: Row-resamples `df` with replacement B times, applying `stat_fn` to
+# each resample; returns the percentile 95% CI (and its SE) from whichever
+# resamples didn't error or come back non-finite. Both interRater and
+# internalConsistency had their own copy of this (interRater's dropped the
+# `se` field internalConsistency's bootstrapTable needs) -- this version is
+# the superset, so both classes' `boot_ci()`/step-10 callers work unchanged.
+# ES: Remuestrea `df` por filas con reemplazo B veces, aplicando `stat_fn` a
+# cada remuestra; retorna el IC 95% percentil (y su SE) de las remuestras que
+# no fallaron ni volvieron no finitas. Tanto interRater como
+# internalConsistency tenían su propia copia (la de interRater omitía el
+# campo `se` que la bootstrapTable de internalConsistency necesita) -- esta
+# versión es el superconjunto, así que los llamadores boot_ci()/paso 10 de
+# ambas clases funcionan sin cambios.
+# ── NA/NaN sanitizing for jamovi Table cells ────────────────────────────────
+# EN: A numeric NA_real_/NaN can render as the literal text "NaN" once it
+# crosses the real jamovi engine's serialization boundary, even though a
+# direct-R asDF() check always shows it correctly as blank -- a real bug
+# first caught in interRater's mainTable. Wrap every numeric value handed to
+# `Table$setRow()` in this before storing it.
+# ES: Un NA_real_/NaN numérico puede renderizarse como el texto literal
+# "NaN" al cruzar el límite de serialización del motor real de jamovi,
+# aunque una verificación directa en R con asDF() siempre lo muestre
+# correctamente en blanco -- un bug real detectado primero en la mainTable
+# de interRater. Envuelva en esto cada valor numérico que se pase a
+# `Table$setRow()` antes de guardarlo.
+.fl_clean_na <- function(x) if (is.na(x)) NA else x
+
+.fl_bootstrap <- function(df, stat_fn, B = 1000L) {
+    n <- nrow(df)
+    vals <- numeric(B)
+    for (b in seq_len(B)) {
+        idx <- sample.int(n, n, replace = TRUE)
+        vals[b] <- tryCatch(stat_fn(df[idx, , drop = FALSE]), error = function(e) NA_real_)
+    }
+    vals <- vals[is.finite(vals)]
+    if (length(vals) < 10L) return(list(se = NA_real_, lo = NA_real_, hi = NA_real_))
+    list(se = sd(vals),
+         lo = unname(quantile(vals, .025)),
+         hi = unname(quantile(vals, .975)))
+}
