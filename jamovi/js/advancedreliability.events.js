@@ -46,11 +46,8 @@ const events = {
         updateFactorLabels(ui);
     },
 
-    onEvent_listItemAdded: function(ui, data) {
+    onEvent_listItemAdded: function(ui) {
         updateFactorLabels(ui);
-        setTimeout(() => {
-            data.item.controls[0].$input.focus();
-        }, 0);
     },
 
     onEvent_listItemRemoved: function(ui) {

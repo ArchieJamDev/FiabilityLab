@@ -119,6 +119,7 @@ items:
         title: Reliability due to G
         type: number
         format: zto,digits=3
+        visible: (secondOrder)
       - name: interpretation
         title: Interpretation
         type: text
