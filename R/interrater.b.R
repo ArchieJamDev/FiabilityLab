@@ -243,6 +243,35 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             }
 
             # ── 5c. Krippendorff's Alpha (universal; bootstrapped, no native CI/p) ─
+            # EN: kripp.alpha()'s interval method (used for continuous data)
+            # builds a coincidence matrix over every DISTINCT observed value
+            # -- 1257 of them on a 423-row/3-rater continuous test case, vs.
+            # a handful of categories for nominal/ordinal data -- and calls
+            # lpSolve for an actual linear-programming step. Measured cost:
+            # ~0.12 sec/replicate for nominal/ordinal (max_b=200 is fine,
+            # ~20-30 sec total) vs. ~5 sec/replicate for continuous (200
+            # replicates would be ~17 minutes -- exactly what hung the real
+            # jamovi engine with all five coefficients + bootstrap enabled
+            # together). Bootstrapping this one specifically is skipped for
+            # continuous data instead of just shrinking max_b, since even a
+            # handful of replicates costs real time while .bootstrap()'s own
+            # <10-valid-replicate floor means a small cap could never
+            # produce a usable CI anyway.
+            # ES: El método interval de kripp.alpha() (usado para datos
+            # continuos) construye una matriz de coincidencia sobre cada
+            # valor observado DISTINTO -- 1257 en un caso de prueba continuo
+            # de 423 filas/3 jueces, frente a un puñado de categorías en
+            # datos nominales/ordinales -- y llama a lpSolve para un paso
+            # real de programación lineal. Costo medido: ~0.12 seg/réplica
+            # para nominal/ordinal (max_b=200 está bien, ~20-30 seg en
+            # total) frente a ~5 seg/réplica para continuo (200 réplicas
+            # serían ~17 minutos -- justo lo que colgó el motor real de
+            # jamovi con los cinco coeficientes + bootstrap activados a la
+            # vez). El bootstrap de este coeficiente se omite para datos
+            # continuos en vez de solo reducir max_b, ya que incluso pocas
+            # réplicas cuestan tiempo real y el piso de <10 réplicas válidas
+            # de .bootstrap() nunca produciría un IC utilizable con un
+            # límite pequeño de todos modos.
             if (opt$krippendorff && k >= 2L) {
                 method <- switch(level, nominal = "nominal", ordinal = "ordinal", continuous = "interval")
                 dsrc <- if (level == "nominal") df else df_num
@@ -253,7 +282,14 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 }
                 ka_val <- kfn(dsrc)
                 interp <- if (level == "nominal" || level == "ordinal") private$.interp_kappa(ka_val) else private$.interp_rel(ka_val)
-                add_row(tr("Krippendorff's α", "α de Krippendorff"), ka_val, interp, boot_ci(kfn, max_b = 200L), NA_real_)
+                krip_name <- tr("Krippendorff's α", "α de Krippendorff")
+                if (level == "continuous") {
+                    krip_name <- paste0(krip_name, tr(" (CI omitted: too costly to bootstrap on near-continuous data)",
+                                                       " (IC omitido: muy costoso de calcular por bootstrap en datos casi continuos)"))
+                    add_row(krip_name, ka_val, interp, c(NA_real_, NA_real_), NA_real_)
+                } else {
+                    add_row(krip_name, ka_val, interp, boot_ci(kfn, max_b = 200L), NA_real_)
+                }
                 krip_val <- ka_val
             }
 
