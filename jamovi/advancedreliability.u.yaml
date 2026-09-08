@@ -45,6 +45,9 @@ children:
             name: factors
             height: large
             addButton: Add New Factor
+            events:
+              listItemAdded: ./advancedreliability.events::onEvent_listItemAdded
+              listItemRemoved: ./advancedreliability.events::onEvent_listItemRemoved
             template:
               type: LayoutBox
               margin: normal
