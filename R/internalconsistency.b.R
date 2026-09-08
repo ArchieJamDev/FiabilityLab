@@ -128,6 +128,26 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 dichotomous = "dichotomous",
                 polytomous  = "polytomous")
 
+            # EN: Whether the polytomous items are ordinal (discrete, <=7
+            # whole-number categories -- a typical Likert scale) rather
+            # than genuinely continuous. This gates which normality check
+            # runs below: Shapiro-Wilk assumes a continuous variable, and
+            # running it on a handful of discrete categories mostly detects
+            # the item's own discreteness/ties rather than a real
+            # distributional problem -- a module whose purpose is checking
+            # assumptions should not itself apply a continuous-data test to
+            # ordinal data.
+            # ES: Si los ítems politómicos son ordinales (discretos, <=7
+            # categorías de números enteros -- una escala Likert típica) en
+            # vez de genuinamente continuos. Esto determina qué prueba de
+            # normalidad corre abajo: Shapiro-Wilk asume una variable
+            # continua, y aplicarla a un puñado de categorías discretas
+            # detecta mayormente la propia discreción/empates del ítem en
+            # vez de un problema distribucional real -- un módulo cuyo
+            # propósito es verificar supuestos no debería él mismo aplicar
+            # una prueba para datos continuos a datos ordinales.
+            is_ordinal_scale <- level == "polytomous" && .fl_is_low_cardinality(df)
+
             # ── 4. Auto-detect note ───────────────────────────────────────────
             detect_icon <- if (level == "dichotomous") "&#9679;" else "&#9632;"
             level_lbl   <- if (level == "dichotomous")
@@ -182,9 +202,31 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 "</ul>")
             self$results$sampleAdequacy$setContent(samp_html)
 
-            # ── 6. Normality tests (Shapiro-Wilk per item) ────────────────────
+            # ── 6. Normality check (Shapiro-Wilk for continuous data;
+            # skewness/kurtosis screening for ordinal Likert-type data;
+            # not applicable to dichotomous data) ─────────────────────────
+            # EN: Shapiro-Wilk only runs when the scale was actually
+            # detected/set as continuous. For ordinal items, "non-normal"
+            # is replaced by a skewness/kurtosis red-flag (|skew| > 2 or
+            # |kurt| > 7 -- the same threshold the sample-adequacy note
+            # above already cites), which is the field-standard way to
+            # screen discrete Likert data for floor/ceiling effects without
+            # applying a continuous-distribution hypothesis test to it.
+            # Dichotomous items get no normality check at all -- the
+            # concept doesn't apply to a two-point (Bernoulli) variable.
+            # ES: Shapiro-Wilk solo corre cuando la escala fue realmente
+            # detectada/fijada como continua. Para ítems ordinales,
+            # "no normal" se reemplaza por una alerta de asimetría/curtosis
+            # (|asimetría| > 2 o |curtosis| > 7 -- el mismo umbral que ya
+            # cita la nota de adecuación muestral de arriba), la forma
+            # estándar del campo de examinar datos Likert discretos en
+            # busca de efectos techo/piso sin aplicarles una prueba de
+            # hipótesis para distribuciones continuas. Los ítems
+            # dicotómicos no reciben ninguna verificación de normalidad --
+            # el concepto no aplica a una variable de dos puntos (Bernoulli).
             nonnormal_count <- 0L
-            if (opt$normality) {
+            normality_applicable <- opt$normality && level != "dichotomous"
+            if (normality_applicable) {
                 norm_tab <- self$results$normalityTable
                 private$.reset_table(norm_tab, k)
                 for (j in seq_len(k)) {
@@ -199,15 +241,24 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                         n_x <- length(x)
                         sum(((x - m)/s)^4) / n_x - 3
                     } else NA_real_
-                    sw <- if (length(x) >= 3 && length(x) <= 5000)
-                        tryCatch(shapiro.test(x), error=function(e) NULL)
-                    else NULL
-                    W_val <- if (!is.null(sw)) sw$statistic[["W"]] else NA_real_
-                    p_val <- if (!is.null(sw)) sw$p.value            else NA_real_
-                    dec <- if (is.na(p_val)) tr("–","–")
-                           else if (p_val < .05) tr("Non-normal", "No normal")
-                           else tr("Normal", "Normal")
-                    if (!is.na(p_val) && p_val < .05) nonnormal_count <- nonnormal_count + 1L
+
+                    if (is_ordinal_scale) {
+                        W_val <- NA_real_
+                        p_val <- NA_real_
+                        flagged <- (!is.na(sk) && abs(sk) > 2) || (!is.na(ku) && abs(ku) > 7)
+                        dec <- if (flagged) tr("Skewed", "Sesgado") else tr("OK", "OK")
+                        if (flagged) nonnormal_count <- nonnormal_count + 1L
+                    } else {
+                        sw <- if (length(x) >= 3 && length(x) <= 5000)
+                            tryCatch(shapiro.test(x), error=function(e) NULL)
+                        else NULL
+                        W_val <- if (!is.null(sw)) sw$statistic[["W"]] else NA_real_
+                        p_val <- if (!is.null(sw)) sw$p.value            else NA_real_
+                        dec <- if (is.na(p_val)) tr("–","–")
+                               else if (p_val < .05) tr("Non-normal", "No normal")
+                               else tr("Normal", "Normal")
+                        if (!is.na(p_val) && p_val < .05) nonnormal_count <- nonnormal_count + 1L
+                    }
                     norm_tab$setRow(rowNo = j, values = list(
                         item     = names(df)[j],
                         W        = W_val,
@@ -217,6 +268,12 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                         kurtosis = ku,
                         decision = dec))
                 }
+                if (is_ordinal_scale)
+                    norm_tab$addFootnote(col = "W", rowNo = 1L, note = tr(
+                        "Shapiro-Wilk assumes a continuous variable; not computed for these ordinal (Likert-type) items, since it would mostly detect their own discreteness rather than a real distributional problem. Decision is based on skewness/kurtosis screening instead (|skew| > 2 or |kurt| > 7).",
+                        "Shapiro-Wilk asume una variable continua; no se calcula para estos ítems ordinales (tipo Likert), ya que detectaría mayormente su propia discreción en vez de un problema distribucional real. La decisión se basa en cambio en asimetría/curtosis (|asimetría| > 2 o |curtosis| > 7)."))
+            } else if (opt$normality && level == "dichotomous") {
+                self$results$normalityTable$setVisible(FALSE)
             }
 
             # ── 7. Item analysis (via psych::alpha) ───────────────────────────
@@ -486,9 +543,15 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                                else if (n_fact_assump <= 1L) tr("Met", "Cumplido")
                                else tr("Violated", "Violado")
 
-                norm_verdict <- if (!opt$normality) tr("N/A", "N/D")
+                norm_verdict <- if (!normality_applicable) tr("N/A", "N/D")
                                 else if (nonnormal_count > 0L) tr("Violated", "Violado")
                                 else tr("Met", "Cumplido")
+                norm_test_lbl <- if (!normality_applicable)
+                    tr("Not applicable (dichotomous)", "No aplica (dicotómico)")
+                else if (is_ordinal_scale)
+                    tr("Skewness/Kurtosis screening (items flagged)", "Cribado de asimetría/curtosis (ítems marcados)")
+                else
+                    tr("Shapiro-Wilk (items failing)", "Shapiro-Wilk (ítems que fallan)")
 
                 assum_rows <- list(
                     list(assumption = tr("Tau-equivalence", "Tau-equivalencia"),
@@ -504,7 +567,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                          p_value = NA,
                          verdict = uni_verdict),
                     list(assumption = tr("Normality of items", "Normalidad de ítems"),
-                         test = tr("Shapiro-Wilk (items failing)", "Shapiro-Wilk (ítems que fallan)"),
+                         test = norm_test_lbl,
                          statistic = .fl_clean_na(as.numeric(nonnormal_count)),
                          df = "",
                          p_value = NA,
@@ -516,7 +579,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
 
                 tau_bad  <- tau$available && !is.na(tau$p) && tau$p < .05
                 uni_bad  <- !is.na(n_fact_assump) && n_fact_assump > 1L
-                norm_bad <- opt$normality && nonnormal_count > 0L
+                norm_bad <- normality_applicable && nonnormal_count > 0L
 
                 note_html <- paste0(.fl_prose_open(),
                     "<p>", tr(
@@ -539,11 +602,14 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                            paste0("el análisis paralelo sugiere ", n_fact_assump, " factores. Un &alpha; global único mezcla dimensiones distintas en un solo número; vea el panel de Verificación de Dimensionalidad abajo para saber qué hacer al respecto.")))
                         else paste0("&#10003; ", tr("Parallel analysis supports a single underlying factor -- consistent with what a single overall &alpha; is meant to measure.",
                                                      "El análisis paralelo respalda un solo factor subyacente -- consistente con lo que un &alpha; global único pretende medir.")), "</p>",
-                    "<p>", if (norm_bad) paste0("&#9888; <b>", tr("Item normality violated", "Normalidad de ítems violada"), ":</b> ",
+                    "<p>", if (norm_bad && is_ordinal_scale) paste0("&#9888; <b>", tr("Item skew/kurtosis flagged", "Asimetría/curtosis de ítems marcada"), ":</b> ",
+                        tr(paste0(nonnormal_count, " item(s) exceed |skew| &gt; 2 or |kurtosis| &gt; 7 (see the Item Normality table below) -- a floor/ceiling effect on a Likert item, not a Shapiro-Wilk violation (which does not apply to discrete data). &alpha;'s standard-error formula still assumes approximate normality, so prefer Ordinal &alpha; or the bootstrap CI above."),
+                           paste0(nonnormal_count, " ítem(s) exceden |asimetría| &gt; 2 o |curtosis| &gt; 7 (vea la tabla de Normalidad de Ítems abajo) -- un efecto techo/piso en un ítem Likert, no una violación de Shapiro-Wilk (que no aplica a datos discretos). La fórmula del error estándar del &alpha; igual asume normalidad aproximada, así que prefiera el Alfa Ordinal o el IC por bootstrap de arriba.")))
+                        else if (norm_bad) paste0("&#9888; <b>", tr("Item normality violated", "Normalidad de ítems violada"), ":</b> ",
                         tr(paste0(nonnormal_count, " item(s) fail Shapiro-Wilk (see the Item Normality table below); &alpha;'s standard-error formula assumes multivariate normality, so treat its confidence interval as approximate and prefer Ordinal &alpha; or the bootstrap CI above."),
                            paste0(nonnormal_count, " ítem(s) fallan Shapiro-Wilk (vea la tabla de Normalidad de Ítems abajo); la fórmula del error estándar del &alpha; asume normalidad multivariada, así que trate su intervalo de confianza como aproximado y prefiera el Alfa Ordinal o el IC por bootstrap de arriba.")))
-                        else if (opt$normality) paste0("&#10003; ", tr("All items pass the normality check -- &alpha; is not at a distributional disadvantage here.",
-                                                                        "Todos los ítems pasan la prueba de normalidad -- el &alpha; no está en desventaja distribucional aquí."))
+                        else if (normality_applicable) paste0("&#10003; ", if (is_ordinal_scale) tr("All items pass the skewness/kurtosis screen -- &alpha; is not at a distributional disadvantage here.", "Todos los ítems pasan el cribado de asimetría/curtosis -- el &alpha; no está en desventaja distribucional aquí.") else tr("All items pass the normality check -- &alpha; is not at a distributional disadvantage here.", "Todos los ítems pasan la prueba de normalidad -- el &alpha; no está en desventaja distribucional aquí."))
+                        else if (opt$normality) tr("Not applicable to dichotomous items.", "No aplica a ítems dicotómicos.")
                         else tr("Normality testing is off (enable it in Item Analysis to check this).", "La prueba de normalidad está desactivada (actívela en Análisis de Ítems para revisar esto)."),
                     "</p>",
                     .fl_prose_close())
@@ -711,19 +777,27 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             self$results$discordanceNote$setContent(if (nzchar(discord_html)) .fl_prose(discord_html) else discord_html)
             if (!nzchar(discord_html)) self$results$discordanceNote$setVisible(FALSE)
 
-            normality_html <- if (opt$normality && k > 0L) {
+            normality_html <- if (normality_applicable && k > 0L) {
                 if (nonnormal_count > 0L) {
                     paste0("<p>&#9888; ",
-                           tr(paste0(nonnormal_count, " of ", k, " item(s) fail the Shapiro-Wilk normality test (p < .05). "),
-                              paste0(nonnormal_count, " de ", k, " ítem(s) fallan la prueba de normalidad de Shapiro-Wilk (p < .05). ")),
+                           if (is_ordinal_scale)
+                               tr(paste0(nonnormal_count, " of ", k, " item(s) exceed |skew| &gt; 2 or |kurtosis| &gt; 7 — a floor/ceiling effect, not a Shapiro-Wilk violation (not applicable to discrete Likert items). "),
+                                  paste0(nonnormal_count, " de ", k, " ítem(s) exceden |asimetría| &gt; 2 o |curtosis| &gt; 7 — un efecto techo/piso, no una violación de Shapiro-Wilk (no aplica a ítems Likert discretos). "))
+                           else
+                               tr(paste0(nonnormal_count, " of ", k, " item(s) fail the Shapiro-Wilk normality test (p < .05). "),
+                                  paste0(nonnormal_count, " de ", k, " ítem(s) fallan la prueba de normalidad de Shapiro-Wilk (p < .05). ")),
                            tr(paste0("Prefer ", if (!is.na(oa)) "Ordinal α" else "McDonald's ω",
                                      " over raw Cronbach's α for the primary estimate."),
                               paste0("Prefiera el ", if (!is.na(oa)) "Alfa Ordinal" else "Omega de McDonald",
                                      " sobre el Alfa de Cronbach bruto como estimación primaria.")),
                            "</p>")
                 } else {
-                    paste0("<p>&#10003; ", tr("All items pass the normality check — Cronbach's α is not at a distributional disadvantage here.",
-                                              "Todos los ítems pasan la prueba de normalidad — el Alfa de Cronbach no está en desventaja distribucional aquí."), "</p>")
+                    paste0("<p>&#10003; ", if (is_ordinal_scale)
+                               tr("All items pass the skewness/kurtosis screen — Cronbach's α is not at a distributional disadvantage here.",
+                                  "Todos los ítems pasan el cribado de asimetría/curtosis — el Alfa de Cronbach no está en desventaja distribucional aquí.")
+                           else
+                               tr("All items pass the normality check — Cronbach's α is not at a distributional disadvantage here.",
+                                  "Todos los ítems pasan la prueba de normalidad — el Alfa de Cronbach no está en desventaja distribucional aquí."), "</p>")
                 }
             } else ""
 

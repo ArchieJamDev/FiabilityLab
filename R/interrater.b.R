@@ -185,11 +185,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             is_nominal_data <- any(is_char)
 
             n_unique <- vapply(df, function(x) length(unique(x)), integer(1))
-            is_whole <- vapply(df, function(x) {
-                xn <- suppressWarnings(as.numeric(x))
-                !anyNA(xn) && all(abs(xn - round(xn)) < 1e-8)
-            }, logical(1))
-            is_ordinal_data <- !is_nominal_data && all(is_whole) && max(n_unique) <= 7L
+            is_ordinal_data <- !is_nominal_data && .fl_is_low_cardinality(df)
 
             level <- switch(opt$dataType,
                 auto       = if (is_nominal_data) "nominal" else if (is_ordinal_data) "ordinal" else "continuous",

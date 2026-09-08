@@ -132,6 +132,35 @@
 # `Table$setRow()` antes de guardarlo.
 .fl_clean_na <- function(x) if (is.na(x)) NA else x
 
+# ── Low-cardinality (ordinal-like) numeric detection ────────────────────────
+# EN: Shapiro-Wilk (and any continuous-normality test) assumes a genuinely
+# continuous variable; run on a discrete Likert item (4-7 whole-number
+# categories) it mostly detects the item's own discreteness/ties rather
+# than a real distributional problem, so a "Non-normal" verdict is close to
+# guaranteed regardless of the item's actual shape. This mirrors the same
+# whole-number + <=7-categories heuristic interRater already uses to
+# separate ordinal from continuous ratings, generalized here as a shared
+# helper so internalConsistency's own normality check can skip Shapiro-Wilk
+# on the same basis instead of running it unconditionally on every item.
+# ES: Shapiro-Wilk (o cualquier prueba de normalidad continua) asume una
+# variable genuinamente continua; aplicada a un ítem Likert discreto (4-7
+# categorías de números enteros) detecta mayormente la propia discreción/
+# empates del ítem en vez de un problema distribucional real, así que un
+# veredicto "No normal" está casi garantizado sin importar la forma real
+# del ítem. Esto refleja la misma heurística de números enteros + <=7
+# categorías que interRater ya usa para separar calificaciones ordinales de
+# continuas, generalizada aquí como ayudante compartido para que la propia
+# verificación de normalidad de internalConsistency pueda omitir Shapiro-
+# Wilk con el mismo criterio en vez de aplicarlo sin condición a cada ítem.
+.fl_is_low_cardinality <- function(df, max_categories = 7L) {
+    is_whole <- vapply(df, function(x) {
+        xn <- suppressWarnings(as.numeric(x))
+        !anyNA(xn) && all(abs(xn - round(xn)) < 1e-8)
+    }, logical(1))
+    n_unique <- vapply(df, function(x) length(unique(x)), integer(1))
+    all(is_whole) && max(n_unique) <= max_categories
+}
+
 .fl_bootstrap <- function(df, stat_fn, B = 1000L) {
     n <- nrow(df)
     vals <- numeric(B)
