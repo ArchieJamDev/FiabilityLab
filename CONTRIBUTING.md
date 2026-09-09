@@ -1,7 +1,8 @@
 # Contributing to FiabilityLab
 
 Thank you for contributing to FiabilityLab, a Lab-suite Jamovi module for
-measurement reliability and inter-rater agreement. Contributions are welcome when
+measurement reliability, inter-rater agreement, SEM-based reliability and
+measurement invariance. Contributions are welcome when
 they improve scientific accuracy, reproducibility, education, accessibility,
 maintainability or Jamovi compatibility.
 

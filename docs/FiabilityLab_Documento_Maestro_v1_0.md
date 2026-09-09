@@ -103,18 +103,18 @@ cada uno se cubren los niveles de medida aplicables. Cada módulo incluye:
 
 | Módulo | Estado | Contenido |
 |---|---|---|
-| **Internal Consistency** — pestaña Clásica (CTT) | Implementado | Alfa, Alfa ordinal, Omega, Omega jerárquico (bifactor), GLB, Split-half, Guttman λ, KR-20/21, análisis de ítems |
-| **Internal Consistency** — pestaña Avanzada (SEM) | Fase 3 | AVE, Confiabilidad Compuesta (CR), Coeficiente H (Hancock & Mueller), Omega de 2do orden/jerárquico, HTMT — vía `lavaan`/`semTools` |
-| **Inter-Rater Agreement** | Fase 1 (prioridad actual) | Kappa (Cohen/Fleiss), Gwet AC1/AC2, ICC (formas 1,1 / 2,1 / 3,1), Alfa de Krippendorff, W de Kendall |
-| **Temporal Stability** | Fase 2 | Correlación test-retest, ICC longitudinal, límites de acuerdo (Bland-Altman), Error Estándar de Medición (SEM), Índice de Cambio Confiable (RCI) |
-| **Classification Consistency** | Fase 3 | Consistencia y precisión de decisiones de corte (Livingston-Lewis, Subkoviak) |
+| **Internal Consistency** (CTT) | Implementado | Alfa, Alfa ordinal, Omega, Omega jerárquico (bifactor), GLB, Split-half, Guttman λ, KR-20/21, análisis de ítems |
+| **Advanced Reliability (SEM)** | Implementado | Análisis de menú propio (`advancedReliability`), no una pestaña dentro de Internal Consistency como se planeó originalmente. AVE, Confiabilidad Compuesta (CR), Coeficiente H (Hancock & Mueller), Omega de 2do orden/jerárquico, HTMT — vía `lavaan`/`semTools` |
+| **Measurement Invariance** | Implementado | Análisis de menú propio (`measurementInvariance`). Secuencia configural/métrica/escalar/estricta multi-grupo, criterios LRT y ΔCFI, sobre el mismo modelo de medida confirmatorio que Advanced Reliability |
+| **Inter-Rater Agreement** | Implementado | Kappa (Cohen/Fleiss), Gwet AC1/AC2, ICC (formas 1,1 / 2,1 / 3,1), Alfa de Krippendorff, W de Kendall |
+| **Temporal Stability** | Fase 2 (no iniciado) | Correlación test-retest, ICC longitudinal, límites de acuerdo (Bland-Altman), Error Estándar de Medición (SEM), Índice de Cambio Confiable (RCI) |
+| **Classification Consistency** | Fase 4 (exploratorio, sin fecha) | Consistencia y precisión de decisiones de corte (Livingston-Lewis, Subkoviak) |
 | **Generalizability Theory** | Fase 4 (exploratorio, sin fecha) | Descomposición de varianza G-study/D-study |
 | **Fiability Library** | Crece con cada fase | Glosario metodológico completo |
 | **Bibliography** | Crece con cada fase | Base de citas por tema |
 
-Ejemplos de módulos ya implementados (ver README.md para el listado
-completo y siempre actualizado):
-- Consistencia interna clásica (Alfa, Omega, GLB, split-half, KR-20/21)
+Ver `ARCHITECTURE.md` para el mapa completo y siempre actualizado de
+módulos, su estado y su arquitectura interna.
 
 ---
 
@@ -178,14 +178,18 @@ solo a confiar en el número que produce el software.
 
 ## 7. Versión del sistema
 
-**v1.0 — estado actual (2026):**
-- Internal Consistency (pestaña Clásica): implementado.
-- Inter-Rater Agreement: en desarrollo — Fase 1, prioridad actual.
+**v1.0 — estado actual (2026-09):**
+- Internal Consistency: implementado.
+- Inter-Rater Agreement: implementado.
+- Advanced Reliability (SEM): implementado, como análisis de menú propio
+  (`advancedReliability`), no como pestaña dentro de Internal Consistency.
+- Measurement Invariance: implementado, como análisis de menú propio
+  (`measurementInvariance`).
 - Fiability Library / Bibliography: esqueleto mínimo, en expansión activa
   siguiendo el contrato de admisión.
-- Temporal Stability, Internal Consistency Avanzada (SEM), Classification
-  Consistency: planificados, no iniciados (Fases 2–3).
-- Generalizability Theory: exploratorio, sin fecha comprometida (Fase 4).
+- Temporal Stability: planificado, no iniciado (Fase 2).
+- Classification Consistency, Generalizability Theory: exploratorios, sin
+  fecha comprometida (Fase 4).
 
 Cada nueva fase debe actualizar este documento y `ARCHITECTURE.md` como
 parte de su definición de "hecho" — no al final, sino antes de escribir el

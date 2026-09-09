@@ -45,11 +45,17 @@ FiabilityLab/
 ├── R/                         # generated headers and analysis engines
 ├── jamovi/                    # .u.yaml, .a.yaml and .r.yaml definitions
 ├── inst/                      # package resources and translations
+├── data/, data-raw/           # bundled example dataset(s) and the scripts that produce them
+├── docs/                      # project documentation, incl. the Master Document
+├── tests/                     # testthat suite (see section 12)
 ├── build/                     # generated, disposable build artifacts
 ├── DESCRIPTION               # R/Jamovi package metadata
 ├── NAMESPACE                 # package exports and imports
+├── LICENSE
 ├── *.jmo                     # distributable Jamovi module
 ├── Compilar_FiabilityLab.sh  # local build entry point
+├── ARCHITECTURE.md           # full architecture reference (see there for the complete tree,
+│                              # including planned-but-not-yet-created directories)
 ├── DEVELOPER_GUIDE.md
 ├── CONTRIBUTING.md
 └── CODE_STYLE.md

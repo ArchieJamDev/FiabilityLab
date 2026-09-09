@@ -191,6 +191,8 @@ el mecanismo diagnóstico central de FiabilityLab.
 
 # 4. Directory Structure
 
+Current, as of this writing:
+
 ```
 FiabilityLab/
 
@@ -200,7 +202,7 @@ FiabilityLab/
 
 ├── jamovi/
 
-│   └── assets/
+│   └── assets/        # module icon (fiabilitylab-icon.png/.svg)
 
 ├── inst/
 
@@ -214,11 +216,9 @@ FiabilityLab/
 
 ├── tests/
 
-├── validation/
+├── build/
 
-├── .github/
-
-├── README.md
+├── .github/           # CI workflow (jamovi-check.yml)
 
 ├── LICENSE
 
@@ -230,11 +230,31 @@ FiabilityLab/
 
 ├── ARCHITECTURE.md
 
+├── README.md
+
 ├── NEWS.md
+
+├── CITATION.cff
+
+├── .zenodo.json
 
 ├── DESCRIPTION
 
 └── NAMESPACE
+```
+
+Planned, not yet created (tracked here so the gap is explicit rather than
+silently assumed done):
+
+```
+└── validation/      # Monte Carlo validation scripts (bias, coverage,
+                     # robustness under realistic, not only asymptotic,
+                     # conditions) -- deliberately deferred: no such study
+                     # has been run for FiabilityLab's own estimators yet.
+                     # Will be populated once the planned validation
+                     # article's simulations exist; creating this folder
+                     # with placeholder or fabricated results before then
+                     # would violate section 13's scientific-integrity rule.
 ```
 
 -------------------------------------------------------------------------------
@@ -247,8 +267,10 @@ Implements every statistical algorithm.
 
 ### jamovi/
 
-Defines analysis options and user interfaces. Also holds `jamovi/assets/`,
-the module's own icon and the bundled example dataset.
+Defines analysis options and user interfaces. `jamovi/assets/` holds the
+module icon (`fiabilitylab-icon.png`, generated from the committed
+`fiabilitylab-icon.svg` source), referenced from `jamovi/0000.yaml`'s
+top-level `icon:` field.
 
 ### inst/
 
@@ -270,12 +292,12 @@ Contains project documentation, including the Master Document.
 
 Stores unit tests (`testthat`) for every estimator.
 
-### validation/
+### validation/ (planned)
 
-Stores Monte Carlo validation scripts that check bias, coverage, and
+Will store Monte Carlo validation scripts that check bias, coverage, and
 robustness of every reliability estimator under realistic — not only
 asymptotic — conditions (non-normal item distributions, missingness,
-small samples, unbalanced rater designs).
+small samples, unbalanced rater designs). Not yet created.
 
 -------------------------------------------------------------------------------
 
@@ -327,10 +349,10 @@ Defines
 
 • interface organization, including collapsible option sections within a
   single analysis (e.g., Internal Consistency's Plot Style box) and, when
-  a feature's own options grow too large for that (e.g., defining up to 5
-  named factors for confirmatory analysis), a separate menu analysis
-  instead (Advanced Reliability (SEM), split out from an originally-planned
-  embedded tab)
+  a feature's own options grow too large for that (e.g., defining a
+  dynamic, unlimited number of named factors for confirmatory analysis), a
+  separate menu analysis instead (Advanced Reliability (SEM), split out
+  from an originally-planned embedded tab)
 
 -------------------------------------------------------------------------------
 
@@ -757,21 +779,25 @@ agreement, Standard Error of Measurement (SEM), Reliable Change Index
 (RCI, Jacobson-Truax) — plus coefficient discordance panels extended to
 Internal Consistency and Inter-Rater.
 
-**Phase 3 — Advanced Reliability (SEM) + Classification Consistency**
+**Phase 3 — Advanced Reliability (SEM) + Measurement Invariance**
 Implemented as `advancedReliability`, its own FiabilityLab menu analysis
 (revised from the original plan of an embedded tab inside Internal
-Consistency, once a point-and-click factor-definition UI with up to 5
-factors made a nested collapse box too cluttered): AVE, Composite
-Reliability (CR), Hancock & Mueller's H coefficient, omega generalized to
-second-order/hierarchical factor structures, HTMT, and modification-index
-diagnostics (interpreted through theory, never applied automatically,
-per MacCallum, Roznowski & Necowitz, 1992) — fit via `lavaan`/`semTools`
-once the user specifies a factor structure (items→subscales,
-subscales→second-order factor). Alongside it, Classification/Decision
-Consistency (Livingston-Lewis, Subkoviak) for cut-score-based instruments.
+Consistency, once a point-and-click factor-definition UI with a dynamic,
+unlimited number of named factors made a nested collapse box too
+cluttered): AVE, Composite Reliability (CR), Hancock & Mueller's H
+coefficient, omega generalized to second-order/hierarchical factor
+structures, HTMT, and modification-index diagnostics (interpreted through
+theory, never applied automatically, per MacCallum, Roznowski & Necowitz,
+1992) — fit via `lavaan`/`semTools` once the user specifies a factor
+structure (items→subscales, subscales→second-order factor). Alongside it,
+`measurementInvariance` extends the same confirmatory measurement model to
+multi-group configural/metric/scalar/strict invariance testing (LRT and
+ΔCFI criteria).
 
 **Phase 4 — Generalizability Theory (exploratory, no committed date)**
-G-study/D-study variance-components decomposition.
+G-study/D-study variance-components decomposition. Classification/Decision
+Consistency (Livingston-Lewis, Subkoviak) for cut-score-based instruments
+remains a candidate for a future phase; it has not been implemented.
 
 Every future module or tab should reuse the same architecture and honor
 the Library/Bibliography admission contract.
@@ -786,8 +812,9 @@ Advanced Reliability (SEM) es la misma pregunta de investigación que
 Internal Consistency (¿qué tan confiable es este instrumento?) resuelta con
 un motor distinto (modelo de medida confirmatorio en vez de estadística
 directa sobre datos crudos), pero vive como su propio análisis de menú:
-definir hasta 5 factores nombrados con su propia lista de ítems no cabía
-bien como una sección más dentro de las opciones de Internal Consistency.
+definir un número dinámico e ilimitado de factores nombrados, cada uno con
+su propia lista de ítems, no cabía bien como una sección más dentro de las
+opciones de Internal Consistency.
 
 -------------------------------------------------------------------------------
 
