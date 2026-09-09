@@ -56,24 +56,61 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
         # entre versiones) en vez de parsear la tabla de comparación
         # impresa de lavaan::lavTestLRT(), cuyos nombres de columna han
         # cambiado entre versiones de lavaan.
-        .tau_equivalence_test = function(df) {
+        # EN: item_is_ordinal picks the estimator, matching Advanced
+        # Reliability's own approach: WLSMV on polychoric/tetrachoric
+        # correlations for ordinal or dichotomous items (declared via
+        # ordered=), plain ML for genuinely continuous ones. Earlier
+        # versions of this test always used ML regardless of the level
+        # this module had itself just detected -- a real inconsistency
+        # for a module whose stated design principle is measurement-
+        # level-aware checks (the same fix already applied to this
+        # module's own normality check, and to Advanced Reliability's CFA).
+        # ES: item_is_ordinal elige el estimador, igual que el propio
+        # enfoque de Advanced Reliability: WLSMV sobre correlaciones
+        # policóricas/tetracóricas para ítems ordinales o dicotómicos
+        # (declarados vía ordered=), ML simple para los genuinamente
+        # continuos. Versiones anteriores de esta prueba siempre usaban ML
+        # sin importar el nivel que este mismo módulo acababa de detectar
+        # -- una inconsistencia real para un módulo cuyo principio de
+        # diseño declarado es verificaciones conscientes del nivel de
+        # medida (el mismo arreglo ya aplicado a la propia prueba de
+        # normalidad de este módulo, y al AFC de Advanced Reliability).
+        .tau_equivalence_test = function(df, item_is_ordinal = FALSE) {
             if (!requireNamespace("lavaan", quietly = TRUE))
                 return(list(stat = NA_real_, df = NA_integer_, p = NA_real_, available = FALSE))
             items <- names(df)
             syn_c <- paste0("f =~ ", paste(items, collapse = " + "))
             syn_t <- paste0("f =~ ", paste0("a*", items, collapse = " + "))
-            fit_c <- tryCatch(lavaan::cfa(syn_c, data = df, std.lv = TRUE), error = function(e) NULL)
-            fit_t <- tryCatch(lavaan::cfa(syn_t, data = df, std.lv = TRUE), error = function(e) NULL)
+            fit_args_c <- list(model = syn_c, data = df, std.lv = TRUE)
+            fit_args_t <- list(model = syn_t, data = df, std.lv = TRUE)
+            if (item_is_ordinal) {
+                fit_args_c$ordered <- items; fit_args_c$estimator <- "WLSMV"
+                fit_args_t$ordered <- items; fit_args_t$estimator <- "WLSMV"
+            }
+            fit_c <- tryCatch(do.call(lavaan::cfa, fit_args_c), error = function(e) NULL)
+            fit_t <- tryCatch(do.call(lavaan::cfa, fit_args_t), error = function(e) NULL)
             ok <- function(f) !is.null(f) && isTRUE(tryCatch(lavaan::lavInspect(f, "converged"), error = function(e) FALSE))
             if (!ok(fit_c) || !ok(fit_t))
                 return(list(stat = NA_real_, df = NA_integer_, p = NA_real_, available = TRUE))
-            fm_c <- lavaan::fitMeasures(fit_c, c("chisq", "df"))
-            fm_t <- lavaan::fitMeasures(fit_t, c("chisq", "df"))
-            d_chisq <- unname(fm_t["chisq"] - fm_c["chisq"])
-            d_df    <- unname(fm_t["df"]    - fm_c["df"])
+            # lavTestLRT() automatically applies the correct scaled
+            # chi-square-difference correction under WLSMV (or MLR),
+            # rather than hand-differencing chisq/df -- see
+            # advancedreliability.b.R's own model-comparison LRT for the
+            # same reasoning.
+            lrt_out <- tryCatch(lavaan::lavTestLRT(fit_c, fit_t), error = function(e) NULL)
+            if (!is.null(lrt_out) && nrow(lrt_out) >= 2L && all(c("Chisq diff", "Df diff", "Pr(>Chisq)") %in% names(lrt_out))) {
+                d_chisq <- lrt_out[["Chisq diff"]][2]
+                d_df    <- lrt_out[["Df diff"]][2]
+                p       <- lrt_out[["Pr(>Chisq)"]][2]
+            } else {
+                fm_c <- lavaan::fitMeasures(fit_c, c("chisq", "df"))
+                fm_t <- lavaan::fitMeasures(fit_t, c("chisq", "df"))
+                d_chisq <- unname(fm_t["chisq"] - fm_c["chisq"])
+                d_df    <- unname(fm_t["df"]    - fm_c["df"])
+                p <- if (is.finite(d_chisq) && is.finite(d_df) && d_df > 0) stats::pchisq(d_chisq, d_df, lower.tail = FALSE) else NA_real_
+            }
             if (!is.finite(d_chisq) || !is.finite(d_df) || d_df <= 0)
                 return(list(stat = NA_real_, df = NA_integer_, p = NA_real_, available = TRUE))
-            p <- stats::pchisq(d_chisq, d_df, lower.tail = FALSE)
             list(stat = d_chisq, df = d_df, p = p, available = TRUE)
         },
 
@@ -194,6 +231,10 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                    "<b>Pocas opciones de respuesta (\u2264 4).</b> Considere Alfa Ordinal; el Alfa estándar puede subestimar la confiabilidad.")
             else ""
             samp_html <- .fl_prose(
+                "<p style='font-size:0.85em;color:#666;'>", tr(
+                    "The n and subject-to-item thresholds below are rule-of-thumb screening guidance, not universal statistical criteria -- treat them as prompts to interpret estimates more cautiously, not as pass/fail cutoffs.",
+                    "Los umbrales de n y de razón sujetos/ítems de abajo son orientación de cribado basada en reglas empíricas, no criterios estadísticos universales -- trátelos como una señal para interpretar las estimaciones con más cautela, no como puntos de corte de aprobado/reprobado."),
+                "</p>",
                 "<ul style='line-height:1;'>",
                 "<li>", n_warn, "</li>",
                 "<li>", ratio_warn, "</li>",
@@ -350,11 +391,19 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             # ── 8a. Cronbach's Alpha ──────────────────────────────────────────
             if (opt$alpha) {
                 a_val <- if (!is.null(alpha_obj)) alpha_obj$total$raw_alpha else .calc_alpha(df)
+                alpha_applicability <- if (level == "dichotomous")
+                    tr("Binary (0/1) items; mathematically equivalent to KR-20 for this case",
+                       "Ítems binarios (0/1); matemáticamente equivalente al KR-20 en este caso")
+                    else if (is_ordinal_scale)
+                    tr("Ordinal/Likert items; assumes τ-equivalence -- see the Reliability Assumptions Check below",
+                       "Ítems ordinales/Likert; asume equivalencia-τ -- vea la Verificación de Supuestos de Confiabilidad abajo")
+                    else
+                    tr("Polytomous, continuous items; assumes τ-equivalence & normality",
+                       "Ítems politómicos/continuos; asume equivalencia-τ y normalidad")
                 add_stat(
                     tr("Cronbach's \u03B1",          "Alfa de Cronbach (\u03B1)"),
                     a_val, a_val,
-                    tr("Polytomous, continuous items; assumes \u03C4-equivalence & normality",
-                       "Ítems politómicos/continuos; asume equivalencia-\u03C4 y normalidad"),
+                    alpha_applicability,
                     function(d) .calc_alpha(d))
             }
 
@@ -415,15 +464,31 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             }
 
             if (opt$omegaHierarchical && !is.null(omega_obj)) {
-                oh <- omega_obj$omega_h
-                cond_h <- if (n_omega_factors >= 2L)
-                    tr("Multidimensional scales; proportion of variance due to g-factor",
-                       "Escalas multidimensionales; proporción de varianza del factor g")
-                else
-                    tr("Parallel analysis suggests 1 factor: this collapses onto ω total here",
-                       "El análisis paralelo sugiere 1 factor: esto colapsa sobre el ω total aquí")
+                # EN: With a single underlying factor, omega hierarchical
+                # isn't a distinct quantity from omega total -- it's not
+                # conceptually meaningful (psych::omega() itself warns
+                # "Omega_h ... not meaningful with one factor"). Showing a
+                # number here would present it as if it were real evidence
+                # of a general-factor structure, when there's none to speak
+                # of; N/A is the honest value.
+                # ES: Con un único factor subyacente, el omega jerárquico no
+                # es una cantidad distinta del omega total -- no es
+                # conceptualmente significativo (el propio psych::omega()
+                # advierte "Omega_h ... not meaningful with one factor").
+                # Mostrar un número aquí lo presentaría como si fuera
+                # evidencia real de una estructura de factor general, cuando
+                # no hay ninguna; N/D es el valor honesto.
+                if (n_omega_factors >= 2L) {
+                    oh <- omega_obj$omega_h
+                    cond_h <- tr("Multidimensional scales; proportion of variance due to g-factor",
+                                 "Escalas multidimensionales; proporción de varianza del factor g")
+                } else {
+                    oh <- NA_real_
+                    cond_h <- tr("N/A -- parallel analysis suggests 1 factor, so this is not conceptually distinct from ω total",
+                                 "N/D -- el análisis paralelo sugiere 1 factor, así que esto no es conceptualmente distinto del ω total")
+                }
                 add_stat(
-                    tr("McDonald's \u03C9 hierarchical", "Omega Jerárquico (\u03C9\u2095)"),
+                    tr("McDonald\'s ω hierarchical", "Omega Jerárquico (ωₕ)"),
                     oh, oh, cond_h)
             }
 
@@ -525,7 +590,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             # hace el panel de discordancia de arriba) permite que el
             # reporte diga con certeza si el α es confiable aquí.
             if (opt$alpha && isTRUE(opt$checkReliabilityAssumptions) && k >= 3L) {
-                tau <- private$.tau_equivalence_test(df)
+                tau <- private$.tau_equivalence_test(df, item_is_ordinal = is_ordinal_scale || level == "dichotomous")
 
                 verdict <- function(p) {
                     if (is.null(p) || is.na(p)) tr("N/A", "N/D")
@@ -574,8 +639,12 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 uni_bad  <- !is.na(n_fact_assump) && n_fact_assump > 1L
                 norm_bad <- normality_applicable && nonnormal_count > 0L
 
+                tau_estim_p <- if (is_ordinal_scale || level == "dichotomous")
+                    tr("The congeneric/tau-equivalent models below were fit with WLSMV on polychoric/tetrachoric correlations, matching how these items were detected/set (ordinal or dichotomous). ",
+                       "Los modelos congenérico/tau-equivalente de abajo se ajustaron con WLSMV sobre correlaciones policóricas/tetracóricas, en línea con cómo se detectaron/fijaron estos ítems (ordinales o dicotómicos). ")
+                    else ""
                 note_html <- paste0(.fl_prose_open(),
-                    "<p>", tr(
+                    "<p>", tau_estim_p, tr(
                         "Cronbach's &alpha; is the most commonly reported reliability coefficient and also the most assumption-laden: it equals the true reliability only when items are tau-equivalent (equal true-score loadings on a single common factor) (Cronbach, 1951; Zumbo, Gadermann &amp; Zeisser, 2007). Unlike McDonald's &omega;, GLB, or the Guttman &lambda; family above (none of which require tau-equivalence), &alpha; is biased -- usually downward -- whenever this assumption fails.",
                         "El Alfa de Cronbach es el coeficiente de confiabilidad más reportado y también el más cargado de supuestos: equivale a la confiabilidad verdadera solo cuando los ítems son tau-equivalentes (iguales cargas de puntaje verdadero sobre un único factor común) (Cronbach, 1951; Zumbo, Gadermann &amp; Zeisser, 2007). A diferencia del Omega de McDonald, el GLB o la familia &lambda; de Guttman de arriba (ninguno de los cuales requiere tau-equivalencia), el &alpha; está sesgado -- usualmente a la baja -- cuando este supuesto falla."
                     ), "</p>",
@@ -630,6 +699,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                     bt_tab$setRow(rowNo = i, values = list(
                         coefficient = r$name,
                         estimate    = r$val,
+                        n_boot      = B_i,
                         ci_lower    = ci$lo,
                         ci_upper    = ci$hi,
                         se_boot     = ci$se))
@@ -737,12 +807,12 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                            else "",
                            ")")
                 }, character(1))
-                paste0("<p>&#9888; <b>", tr("Weak items detected", "Ítems débiles detectados"), ":</b> ",
-                       tr("the following item(s) fall below the r(item-total) ≥ .30 threshold and are actively pulling reliability down: ",
-                          "el/los siguiente(s) ítem(s) está(n) por debajo del umbral r(ítem-total) ≥ .30 y está(n) reduciendo activamente la confiabilidad: "),
+                paste0("<p>&#9888; <b>", tr("Weak item-total correlation(s)", "Correlación(es) ítem-total débil(es)"), ":</b> ",
+                       tr("the following item(s) fall below the r(item-total) &ge; .30 screening threshold: ",
+                          "el/los siguiente(s) ítem(s) está(n) por debajo del umbral de cribado r(ítem-total) &ge; .30: "),
                        paste(items_txt, collapse = "; "), ". ",
-                       tr("Consider revising or removing them — the item-analysis table above already shows α improves if each is dropped.",
-                          "Considere revisarlos o eliminarlos — la tabla de análisis de ítems arriba ya muestra que α mejora al eliminar cada uno."),
+                       tr("This is a diagnostic flag, not a retention rule: a low item-total correlation can come from reverse-scoring that was never recoded, multidimensionality, deliberately heterogeneous content, or an item that genuinely doesn't function as intended. Inspect the item's content and scoring direction, and consider its theoretical role in the construct, before deciding to revise, recode, or remove it — the item-analysis table above shows &alpha; if each item were dropped only as one input to that judgment, not as the criterion itself.",
+                          "Esta es una alerta diagnóstica, no una regla de retención: una correlación ítem-total baja puede deberse a una recodificación inversa que nunca se aplicó, multidimensionalidad, contenido deliberadamente heterogéneo, o un ítem que genuinamente no funciona como se pretendía. Inspeccione el contenido y la dirección de puntuación del ítem, y considere su rol teórico en el constructo, antes de decidir revisarlo, recodificarlo o eliminarlo — el α si se elimina cada ítem en la tabla de análisis de ítems de arriba es solo un insumo para ese juicio, no el criterio en sí mismo."),
                        "</p>")
             } else {
                 paste0("<p>&#10003; ", tr("No items fall below the r(item-total) ≥ .30 threshold.",
@@ -800,8 +870,8 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             action_items <- character(0)
             if (length(weak_idx) > 0L)
                 action_items <- c(action_items, tr(
-                    paste0("Review or remove: ", paste(names(df)[weak_idx], collapse = ", "), "."),
-                    paste0("Revisar o eliminar: ", paste(names(df)[weak_idx], collapse = ", "), ".")))
+                    paste0("Inspect the content, scoring direction, and theoretical role of: ", paste(names(df)[weak_idx], collapse = ", "), " -- only revise or remove after that substantive review."),
+                    paste0("Inspeccione el contenido, la dirección de puntuación y el rol teórico de: ", paste(names(df)[weak_idx], collapse = ", "), " -- revise o elimine solo después de esa revisión sustantiva.")))
             if (!is.na(best_val) && !is.na(ot) && abs(best_val - ot) > .04)
                 action_items <- c(action_items, tr("Report McDonald's ω as the primary coefficient, not α.",
                                                     "Reporte el Omega de McDonald como coeficiente primario, no el α."))

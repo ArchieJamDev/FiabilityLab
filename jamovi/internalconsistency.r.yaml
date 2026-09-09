@@ -67,6 +67,9 @@ items:
         title: Boot SE
         type: number
         format: zto,digits=3
+      - name: n_boot
+        title: Replicates Used
+        type: integer
 
   - name: reliabilityAssumptionsTable
     type: Table

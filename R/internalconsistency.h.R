@@ -321,7 +321,11 @@ internalConsistencyResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
                         `name`="se_boot", 
                         `title`="Boot SE", 
                         `type`="number", 
-                        `format`="zto,digits=3"))))
+                        `format`="zto,digits=3"),
+                    list(
+                        `name`="n_boot", 
+                        `title`="Replicates Used", 
+                        `type`="integer"))))
             self$add(jmvcore::Table$new(
                 options=options,
                 name="reliabilityAssumptionsTable",
