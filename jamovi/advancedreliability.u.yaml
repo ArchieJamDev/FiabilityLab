@@ -69,6 +69,13 @@ children:
         label: Missing data
         enable: (itemType != ordinal && estimator != wlsmv)
   - type: CollapseBox
+    label: Exploratory Dimensionality
+    collapsed: true
+    children:
+      - type: CheckBox
+        name: showParallelAnalysis
+        label: Show exploratory dimensionality (parallel analysis)
+  - type: CollapseBox
     label: Diagnostic Plot
     collapsed: true
     children:

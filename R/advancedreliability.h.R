@@ -12,6 +12,7 @@ advancedReliabilityOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
             missingData = "listwise",
             factors = list(
                 list(label="Factor 1", vars=list())),
+            showParallelAnalysis = TRUE,
             showPlots = TRUE,
             plotStyle = "gray",
             reportLang = "en", ...) {
@@ -70,6 +71,10 @@ advancedReliabilityOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
                                 "ordinal"),
                             permitted=list(
                                 "numeric")))))
+            private$..showParallelAnalysis <- jmvcore::OptionBool$new(
+                "showParallelAnalysis",
+                showParallelAnalysis,
+                default=TRUE)
             private$..showPlots <- jmvcore::OptionBool$new(
                 "showPlots",
                 showPlots,
@@ -98,6 +103,7 @@ advancedReliabilityOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
             self$.addOption(private$..estimator)
             self$.addOption(private$..missingData)
             self$.addOption(private$..factors)
+            self$.addOption(private$..showParallelAnalysis)
             self$.addOption(private$..showPlots)
             self$.addOption(private$..plotStyle)
             self$.addOption(private$..reportLang)
@@ -108,6 +114,7 @@ advancedReliabilityOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
         estimator = function() private$..estimator$value,
         missingData = function() private$..missingData$value,
         factors = function() private$..factors$value,
+        showParallelAnalysis = function() private$..showParallelAnalysis$value,
         showPlots = function() private$..showPlots$value,
         plotStyle = function() private$..plotStyle$value,
         reportLang = function() private$..reportLang$value),
@@ -117,6 +124,7 @@ advancedReliabilityOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
         ..estimator = NA,
         ..missingData = NA,
         ..factors = NA,
+        ..showParallelAnalysis = NA,
         ..showPlots = NA,
         ..plotStyle = NA,
         ..reportLang = NA)
@@ -126,6 +134,10 @@ advancedReliabilityResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
     "advancedReliabilityResults",
     inherit = jmvcore::Group,
     active = list(
+        parallelAnalysisTable = function() private$.items[["parallelAnalysisTable"]],
+        parallelAnalysisNote = function() private$.items[["parallelAnalysisNote"]],
+        plotParallelAnalysis = function() private$.items[["plotParallelAnalysis"]],
+        plotParallelAnalysisNote = function() private$.items[["plotParallelAnalysisNote"]],
         fitTable = function() private$.items[["fitTable"]],
         fitNote = function() private$.items[["fitNote"]],
         solutionDiagnosticsTable = function() private$.items[["solutionDiagnosticsTable"]],
@@ -153,6 +165,43 @@ advancedReliabilityResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
                 options=options,
                 name="",
                 title="Advanced Reliability (SEM)")
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="parallelAnalysisTable",
+                title="Exploratory Dimensionality: Parallel Analysis",
+                visible="(showParallelAnalysis)",
+                rows=0,
+                columns=list(
+                    list(
+                        `name`="suggested", 
+                        `title`="Factors Suggested", 
+                        `type`="integer"),
+                    list(
+                        `name`="specified", 
+                        `title`="Factors Specified in This Model", 
+                        `type`="integer"),
+                    list(
+                        `name`="verdict", 
+                        `title`="Verdict", 
+                        `type`="text"))))
+            self$add(jmvcore::Html$new(
+                options=options,
+                name="parallelAnalysisNote",
+                title="Parallel Analysis \u2014 What It Means",
+                visible="(showParallelAnalysis)"))
+            self$add(jmvcore::Image$new(
+                options=options,
+                name="plotParallelAnalysis",
+                title="Parallel Analysis Scree Plot",
+                width=600,
+                height=350,
+                renderFun=".plotParallelAnalysis",
+                visible="(showParallelAnalysis)"))
+            self$add(jmvcore::Html$new(
+                options=options,
+                name="plotParallelAnalysisNote",
+                title="Parallel Analysis Scree Plot \u2014 What It Means",
+                visible="(showParallelAnalysis)"))
             self$add(jmvcore::Table$new(
                 options=options,
                 name="fitTable",
@@ -492,11 +541,16 @@ advancedReliabilityBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
 #' @param estimator .
 #' @param missingData .
 #' @param factors .
+#' @param showParallelAnalysis .
 #' @param showPlots .
 #' @param plotStyle .
 #' @param reportLang .
 #' @return A results object containing:
 #' \tabular{llllll}{
+#'   \code{results$parallelAnalysisTable} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$parallelAnalysisNote} \tab \tab \tab \tab \tab a html \cr
+#'   \code{results$plotParallelAnalysis} \tab \tab \tab \tab \tab an image \cr
+#'   \code{results$plotParallelAnalysisNote} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$fitTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$fitNote} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$solutionDiagnosticsTable} \tab \tab \tab \tab \tab a table \cr
@@ -521,9 +575,9 @@ advancedReliabilityBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
 #'
 #' Tables can be converted to data frames with \code{asDF} or \code{\link{as.data.frame}}. For example:
 #'
-#' \code{results$fitTable$asDF}
+#' \code{results$parallelAnalysisTable$asDF}
 #'
-#' \code{as.data.frame(results$fitTable)}
+#' \code{as.data.frame(results$parallelAnalysisTable)}
 #'
 #' @export
 advancedReliability <- function(
@@ -534,6 +588,7 @@ advancedReliability <- function(
     missingData = "listwise",
     factors = list(
                 list(label="Factor 1", vars=list())),
+    showParallelAnalysis = TRUE,
     showPlots = TRUE,
     plotStyle = "gray",
     reportLang = "en") {
@@ -552,6 +607,7 @@ advancedReliability <- function(
         estimator = estimator,
         missingData = missingData,
         factors = factors,
+        showParallelAnalysis = showParallelAnalysis,
         showPlots = showPlots,
         plotStyle = plotStyle,
         reportLang = reportLang)

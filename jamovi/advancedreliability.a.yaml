@@ -76,6 +76,11 @@ options:
           permitted:
             - numeric
 
+  - name: showParallelAnalysis
+    title: Show exploratory dimensionality (parallel analysis)
+    type: Bool
+    default: true
+
   - name: showPlots
     type: Bool
     default: true

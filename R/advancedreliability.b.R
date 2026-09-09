@@ -57,6 +57,7 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
         .plot_rows     = NULL,   # data.frame: factor, value (CR/omega per factor)
         .loadings_data = NULL,   # data.frame: factor, item, loading
         .fitcmp_data   = NULL,   # data.frame: model, index, value (for CFI/TLI comparison plot)
+        .parallel_data = NULL,   # data.frame: component, series (observed/simulated), value
 
         .tr = function(en, es) .fl_tr(en, es, self$options$reportLang),
         .plot_theme = function() .fl_plot_theme(self$options$plotStyle),
@@ -178,7 +179,8 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
             esc <- private$.esc
             fit_verdict <- private$.fit_verdict
 
-            all_result_names <- c("fitTable", "fitNote", "solutionDiagnosticsTable", "solutionDiagnosticsNote",
+            all_result_names <- c("parallelAnalysisTable", "parallelAnalysisNote", "plotParallelAnalysis", "plotParallelAnalysisNote",
+                                   "fitTable", "fitNote", "solutionDiagnosticsTable", "solutionDiagnosticsNote",
                                    "modelComparisonTable", "modelComparisonNote",
                                    "plotFitComparison", "plotFitComparisonNote",
                                    "reliabilityTable", "reliabilityNote", "plotComparison", "plotComparisonNote",
@@ -245,6 +247,64 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
                 bail("Not enough complete cases to fit a confirmatory factor model (minimum 20 required).",
                      "No hay suficientes casos completos para ajustar un modelo factorial confirmatorio (mínimo 20 requeridos).")
                 return()
+            }
+
+            # ── Exploratory dimensionality (parallel analysis, Horn 1965,
+            # via psych::fa.parallel): independent of the confirmatory
+            # structure the user assigned above, this asks how many
+            # factors the items suggest on their own -- a real disagreement
+            # with the number of factors specified is worth investigating
+            # before trusting the confirmatory results, though it is not
+            # by itself proof the specified structure is wrong (parallel
+            # analysis is exploratory and sample-dependent too). Only run
+            # when psych is available and the option is on; failures here
+            # never block the confirmatory analysis below. ─────────────────
+            if (isTRUE(opt$showParallelAnalysis) && requireNamespace("psych", quietly = TRUE)) {
+                pa <- tryCatch({
+                    cor_type <- if (item_is_ordinal) "poly" else "cor"
+                    invisible(capture.output(out <- psych::fa.parallel(df_adv, fa = "fa", plot = FALSE, cor = cor_type)))
+                    out
+                }, error = function(e) NULL)
+                if (!is.null(pa) && !is.null(pa$nfact) && is.finite(pa$nfact)) {
+                    n_suggested <- as.integer(round(pa$nfact))
+                    n_specified <- length(factors)
+                    pa_verdict <- if (n_suggested == n_specified)
+                        tr("Matches the specified structure", "Coincide con la estructura especificada")
+                    else if (n_suggested < n_specified)
+                        tr("Suggests fewer factors than specified", "Sugiere menos factores que los especificados")
+                    else tr("Suggests more factors than specified", "Sugiere más factores que los especificados")
+                    pat <- res$parallelAnalysisTable
+                    private$.reset_table(pat, 1L)
+                    pat$setRow(rowNo = 1, values = list(suggested = n_suggested, specified = n_specified, verdict = pa_verdict))
+                    res$parallelAnalysisNote$setContent(.fl_prose(
+                        "<p>", tr(
+                            "Parallel analysis (Horn, 1965) compares the eigenvalues from an exploratory factor analysis of these items against the eigenvalues expected from random data of the same size -- the suggested number of factors is how many real eigenvalues exceed their random counterpart (see the scree plot below). This is exploratory and does not know about the factor structure assigned above; it is a sanity check on that structure, not a replacement for it.",
+                            "El análisis paralelo (Horn, 1965) compara los eigenvalores de un análisis factorial exploratorio de estos ítems contra los eigenvalores esperados de datos aleatorios del mismo tamaño -- el número sugerido de factores es cuántos eigenvalores reales superan a su contraparte aleatoria (vea el gráfico de sedimentación abajo). Esto es exploratorio y no conoce la estructura de factores asignada arriba; es una verificación de sensatez sobre esa estructura, no un reemplazo de ella."),
+                        "</p>",
+                        if (n_suggested != n_specified) paste0("<p>&#9888; ", tr(
+                                "The suggested and specified number of factors disagree. This does not automatically mean the specified structure is wrong -- theory-driven confirmatory structures legitimately group items in ways a purely data-driven exploratory method may not recover, especially with correlated factors or a small number of items per factor. But it is worth understanding why they disagree before treating the confirmatory results as the final word.",
+                                "El número sugerido y el especificado de factores no coinciden. Esto no significa automáticamente que la estructura especificada esté equivocada -- las estructuras confirmatorias guiadas por teoría legítimamente agrupan ítems de formas que un método exploratorio puramente guiado por datos puede no recuperar, especialmente con factores correlacionados o pocos ítems por factor. Pero vale la pena entender por qué no coinciden antes de tratar los resultados confirmatorios como la última palabra."), "</p>")
+                            else paste0("<p>&#10003; ", tr("The exploratory and confirmatory factor counts agree.", "El conteo exploratorio y el confirmatorio de factores coinciden."), "</p>")))
+                    n_show <- min(length(pa$fa.values), 15L)
+                    private$.parallel_data <- data.frame(
+                        component = rep(seq_len(n_show), 2),
+                        series = c(rep(tr("Observed data", "Datos observados"), n_show), rep(tr("Simulated random data", "Datos aleatorios simulados"), n_show)),
+                        value = c(pa$fa.values[seq_len(n_show)], pa$fa.sim[seq_len(n_show)]),
+                        stringsAsFactors = FALSE)
+                    res$plotParallelAnalysisNote$setContent(.fl_prose("<p>", tr(
+                        "Eigenvalues from the actual items (observed) against the average eigenvalues from simulated random data of the same size and number of variables; the suggested number of factors is where the observed line still sits above the simulated one.",
+                        "Eigenvalores de los ítems reales (observados) contra los eigenvalores promedio de datos aleatorios simulados del mismo tamaño y número de variables; el número sugerido de factores es donde la línea observada aún se ubica por encima de la simulada."), "</p>"))
+                } else {
+                    res$parallelAnalysisTable$setVisible(FALSE)
+                    res$parallelAnalysisNote$setVisible(FALSE)
+                    res$plotParallelAnalysis$setVisible(FALSE)
+                    res$plotParallelAnalysisNote$setVisible(FALSE)
+                }
+            } else {
+                res$parallelAnalysisTable$setVisible(FALSE)
+                res$parallelAnalysisNote$setVisible(FALSE)
+                res$plotParallelAnalysis$setVisible(FALSE)
+                res$plotParallelAnalysisNote$setVisible(FALSE)
             }
 
             model_cf <- paste(vapply(factors, function(f)
@@ -776,6 +836,27 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
                     "Los criterios de ajuste del AFC siguen a Hu &amp; Bentler (1999); el umbral de HTMT sigue a Henseler, Ringle &amp; Sarstedt (2015); la cautela sobre índices de modificación sigue a MacCallum, Roznowski &amp; Necowitz (1992); el omega jerárquico sigue a McDonald (1999).")),
                 .fl_prose_close())
             res$interpretation$setContent(adv_html)
+        },
+
+        # ── Plot: parallel-analysis scree plot (observed vs. simulated
+        # eigenvalues) ─────────────────────────────────────────────────────
+        .plotParallelAnalysis = function(image, ggtheme, theme, ...) {
+            d <- private$.parallel_data
+            if (is.null(d) || nrow(d) == 0L) return(FALSE)
+            cols <- private$.plot_colors()
+            d$series <- factor(d$series, levels = unique(d$series))
+            p <- ggplot2::ggplot(d, ggplot2::aes(x = component, y = value, colour = series, shape = series)) +
+                ggplot2::geom_line(linewidth = .6) +
+                ggplot2::geom_point(size = 2.2) +
+                ggplot2::geom_hline(yintercept = 0, linetype = "dotted", colour = "grey50", linewidth = .4) +
+                ggplot2::scale_colour_manual(values = stats::setNames(c(cols$primary, cols$secondary), levels(d$series)), name = NULL) +
+                ggplot2::scale_shape_manual(values = c(16, 17), name = NULL) +
+                ggplot2::scale_x_continuous(breaks = unique(d$component)) +
+                ggplot2::labs(x = private$.tr("Factor", "Factor"), y = private$.tr("Eigenvalue", "Eigenvalor"),
+                              title = private$.tr("Parallel Analysis Scree Plot", "Gráfico de Sedimentación del Análisis Paralelo")) +
+                private$.plot_theme()
+            print(p)
+            TRUE
         },
 
         # ── Plot: reliability comparison (forest-plot style, one point per

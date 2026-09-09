@@ -4,6 +4,40 @@ title: Advanced Reliability (SEM)
 jrs: '1.0'
 items:
 
+  - name: parallelAnalysisTable
+    type: Table
+    title: 'Exploratory Dimensionality: Parallel Analysis'
+    visible: (showParallelAnalysis)
+    rows: 0
+    columns:
+      - name: suggested
+        title: Factors Suggested
+        type: integer
+      - name: specified
+        title: Factors Specified in This Model
+        type: integer
+      - name: verdict
+        title: Verdict
+        type: text
+
+  - name: parallelAnalysisNote
+    type: Html
+    title: Parallel Analysis — What It Means
+    visible: (showParallelAnalysis)
+
+  - name: plotParallelAnalysis
+    type: Image
+    title: Parallel Analysis Scree Plot
+    width: 600
+    height: 350
+    renderFun: .plotParallelAnalysis
+    visible: (showParallelAnalysis)
+
+  - name: plotParallelAnalysisNote
+    type: Html
+    title: Parallel Analysis Scree Plot — What It Means
+    visible: (showParallelAnalysis)
+
   - name: fitTable
     type: Table
     title: Confirmatory Factor Model Fit
