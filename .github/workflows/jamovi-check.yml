@@ -64,4 +64,4 @@ jobs:
         run: |
           Rscript -e "if (!requireNamespace('testthat', quietly = TRUE)) install.packages('testthat', repos = 'https://cloud.r-project.org')"
           R CMD INSTALL --no-multiarch --with-keep.source .
-          Rscript -e "testthat::test_dir('tests/testthat')"
+          Rscript tests/testthat.R
