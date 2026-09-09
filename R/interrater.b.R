@@ -71,10 +71,16 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
         # (lineal, sin interacción). Estos tres ayudantes calculan el
         # diagnóstico estándar de cada uno.
 
-        # Levene (1960): one-way ANOVA F-test on |y - group mean|, testing
-        # equality of error variance across raters (the ICC model's
-        # homoscedasticity assumption). Mean-centered (classic Levene, not
-        # the median-centered Brown-Forsythe variant).
+        # Levene (1960): one-way ANOVA F-test on |y - group mean|, generic
+        # test of equal variance across the levels of g. Mean-centered
+        # (classic Levene, not the median-centered Brown-Forsythe variant).
+        # For the ICC homoscedasticity check specifically, the caller
+        # passes the subject+rater two-way ANOVA's own residuals as y (not
+        # raw scores) -- ICC's assumption is about that model's error
+        # variance being equal across raters, not about raters' raw score
+        # distributions having equal marginal variance (dominated by
+        # between-subject variance, a different question this same
+        # function would otherwise silently answer instead).
         .levene_manual = function(y, g) {
             g <- factor(g)
             means <- tapply(y, g, mean, na.rm = TRUE)
@@ -412,7 +418,25 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
 
                 sw  <- if (!is.null(resd) && length(resd) >= 3L && length(resd) <= 5000L)
                     tryCatch(stats::shapiro.test(resd), error = function(e) NULL) else NULL
-                lev <- private$.levene_manual(long$value, long$rater)
+                # EN: Levene on the two-way model's own residuals (already
+                # computed above for Shapiro-Wilk), not on raw scores --
+                # ICC's homoscedasticity assumption is about the error
+                # term of the subject + rater ANOVA, not about whether
+                # raters' raw score distributions happen to have equal
+                # marginal variance (which raw-score Levene would test
+                # instead, and which is dominated by between-subject
+                # variance, not the residual variance ICC actually cares
+                # about).
+                # ES: Levene sobre los propios residuos del modelo de dos
+                # vías (ya calculados arriba para Shapiro-Wilk), no sobre
+                # los puntajes brutos -- el supuesto de homocedasticidad
+                # del ICC es sobre el término de error del ANOVA sujeto +
+                # juez, no sobre si las distribuciones de puntajes brutos
+                # de los jueces resultan tener varianza marginal igual (que
+                # es lo que Levene sobre puntajes brutos probaría en su
+                # lugar, y que está dominado por la varianza entre sujetos,
+                # no por la varianza residual que realmente le importa al ICC).
+                lev <- if (!is.null(resd)) private$.levene_manual(resd, long$rater) else list(stat = NA_real_, df1 = NA_integer_, df2 = NA_integer_, p = NA_real_)
                 tuk <- private$.tukey_nonadditivity(df_num)
 
                 verdict <- function(p) {
