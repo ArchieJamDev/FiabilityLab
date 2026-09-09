@@ -38,6 +38,12 @@ analyses:
     category: analyses
     menuGroup: FiabilityLab
     menuTitle: Advanced Reliability (SEM)
+  - title: Measurement Invariance
+    name: measurementInvariance
+    ns: fiabilitylab
+    category: analyses
+    menuGroup: FiabilityLab
+    menuTitle: Measurement Invariance
 menu:
   - title: Fiability Lab
     menu:

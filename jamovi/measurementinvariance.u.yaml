@@ -1,0 +1,83 @@
+name: measurementInvariance
+title: Measurement Invariance
+jus: '3.0'
+stage: 0
+compilerMode: tame
+children:
+  - type: VariableSupplier
+    persistentItems: true
+    stretchFactor: 1
+    suggested:
+      - continuous
+      - ordinal
+      - nominal
+    permitted:
+      - numeric
+      - factor
+    children:
+      - type: TargetLayoutBox
+        children:
+          - type: VariablesListBox
+            name: group
+            maxItemCount: 1
+            isTarget: true
+      - type: TargetLayoutBox
+        label: Factors
+        children:
+          - type: ListBox
+            name: factors
+            height: large
+            addButton: Add New Factor
+            events:
+              listItemAdded: ./measurementinvariance.events::onEvent_listItemAdded
+              listItemRemoved: ./measurementinvariance.events::onEvent_listItemRemoved
+            template:
+              type: LayoutBox
+              margin: normal
+              children:
+                - type: TextBox
+                  valueKey: [label]
+                  borderless: true
+                  name: blockName
+                  stretchFactor: 1
+                  margin: normal
+                - type: VariablesListBox
+                  valueFilter: unique
+                  valueKey: [vars]
+                  name: blockList
+                  isTarget: true
+                  height: auto
+                  ghostText: drag variables here
+  - type: Label
+    label: >-
+      Assign items to at least one factor above (3+ items per factor), and a
+      grouping variable to test invariance across. Tests whether the same
+      measurement model holds across groups (e.g. sex, country, time point)
+      before comparing group means or scores on it.
+  - type: CollapseBox
+    label: Report Language
+    collapsed: false
+    children:
+      - type: ComboBox
+        name: reportLang
+  - type: CollapseBox
+    label: Estimation
+    collapsed: true
+    children:
+      - type: ComboBox
+        name: itemType
+        label: Item type
+      - type: ComboBox
+        name: estimator
+        label: Estimator
+  - type: CollapseBox
+    label: Diagnostic Plot
+    collapsed: true
+    children:
+      - type: CheckBox
+        name: showPlots
+        label: Show fit-by-level plot
+      - type: ComboBox
+        name: plotStyle
+        label: Plot style
+        enable: (showPlots)

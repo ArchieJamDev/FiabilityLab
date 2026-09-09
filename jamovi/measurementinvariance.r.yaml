@@ -1,0 +1,81 @@
+---
+name: measurementInvariance
+title: Measurement Invariance
+jrs: '1.0'
+items:
+
+  - name: groupSummaryTable
+    type: Table
+    title: Group Sizes
+    rows: 0
+    columns:
+      - name: level
+        title: Group
+        type: text
+      - name: n
+        title: n
+        type: integer
+
+  - name: invarianceTable
+    type: Table
+    title: 'Measurement Invariance Sequence (Nested Model Comparisons)'
+    rows: 0
+    columns:
+      - name: model
+        title: Model
+        type: text
+      - name: chisq
+        title: χ²
+        type: number
+        format: zto,digits=2
+      - name: df
+        title: df
+        type: integer
+      - name: cfi
+        title: CFI
+        type: number
+        format: zto,digits=3
+      - name: rmsea
+        title: RMSEA
+        type: number
+        format: zto,digits=3
+      - name: dchisq
+        title: Δχ² (vs. prior)
+        type: number
+        format: zto,digits=2
+      - name: ddf
+        title: Δdf
+        type: integer
+      - name: pvalue
+        title: p
+        type: number
+        format: zto,pvalue
+      - name: dcfi
+        title: ΔCFI
+        type: number
+        format: zto,digits=3
+      - name: verdict
+        title: Verdict
+        type: text
+
+  - name: invarianceNote
+    type: Html
+    title: Measurement Invariance — What It Means
+
+  - name: plotInvariance
+    type: Image
+    title: Fit Across Invariance Levels
+    width: 600
+    height: 350
+    renderFun: .plotInvariance
+    visible: (showPlots)
+
+  - name: plotInvarianceNote
+    type: Html
+    title: Fit Across Invariance Levels — What It Means
+    visible: (showPlots)
+
+  - name: interpretation
+    type: Html
+    title: Interpretation & Recommendations
+...
