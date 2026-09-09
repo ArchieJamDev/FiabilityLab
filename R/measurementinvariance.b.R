@@ -272,6 +272,47 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
                                               identical(r$verdict, tr("Supported by ΔCFI only", "Respaldado solo por ΔCFI")), inv_rows)
             failed_to_converge <- Filter(function(r) identical(r$verdict, tr("Did not converge", "No convergió")), inv_rows)
 
+            # EN: "Full invariance holds" doesn't by itself say WHICH
+            # comparisons that actually licenses, and a partial failure
+            # doesn't say what remains usable below it. max_level_name is
+            # the last level in the sequence where every step up to and
+            # including it was fully supported by both criteria (a
+            # consecutive run from Configural) -- used to state explicitly
+            # what that highest confirmed level does and does not permit,
+            # rather than leaving "full invariance" / "does not hold" to
+            # imply more or less than the data actually support.
+            # ES: "La invariancia completa se sostiene" no dice por sí solo
+            # QUÉ comparaciones habilita eso, y un fallo parcial no dice qué
+            # sigue siendo utilizable por debajo de él. max_level_name es el
+            # último nivel de la secuencia donde cada paso hasta él inclusive
+            # estuvo plenamente respaldado por ambos criterios (una racha
+            # consecutiva desde Configural) -- se usa para decir explícita-
+            # mente qué permite y qué no permite ese nivel máximo confirmado,
+            # en vez de dejar que "invariancia completa" / "no se sostiene"
+            # implique más o menos de lo que los datos realmente respaldan.
+            both_ok <- vapply(inv_rows, function(r)
+                identical(r$verdict, tr("Supported by both criteria", "Respaldado por ambos criterios")) ||
+                identical(r$verdict, tr("Baseline", "Línea base")), logical(1))
+            max_ok_idx <- 0L
+            for (i in seq_along(both_ok)) { if (both_ok[i]) max_ok_idx <- i else break }
+            max_level_name <- if (max_ok_idx > 0L) inv_rows[[max_ok_idx]]$model else NULL
+
+            usage_desc <- if (is.null(max_level_name))
+                tr("Not even configural invariance is fully confirmed -- this construct's structure is not yet established as comparable across groups at all.",
+                   "Ni siquiera la invariancia configural está plenamente confirmada -- la estructura de este constructo aún no está establecida como comparable entre grupos en absoluto.")
+                else if (identical(max_level_name, tr("Configural", "Configural")))
+                tr("Configural invariance is the highest level fully supported: the factor structure itself is comparable, but no numeric comparison (correlations, regression coefficients, group means) across these groups is yet justified.",
+                   "La invariancia configural es el nivel máximo plenamente respaldado: la estructura factorial en sí es comparable, pero ninguna comparación numérica (correlaciones, coeficientes de regresión, medias de grupo) entre estos grupos está aún justificada.")
+                else if (identical(max_level_name, tr("Metric (weak)", "Métrica (débil)")))
+                tr("Metric (weak) invariance is the highest level fully supported: correlations/regression coefficients involving the factor can be compared across these groups, but group means/observed scores should not be -- that requires scalar invariance, which is not confirmed here.",
+                   "La invariancia métrica (débil) es el nivel máximo plenamente respaldado: las correlaciones/coeficientes de regresión que involucren al factor pueden compararse entre estos grupos, pero las medias de grupo/puntajes observados no deberían compararse -- eso requiere invariancia escalar, que no está confirmada aquí.")
+                else if (identical(max_level_name, tr("Scalar (strong)", "Escalar (fuerte)")))
+                tr("Scalar (strong) invariance is the highest level fully supported -- this is exactly the level group mean/score comparisons require, so those comparisons are on solid footing, even though strict invariance (a stronger, less commonly needed condition) is not confirmed.",
+                   "La invariancia escalar (fuerte) es el nivel máximo plenamente respaldado -- este es exactamente el nivel que requieren las comparaciones de medias/puntajes de grupo, así que esas comparaciones están en una base sólida, aunque la invariancia estricta (una condición más fuerte, requerida con menos frecuencia) no esté confirmada.")
+                else
+                tr("Strict invariance is fully supported through every level tested. Group mean/score comparisons only require the scalar level reached before it, so this is more than sufficient for that purpose.",
+                   "La invariancia estricta está plenamente respaldada en todos los niveles probados. Las comparaciones de medias/puntajes de grupo solo requieren el nivel escalar alcanzado antes de ella, así que esto es más que suficiente para ese propósito.")
+
             estim_desc <- if (item_is_ordinal)
                 tr("Items were treated as ordinal (WLSMV estimator on polychoric/tetrachoric correlations). χ², CFI and RMSEA below are the scaled/robust versions WLSMV recommends, not the plain ones.",
                    "Los ítems se trataron como ordinales (estimador WLSMV sobre correlaciones policóricas/tetracóricas). El χ², CFI y RMSEA de abajo son las versiones escaladas/robustas que WLSMV recomienda, no las simples.")
@@ -279,9 +320,14 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
                 tr("Items were treated as continuous, fit with MLR (robust to non-normality). χ², CFI and RMSEA below are the scaled/robust versions MLR recommends, not the plain ones.",
                    "Los ítems se trataron como continuos, ajustados con MLR (robusto a la no normalidad). El χ², CFI y RMSEA de abajo son las versiones escaladas/robustas que MLR recomienda, no las simples.")
                 else tr("Items were treated as continuous, fit with ML.", "Los ítems se trataron como continuos, ajustados con ML.")
+            override_desc <- if (item_is_ordinal && opt$estimator %in% c("ml", "mlr"))
+                paste0(" ", tr(
+                    paste0("You selected ", toupper(opt$estimator), ", but WLSMV was used instead because the items are ordinal."),
+                    paste0("Usted seleccionó ", toupper(opt$estimator), ", pero se usó WLSMV en su lugar porque los ítems son ordinales.")))
+                else ""
 
             res$invarianceNote$setContent(.fl_prose(
-                "<p>", estim_desc, " ", tr(
+                "<p>", estim_desc, override_desc, " ", tr(
                     paste0("Each row after Configural is tested against the row just before it (not against Configural directly), on two criteria: a likelihood-ratio test (LRT; significant at p &lt; .05 means the added restriction costs a real amount of fit) and the change in CFI (&Delta;CFI &lt; -.01 is Cheung &amp; Rensvold's, 2002, sample-size-robust threshold for the same question). The LRT alone gets hypersensitive to trivial misfit in large samples -- part of why &Delta;CFI is reported alongside it -- but the two do not always agree: this report shows \"Supported by both criteria\" only when they do, and names which single criterion supports the restriction when they disagree, rather than treating either criterion passing as sufficient on its own."),
                     paste0("Cada fila después de Configural se prueba contra la fila justo anterior (no contra Configural directamente), con dos criterios: una prueba de razón de verosimilitud (LRT; significativa en p &lt; .05 significa que la restricción agregada cuesta una cantidad real de ajuste) y el cambio en CFI (&Delta;CFI &lt; -.01 es el umbral robusto al tamaño muestral de Cheung &amp; Rensvold, 2002, para la misma pregunta). El LRT por sí solo se vuelve hipersensible a desajustes triviales en muestras grandes -- parte de por qué se reporta el &Delta;CFI junto a él -- pero ambos no siempre coinciden: este informe muestra \"Respaldado por ambos criterios\" solo cuando coinciden, y nombra qué criterio único respalda la restricción cuando discrepan, en vez de tratar que cualquiera de los dos se cumpla como suficiente por sí solo.")),
                 "</p>",
@@ -291,15 +337,19 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
                 "</p>",
                 if (length(failed_to_converge) > 0L) paste0("<p>&#9888; ", tr(
                         "One or more models in the sequence did not converge -- the invariance question cannot be answered past that point with this data/structure.",
-                        "Uno o más modelos de la secuencia no convergieron -- la pregunta de invariancia no puede responderse más allá de ese punto con estos datos/estructura."), "</p>")
+                        "Uno o más modelos de la secuencia no convergieron -- la pregunta de invariancia no puede responderse más allá de ese punto con estos datos/estructura."), "</p>",
+                        "<p>", usage_desc, "</p>")
                     else if (length(not_supported) > 0L) paste0("<p>&#9888; ", tr(
                         paste0(not_supported[[1]]$model, " invariance is not supported by either criterion -- do not compare whatever that level of invariance is required for (see above) across ", esc(group_name), " groups without first identifying which specific parameters differ (partial invariance) via semTools::partialInvariance()/partialInvarianceCat()."),
-                        paste0("La invariancia ", not_supported[[1]]$model, " no está respaldada por ningún criterio -- no compare aquello para lo que se requiere ese nivel de invariancia (vea arriba) entre grupos de ", esc(group_name), " sin antes identificar qué parámetros específicos difieren (invariancia parcial) vía semTools::partialInvariance()/partialInvarianceCat().")), "</p>")
+                        paste0("La invariancia ", not_supported[[1]]$model, " no está respaldada por ningún criterio -- no compare aquello para lo que se requiere ese nivel de invariancia (vea arriba) entre grupos de ", esc(group_name), " sin antes identificar qué parámetros específicos difieren (invariancia parcial) vía semTools::partialInvariance()/partialInvarianceCat().")), "</p>",
+                        "<p>", usage_desc, "</p>")
                     else if (length(discordant) > 0L) paste0("<p>&#9888; ", tr(
                         paste0(discordant[[1]]$model, " invariance is supported by only one of the two criteria -- treat this level with real caution rather than as settled. Investigate partial invariance to see whether the discordance traces to specific items before relying on comparisons that require this level."),
-                        paste0("La invariancia ", discordant[[1]]$model, " está respaldada por solo uno de los dos criterios -- trate este nivel con verdadera cautela en vez de darlo por resuelto. Investigue la invariancia parcial para ver si la discordancia se debe a ítems específicos antes de confiar en comparaciones que requieran este nivel.")), "</p>")
-                    else paste0("<p>&#10003; ", tr("Full invariance is supported by both criteria through every level tested -- comparing group means/scores on this construct across these groups is on solid footing.",
-                                                     "La invariancia completa está respaldada por ambos criterios en todos los niveles probados -- comparar medias/puntajes de grupo en este constructo entre estos grupos está en una base sólida."), "</p>")))
+                        paste0("La invariancia ", discordant[[1]]$model, " está respaldada por solo uno de los dos criterios -- trate este nivel con verdadera cautela en vez de darlo por resuelto. Investigue la invariancia parcial para ver si la discordancia se debe a ítems específicos antes de confiar en comparaciones que requieran este nivel.")), "</p>",
+                        "<p>", usage_desc, "</p>")
+                    else paste0("<p>&#10003; ", tr("Full invariance is supported by both criteria through every level tested.",
+                                                     "La invariancia completa está respaldada por ambos criterios en todos los niveles probados."), "</p>",
+                        "<p>", usage_desc, "</p>")))
 
             private$.fitcmp_data <- data.frame(
                 level = vapply(inv_rows, function(r) r$model, character(1)),
