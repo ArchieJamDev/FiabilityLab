@@ -186,7 +186,11 @@ interRaterResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                         `name`="p_value", 
                         `title`="p", 
                         `type`="number", 
-                        `format`="zto,digits=4"))))
+                        `format`="zto,digits=4"),
+                    list(
+                        `name`="n_boot", 
+                        `title`="Boot Replicates Used", 
+                        `type`="integer"))))
             self$add(jmvcore::Image$new(
                 options=options,
                 name="plotComparison",

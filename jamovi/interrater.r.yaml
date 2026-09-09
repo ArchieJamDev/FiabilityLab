@@ -34,6 +34,9 @@ items:
         title: p
         type: number
         format: zto,digits=4
+      - name: n_boot
+        title: Boot Replicates Used
+        type: integer
 
   - name: plotComparison
     type: Image

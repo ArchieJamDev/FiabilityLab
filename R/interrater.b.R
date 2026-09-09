@@ -225,10 +225,11 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             # "not computable" numeric table cells (e.g. AssumptionsLab's
             # multcheck.b.R).
             .clean_na <- .fl_clean_na
-            add_row <- function(name, val, interp, ci = c(NA_real_, NA_real_), p = NA_real_) {
+            add_row <- function(name, val, interp, ci = c(NA_real_, NA_real_), p = NA_real_, n_boot = NA_integer_) {
                 rows[[length(rows) + 1L]] <<- list(
                     coefficient = name, value = .clean_na(val), interpretation = interp,
-                    ci_lower = .clean_na(ci[1]), ci_upper = .clean_na(ci[2]), p_value = .clean_na(p))
+                    ci_lower = .clean_na(ci[1]), ci_upper = .clean_na(ci[2]), p_value = .clean_na(p),
+                    n_boot = n_boot)
             }
 
             # max_b caps replicate count independently of the user's
@@ -249,11 +250,22 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             # ~4 minutos solo para estos dos IC. Replica el mismo arreglo
             # ya aplicado al bootstrap del Omega en internalConsistency.
             B <- if (isTRUE(opt$bootstrapCi)) opt$bootstrapSamples else 0L
+            # EN: Returns the CI *and* the replicate count actually used,
+            # not just the requested bootstrapSamples -- a coefficient
+            # capped by max_b above would otherwise silently disclose a
+            # different replicate count than a user reporting
+            # "bootstrapSamples = 1000" in a methods section would assume.
+            # ES: Retorna el IC *y* el número de réplicas realmente usadas,
+            # no solo el bootstrapSamples solicitado -- un coeficiente
+            # limitado por max_b arriba, de lo contrario, divulgaría en
+            # silencio un número de réplicas distinto al que asumiría un
+            # usuario que reporta "bootstrapSamples = 1000" en una sección
+            # de métodos.
             boot_ci <- function(stat_fn, max_b = NULL) {
-                if (B <= 0L) return(c(NA_real_, NA_real_))
+                if (B <= 0L) return(list(ci = c(NA_real_, NA_real_), n = NA_integer_))
                 B_i <- if (!is.null(max_b)) min(B, max_b) else B
                 bt <- private$.bootstrap(df, stat_fn, B_i)
-                c(bt$lo, bt$hi)
+                list(ci = c(bt$lo, bt$hi), n = as.integer(B_i))
             }
 
             kappa_val <- gwet_val <- krip_val <- icc_c_val <- icc_a_val <- NA_real_
@@ -279,7 +291,8 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                     }
                     if (!is.null(kres)) {
                         kappa_val <- kres$value
-                        add_row(kname, kappa_val, private$.interp_kappa(kappa_val), boot_ci(kfn, max_b = 200L), kres$p.value)
+                        bc <- boot_ci(kfn, max_b = 200L)
+                        add_row(kname, kappa_val, private$.interp_kappa(kappa_val), bc$ci, kres$p.value, bc$n)
                     }
                 }
             }
@@ -352,8 +365,8 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 # categoría en el eje Y. El motivo se adjunta como una nota
                 # al pie real de jamovi (ver paso 6 abajo) en vez de
                 # incluirse en la etiqueta misma.
-                add_row(tr("Krippendorff's α", "α de Krippendorff"), ka_val, interp,
-                        if (level == "continuous") c(NA_real_, NA_real_) else boot_ci(kfn, max_b = 200L), NA_real_)
+                bc_ka <- if (level == "continuous") list(ci = c(NA_real_, NA_real_), n = NA_integer_) else boot_ci(kfn, max_b = 200L)
+                add_row(tr("Krippendorff's α", "α de Krippendorff"), ka_val, interp, bc_ka$ci, NA_real_, bc_ka$n)
                 if (level == "continuous") krip_row_idx <- length(rows)
                 krip_val <- ka_val
             }
@@ -489,7 +502,8 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                     # measured), unlike Krippendorff's interval method --
                     # the full bootstrapSamples cap (200) is fine here.
                     kwfn <- function(d) tryCatch(irr::kendall(d)$value, error = function(e) NA_real_)
-                    add_row(paste0("Kendall's W", note), kw$value, private$.interp_rel(kw$value), boot_ci(kwfn, max_b = 200L), kw$p.value)
+                    bc_w <- boot_ci(kwfn, max_b = 200L)
+                    add_row(paste0("Kendall's W", note), kw$value, private$.interp_rel(kw$value), bc_w$ci, kw$p.value, bc_w$n)
                 }
             } else if (opt$kendallW && level == "nominal") {
                 add_row("Kendall's W", NA_real_, tr("Not applicable to nominal data", "No aplica a datos nominales"))
