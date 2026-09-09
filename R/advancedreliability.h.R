@@ -92,6 +92,8 @@ advancedReliabilityResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
     active = list(
         fitTable = function() private$.items[["fitTable"]],
         fitNote = function() private$.items[["fitNote"]],
+        solutionDiagnosticsTable = function() private$.items[["solutionDiagnosticsTable"]],
+        solutionDiagnosticsNote = function() private$.items[["solutionDiagnosticsNote"]],
         modelComparisonTable = function() private$.items[["modelComparisonTable"]],
         modelComparisonNote = function() private$.items[["modelComparisonNote"]],
         plotFitComparison = function() private$.items[["plotFitComparison"]],
@@ -173,6 +175,49 @@ advancedReliabilityResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
                 title="Model Fit \u2014 What It Means"))
             self$add(jmvcore::Table$new(
                 options=options,
+                name="solutionDiagnosticsTable",
+                title="Solution Admissibility",
+                rows=0,
+                columns=list(
+                    list(
+                        `name`="model", 
+                        `title`="Model", 
+                        `type`="text"),
+                    list(
+                        `name`="converged", 
+                        `title`="Converged", 
+                        `type`="text"),
+                    list(
+                        `name`="admissible", 
+                        `title`="Admissible", 
+                        `type`="text"),
+                    list(
+                        `name`="negVariances", 
+                        `title`="Negative Residual Variances", 
+                        `type`="integer"),
+                    list(
+                        `name`="loadingsOutOfBounds", 
+                        `title`="Loadings \u2265 1", 
+                        `type`="integer"),
+                    list(
+                        `name`="maxLatentCorr", 
+                        `title`="Max. Latent Correlation", 
+                        `type`="number", 
+                        `format`="zto,digits=3"),
+                    list(
+                        `name`="nAnalyzed", 
+                        `title`="n Analyzed", 
+                        `type`="integer"),
+                    list(
+                        `name`="nAvailable", 
+                        `title`="n Available", 
+                        `type`="integer"))))
+            self$add(jmvcore::Html$new(
+                options=options,
+                name="solutionDiagnosticsNote",
+                title="Solution Admissibility \u2014 What It Means"))
+            self$add(jmvcore::Table$new(
+                options=options,
                 name="modelComparisonTable",
                 title="Model Comparison: Second-Order vs. Correlated Factors (Likelihood-Ratio Test)",
                 visible="(secondOrder)",
@@ -251,7 +296,8 @@ advancedReliabilityResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
                         `name`="rel_g", 
                         `title`="Reliability due to G", 
                         `type`="number", 
-                        `format`="zto,digits=3"),
+                        `format`="zto,digits=3", 
+                        `visible`="(secondOrder)"),
                     list(
                         `name`="interpretation", 
                         `title`="Interpretation", 
@@ -385,6 +431,8 @@ advancedReliabilityBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
 #' \tabular{llllll}{
 #'   \code{results$fitTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$fitNote} \tab \tab \tab \tab \tab a html \cr
+#'   \code{results$solutionDiagnosticsTable} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$solutionDiagnosticsNote} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$modelComparisonTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$modelComparisonNote} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$plotFitComparison} \tab \tab \tab \tab \tab an image \cr

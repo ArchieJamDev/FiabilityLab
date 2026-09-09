@@ -50,6 +50,41 @@ items:
     type: Html
     title: Model Fit — What It Means
 
+  - name: solutionDiagnosticsTable
+    type: Table
+    title: Solution Admissibility
+    rows: 0
+    columns:
+      - name: model
+        title: Model
+        type: text
+      - name: converged
+        title: Converged
+        type: text
+      - name: admissible
+        title: Admissible
+        type: text
+      - name: negVariances
+        title: Negative Residual Variances
+        type: integer
+      - name: loadingsOutOfBounds
+        title: Loadings ≥ 1
+        type: integer
+      - name: maxLatentCorr
+        title: Max. Latent Correlation
+        type: number
+        format: zto,digits=3
+      - name: nAnalyzed
+        title: n Analyzed
+        type: integer
+      - name: nAvailable
+        title: n Available
+        type: integer
+
+  - name: solutionDiagnosticsNote
+    type: Html
+    title: Solution Admissibility — What It Means
+
   - name: modelComparisonTable
     type: Table
     title: 'Model Comparison: Second-Order vs. Correlated Factors (Likelihood-Ratio Test)'

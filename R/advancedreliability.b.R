@@ -78,6 +78,39 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
             else tr("Poor", "Pobre")
         },
 
+        # ── Solution admissibility: convergence only means the optimizer
+        # stopped, not that the estimates are usable. lavInspect(...,
+        # "post.check") flags Heywood cases and non-positive-definite
+        # matrices directly; we additionally count negative residual
+        # variances and out-of-range standardized loadings by hand (both
+        # symptoms post.check can also catch, surfaced here per-item so the
+        # note can name them) and the largest latent correlation (near/at 1
+        # signals two factors may not be empirically distinct regardless of
+        # what HTMT says about their indicators). ──────────────────────────
+        .solution_diag = function(fit, items, factor_ids, n_analyzed, n_available) {
+            tr <- private$.tr
+            post_ok <- tryCatch(isTRUE(lavaan::lavInspect(fit, "post.check")), error = function(e) NA)
+            ss <- tryCatch(lavaan::standardizedSolution(fit), error = function(e) NULL)
+            neg_var <- 0L
+            out_of_bounds <- 0L
+            max_corr <- NA_real_
+            if (!is.null(ss)) {
+                resid_rows <- ss[ss$op == "~~" & ss$lhs == ss$rhs & ss$lhs %in% items, ]
+                neg_var <- sum(resid_rows$est.std < 0, na.rm = TRUE)
+                load_rows <- ss[ss$op == "=~", ]
+                out_of_bounds <- sum(abs(load_rows$est.std) >= 1, na.rm = TRUE)
+                if (length(factor_ids) >= 2L) {
+                    corr_rows <- ss[ss$op == "~~" & ss$lhs != ss$rhs & ss$lhs %in% factor_ids & ss$rhs %in% factor_ids, ]
+                    if (nrow(corr_rows) > 0L) max_corr <- max(abs(corr_rows$est.std), na.rm = TRUE)
+                }
+            }
+            admissible <- if (is.na(post_ok)) tr("N/A", "N/D") else if (post_ok) tr("Yes", "Sí") else tr("No", "No")
+            list(converged = tr("Yes", "Sí"), admissible = admissible,
+                 negVariances = as.integer(neg_var), loadingsOutOfBounds = as.integer(out_of_bounds),
+                 maxLatentCorr = .fl_clean_na(max_corr), nAnalyzed = as.integer(n_analyzed), nAvailable = as.integer(n_available),
+                 flagged = isTRUE(!post_ok) || neg_var > 0L || out_of_bounds > 0L)
+        },
+
         .run = function() {
             tr  <- private$.tr
             opt <- self$options
@@ -85,7 +118,8 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
             esc <- private$.esc
             fit_verdict <- private$.fit_verdict
 
-            all_result_names <- c("fitTable", "fitNote", "modelComparisonTable", "modelComparisonNote",
+            all_result_names <- c("fitTable", "fitNote", "solutionDiagnosticsTable", "solutionDiagnosticsNote",
+                                   "modelComparisonTable", "modelComparisonNote",
                                    "plotFitComparison", "plotFitComparisonNote",
                                    "reliabilityTable", "reliabilityNote", "plotComparison", "plotComparisonNote",
                                    "plotLoadings", "plotLoadingsNote", "htmtTable", "htmtNote", "omegaHNote",
@@ -128,6 +162,7 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
 
             all_items <- unique(unlist(lapply(factors, function(f) f$items)))
             df_raw <- self$data[, all_items, drop = FALSE]
+            n_available <- nrow(df_raw)
             for (col in names(df_raw)) df_raw[[col]] <- suppressWarnings(as.numeric(df_raw[[col]]))
             df_adv <- na.omit(df_raw)
             n_adv <- nrow(df_adv)
@@ -148,6 +183,11 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
             }
 
             fnames_txt <- paste(vapply(factors, function(f) esc(f$name), character(1)), collapse = ", ")
+            factor_ids <- vapply(factors, function(f) f$id, character(1))
+
+            diag_rows <- list()
+            diag_cf <- private$.solution_diag(fit_cf, all_items, factor_ids, n_adv, n_available)
+            diag_rows[[length(diag_rows) + 1L]] <- c(list(model = tr("Correlated factors", "Factores correlacionados")), diag_cf[names(diag_cf) != "flagged"])
 
             fm_cf <- lavaan::fitMeasures(fit_cf, c("chisq","df","pvalue","cfi","tli","rmsea","rmsea.ci.lower","rmsea.ci.upper","srmr"))
             cf_verdict <- fit_verdict(fm_cf["cfi"], fm_cf["rmsea"], fm_cf["srmr"])
@@ -177,13 +217,16 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
                 for (r in seq_len(nrow(lam_rows)))
                     loadings_rows[[length(loadings_rows) + 1L]] <<- list(
                         factor = f$name, item = lam_rows$rhs[r], loading = lam_rows$est.std[r])
-                lam <- lam_rows$est.std[is.finite(lam_rows$est.std) & abs(lam_rows$est.std) < 1]
+                lam_finite <- lam_rows$est.std[is.finite(lam_rows$est.std)]
+                heywood_n <- sum(abs(lam_finite) >= 1)
+                lam <- lam_finite[abs(lam_finite) < 1]
                 h_terms <- (lam^2) / (1 - lam^2)
                 h_val <- if (length(h_terms) > 0L) sum(h_terms) / (1 + sum(h_terms)) else NA_real_
                 cr_val  <- if (!is.null(cr_vals) && f$id %in% names(cr_vals)) unname(cr_vals[f$id]) else NA_real_
                 ave_val <- if (!is.null(ave_vals) && f$id %in% names(ave_vals)) unname(ave_vals[f$id]) else NA_real_
                 interp <- paste0(private$.interp_rel(cr_val),
-                    if (!is.na(ave_val) && ave_val < .50) paste0("; ", tr("AVE &lt; .50", "AVE &lt; .50")) else "")
+                    if (!is.na(ave_val) && ave_val < .50) paste0("; ", tr("AVE &lt; .50", "AVE &lt; .50")) else "",
+                    if (heywood_n > 0L) paste0("; ", tr("Heywood case", "Caso Heywood")) else "")
                 list(factor = esc(f$name), items = length(f$items),
                      cr = .fl_clean_na(cr_val), ave = .fl_clean_na(ave_val), h = .fl_clean_na(h_val),
                      rel_g = NA_real_, interpretation = interp)
@@ -260,6 +303,9 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
                 fit_2nd <- tryCatch(lavaan::cfa(model_2nd, data = df_adv, std.lv = TRUE), error = function(e) NULL)
                 ho_ok <- !is.null(fit_2nd) && isTRUE(tryCatch(lavaan::lavInspect(fit_2nd, "converged"), error = function(e) FALSE))
                 if (ho_ok) {
+                    diag_2nd <- private$.solution_diag(fit_2nd, all_items, c(factor_ids, "G"), n_adv, n_available)
+                    diag_rows[[length(diag_rows) + 1L]] <- c(list(model = tr("Second-order (general factor)", "Segundo orden (factor general)")), diag_2nd[names(diag_2nd) != "flagged"])
+
                     fm_2nd <- lavaan::fitMeasures(fit_2nd, c("chisq","df","pvalue","cfi","tli","rmsea","rmsea.ci.lower","rmsea.ci.upper","srmr"))
                     ho_verdict <- fit_verdict(fm_2nd["cfi"], fm_2nd["rmsea"], fm_2nd["srmr"])
                     fit_rows[[length(fit_rows) + 1L]] <- list(
@@ -276,17 +322,27 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
 
                     # Formal likelihood-ratio comparison: the second-order
                     # model is nested within (a constrained version of) the
-                    # freely-correlated one, so their chi-square/df
-                    # difference is itself chi-square distributed. Hand-
-                    # computed via fitMeasures (not lavTestLRT()'s printed
-                    # table) for the same reason as internalConsistency's own
-                    # tau-equivalence test: stable field names across lavaan
-                    # versions.
-                    d_chisq <- unname(fm_2nd["chisq"] - fm_cf["chisq"])
-                    d_df    <- unname(fm_2nd["df"]    - fm_cf["df"])
-                    lrt <- if (is.finite(d_chisq) && is.finite(d_df) && d_df > 0)
-                        list(dchisq = d_chisq, ddf = d_df, p = stats::pchisq(d_chisq, d_df, lower.tail = FALSE))
-                    else list(dchisq = d_chisq, ddf = d_df, p = NA_real_)
+                    # freely-correlated one, so lavTestLRT() gives the right
+                    # chi-square-difference test (and, unlike a hand-computed
+                    # chisq/df difference, automatically applies the correct
+                    # scaled-difference correction if a robust estimator is
+                    # ever used here). We read the returned anova/data.frame
+                    # object's named columns directly rather than its printed
+                    # table, so this does not depend on print formatting.
+                    lrt_out <- tryCatch(lavaan::lavTestLRT(fit_cf, fit_2nd), error = function(e) NULL)
+                    if (!is.null(lrt_out) && nrow(lrt_out) >= 2L && all(c("Chisq diff", "Df diff", "Pr(>Chisq)") %in% names(lrt_out))) {
+                        d_chisq <- lrt_out[["Chisq diff"]][2]
+                        d_df    <- lrt_out[["Df diff"]][2]
+                        p_val   <- lrt_out[["Pr(>Chisq)"]][2]
+                        lrt <- list(dchisq = d_chisq, ddf = d_df,
+                                    p = if (is.finite(d_df) && d_df > 0) p_val else NA_real_)
+                    } else {
+                        d_chisq <- unname(fm_2nd["chisq"] - fm_cf["chisq"])
+                        d_df    <- unname(fm_2nd["df"]    - fm_cf["df"])
+                        lrt <- if (is.finite(d_chisq) && is.finite(d_df) && d_df > 0)
+                            list(dchisq = d_chisq, ddf = d_df, p = stats::pchisq(d_chisq, d_df, lower.tail = FALSE))
+                        else list(dchisq = d_chisq, ddf = d_df, p = NA_real_)
+                    }
 
                     # Omega hierarchical for the TOTAL scale: proportion of
                     # the model-implied total-score variance attributable to
@@ -329,6 +385,20 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
             ft <- res$fitTable
             private$.reset_table(ft, length(fit_rows))
             for (i in seq_along(fit_rows)) ft$setRow(rowNo = i, values = fit_rows[[i]])
+
+            sdt <- res$solutionDiagnosticsTable
+            private$.reset_table(sdt, length(diag_rows))
+            for (i in seq_along(diag_rows)) sdt$setRow(rowNo = i, values = diag_rows[[i]])
+            any_flagged <- isTRUE(diag_cf$flagged) || (isTRUE(opt$secondOrder) && ho_ok && isTRUE(diag_2nd$flagged))
+            res$solutionDiagnosticsNote$setContent(.fl_prose(
+                "<p>", tr(
+                    "Convergence only means the optimizer stopped at some solution; it does not mean that solution is admissible. \"Admissible\" (from lavaan's own post-estimation check) means no negative residual variances, no non-positive-definite covariance matrix, and no other Heywood-case symptom -- a prerequisite for trusting CR, AVE, H, HTMT or omega hierarchical from that model. Negative residual variances and standardized loadings at or beyond 1 are two common, visible symptoms of an inadmissible solution; the largest latent correlation flags whether two factors may not be empirically distinct.",
+                    "La convergencia solo significa que el optimizador se detuvo en alguna solución; no significa que esa solución sea admisible. \"Admisible\" (de la propia verificación posterior a la estimación de lavaan) significa sin varianzas residuales negativas, sin matriz de covarianza no definida positiva, y sin otro síntoma de caso Heywood -- un requisito previo para confiar en el CR, AVE, H, HTMT u omega jerárquico de ese modelo. Las varianzas residuales negativas y las cargas estandarizadas iguales o mayores a 1 son dos síntomas comunes y visibles de una solución inadmisible; la correlación latente máxima señala si dos factores podrían no ser empíricamente distintos."),
+                "</p>",
+                if (any_flagged) paste0("<p>&#9888; ", tr(
+                        "At least one model above shows a symptom of an inadmissible or borderline solution. Do not interpret CR, AVE, H, HTMT or omega hierarchical from that model until this is resolved -- common causes are too few cases for the number of parameters, near-perfectly correlated items, or a factor defined by too few (or too similar) indicators.",
+                        "Al menos un modelo de arriba muestra un síntoma de una solución inadmisible o límite. No interprete el CR, AVE, H, HTMT u omega jerárquico de ese modelo hasta resolver esto -- las causas comunes son muy pocos casos para el número de parámetros, ítems casi perfectamente correlacionados, o un factor definido por muy pocos indicadores (o indicadores demasiado similares)."), "</p>")
+                    else paste0("<p>&#10003; ", tr("No admissibility symptoms detected in the model(s) above.", "No se detectaron síntomas de inadmisibilidad en el/los modelo(s) de arriba."), "</p>")))
 
             rat <- res$reliabilityTable
             private$.reset_table(rat, length(rel_rows))
@@ -393,8 +463,11 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
                         paste0("El omega jerárquico para la escala total es <b>", round(omega_h, 3), "</b> (", private$.interp_rel(omega_h), ") — la proporción de varianza del puntaje total atribuible específicamente al factor general G, descontando la varianza propia de cada subescala (McDonald, 1999).")),
                     "</p>",
                     "<p>", tr(
-                        "This number is only as trustworthy as the model comparison above: if the likelihood-ratio test found the second-order structure fits significantly worse, treat this value as an overstatement of how unidimensional the total score really is. Each factor's Reliability Table row below also lists its reliability specifically due to G — the share of that factor's own reliable variance that reflects the general trait rather than something specific to the subscale; a factor with high CR/&omega; but low reliability-due-to-G is measuring its own specific construct well, but a total score built by summing all items would discard most of that factor's reliable variance as if it were noise.",
-                        "Este número solo es confiable en la medida en que lo sea la comparación de modelos de arriba: si la prueba de razón de verosimilitud encontró que la estructura de segundo orden ajusta significativamente peor, trate este valor como una sobreestimación de qué tan unidimensional es realmente el puntaje total. La fila de cada factor en la Tabla de Confiabilidad de abajo también lista su confiabilidad debida específicamente a G — la parte de la varianza confiable propia de ese factor que refleja el rasgo general en vez de algo específico de la subescala; un factor con CR/&omega; alto pero confiabilidad-debida-a-G baja está midiendo bien su propio constructo específico, pero un puntaje total construido sumando todos los ítems descartaría la mayor parte de la varianza confiable de ese factor como si fuera ruido."),
+                        "This number is only as trustworthy as the model comparison above: if the likelihood-ratio test found the second-order structure fits significantly worse, treat this value as conditional on a structure the data do not support, not as independent evidence of a general dimension. Each factor's Reliability Table row below also lists its reliability specifically due to G — the share of that factor's own reliable variance that reflects the general trait rather than something specific to the subscale; a factor with high CR/&omega; but low reliability-due-to-G is measuring its own specific construct well, but a total score built by summing all items would discard most of that factor's reliable variance as if it were noise.",
+                        "Este número solo es confiable en la medida en que lo sea la comparación de modelos de arriba: si la prueba de razón de verosimilitud encontró que la estructura de segundo orden ajusta significativamente peor, trate este valor como condicional a una estructura que los datos no respaldan, no como evidencia independiente de una dimensión general. La fila de cada factor en la Tabla de Confiabilidad de abajo también lista su confiabilidad debida específicamente a G — la parte de la varianza confiable propia de ese factor que refleja el rasgo general en vez de algo específico de la subescala; un factor con CR/&omega; alto pero confiabilidad-debida-a-G baja está midiendo bien su propio constructo específico, pero un puntaje total construido sumando todos los ítems descartaría la mayor parte de la varianza confiable de ese factor como si fuera ruido."),
+                    "</p><p>", tr(
+                        "This omega hierarchical is derived from a second-order model, which forces the general factor's relationship to each subscale to run entirely through that subscale's overall factor (a restricted, nested special case). It is a different quantity from the omega hierarchical of an exploratory or confirmatory bifactor model, which lets each item load on the general factor directly as well as its own subscale; the two need not agree, and disagreement between them is itself informative about which structure fits the construct better.",
+                        "Este omega jerárquico se deriva de un modelo de segundo orden, que obliga a que la relación del factor general con cada subescala pase enteramente por el factor global de esa subescala (un caso especial restringido y anidado). Es una cantidad distinta del omega jerárquico de un modelo bifactor exploratorio o confirmatorio, que permite que cada ítem cargue directamente sobre el factor general además de su propia subescala; ambos no tienen por qué coincidir, y su desacuerdo es en sí mismo informativo sobre qué estructura ajusta mejor al constructo."),
                     "</p>"))
 
                 private$.fitcmp_data <- data.frame(
@@ -469,8 +542,8 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
                 low_relg <- Filter(function(r) !is.na(r$rel_g) && !is.na(r$cr) && r$cr > 0 && (r$rel_g / r$cr) < .40, rel_rows)
 
             rel_intro_p <- tr(
-                "CR/&omega; (Composite Reliability, Fornell &amp; Larcker, 1981; equivalently McDonald's, 1999, &omega;) is the proportion of each factor's own composite-score variance attributable to its common factor, from this model's standardized loadings — unlike Cronbach's &alpha;, it does not assume equal (tau-equivalent) loadings. AVE (Fornell &amp; Larcker, 1981) is the average squared loading — convergent validity, not reliability; &ge; .50 is the field-standard minimum. H (Hancock &amp; Mueller, 2001) is an alternative construct-reliability index computed from the same loadings, less sensitive than CR/&omega; to a single weak indicator.",
-                "El CR/&omega; (Confiabilidad Compuesta, Fornell &amp; Larcker, 1981; equivalente al &omega; de McDonald, 1999) es la proporción de la varianza propia del puntaje compuesto de cada factor atribuible a su factor común, a partir de las cargas estandarizadas de este modelo — a diferencia del Alfa de Cronbach, no asume cargas iguales (tau-equivalencia). El AVE (Fornell &amp; Larcker, 1981) es la carga al cuadrado promedio — validez convergente, no confiabilidad; &ge; .50 es el mínimo estándar del campo. El H (Hancock &amp; Mueller, 2001) es un índice de confiabilidad de constructo alternativo calculado a partir de las mismas cargas, menos sensible que el CR/&omega; a un único indicador débil.")
+                "CR/&omega; (Composite Reliability, Fornell &amp; Larcker, 1981; under this model — one common factor per subscale, no correlated residuals — numerically the same as McDonald's, 1999, total &omega;) is the proportion of each factor's own composite-score variance attributable to its common factor, from this model's standardized loadings — unlike Cronbach's &alpha;, it does not assume equal (tau-equivalent) loadings. AVE (Fornell &amp; Larcker, 1981) is the average squared loading — convergent validity, not reliability; &ge; .50 is the field-standard minimum. H (Hancock &amp; Mueller, 2001) is an alternative construct-reliability index computed from the same loadings, less sensitive than CR/&omega; to a single weak indicator.",
+                "El CR/&omega; (Confiabilidad Compuesta, Fornell &amp; Larcker, 1981; bajo este modelo — un factor común por subescala, sin residuos correlacionados — numéricamente igual al &omega; total de McDonald, 1999) es la proporción de la varianza propia del puntaje compuesto de cada factor atribuible a su factor común, a partir de las cargas estandarizadas de este modelo — a diferencia del Alfa de Cronbach, no asume cargas iguales (tau-equivalencia). El AVE (Fornell &amp; Larcker, 1981) es la carga al cuadrado promedio — validez convergente, no confiabilidad; &ge; .50 es el mínimo estándar del campo. El H (Hancock &amp; Mueller, 2001) es un índice de confiabilidad de constructo alternativo calculado a partir de las mismas cargas, menos sensible que el CR/&omega; a un único indicador débil.")
 
             ave_names <- paste(vapply(worst_ave, function(r) r$factor, character(1)), collapse = ", ")
             if (length(worst_ave) > 0L) {
@@ -550,10 +623,14 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
             adv_html <- paste0(.fl_prose_open(),
                 "<h4>", tr("What happened", "Qué pasó"), "</h4>",
                 "<p>", tr(paste0("A confirmatory factor model with ", length(factors), " factor(s) (", fnames_txt,
-                                 ") was fit on n = ", n_adv, " complete cases. Model fit: ", cf_verdict,
+                                 ") was fit on n = ", n_adv, " complete cases",
+                                 if (n_available > n_adv) paste0(" (", n_available - n_adv, " of ", n_available, " available cases excluded listwise for missing values on at least one item)") else "",
+                                 ". Model fit: ", cf_verdict,
                                  if (isTRUE(opt$secondOrder) && ho_ok) "; a second-order general factor was additionally fit and formally compared against it." else "."),
                           paste0("Se ajustó un modelo factorial confirmatorio con ", length(factors), " factor(es) (", fnames_txt,
-                                 ") sobre n = ", n_adv, " casos completos. Ajuste del modelo: ", cf_verdict,
+                                 ") sobre n = ", n_adv, " casos completos",
+                                 if (n_available > n_adv) paste0(" (se excluyeron ", n_available - n_adv, " de ", n_available, " casos disponibles por eliminación por lista, con valores faltantes en al menos un ítem)") else "",
+                                 ". Ajuste del modelo: ", cf_verdict,
                                  if (isTRUE(opt$secondOrder) && ho_ok) "; adicionalmente se ajustó un factor general de segundo orden y se comparó formalmente contra él." else ".")), "</p>",
                 "<h4>", tr("Why", "Por qué"), "</h4>",
                 "<p>", tr(
@@ -565,6 +642,9 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
                     "Vea la sección Biblioteca de Confiabilidad → Confiabilidad Avanzada (SEM) para definiciones, fórmulas y supuestos completos de CR, AVE, H, HTMT, omega de segundo orden, la prueba de razón de verosimilitud de comparación de modelos, e índices de modificación, y Bibliografía → Confiabilidad Avanzada (SEM) para las citas correspondientes."), "</p>",
                 "<h4>", tr("What to do now", "Qué hacer ahora"), "</h4>",
                 "<ul style='line-height:1;'>",
+                if (any_flagged)
+                    paste0("<li>", tr("The Solution Admissibility table above flags at least one symptom of an inadmissible or borderline solution -- resolve this first; every other number in this report inherits whichever model is affected.",
+                                      "La tabla de Admisibilidad de la Solución de arriba señala al menos un síntoma de una solución inadmisible o límite -- resuelva esto primero; cualquier otro número de este informe hereda el modelo que esté afectado."), "</li>") else "",
                 if (!is.null(lrt) && !is.na(lrt$p) && lrt$p < .05)
                     paste0("<li>", tr("The second-order structure fits significantly worse than free correlations — report per-factor reliability (CR/ω/H above) rather than a single general-factor score, unless there is a strong theoretical reason to insist on one.",
                                       "La estructura de segundo orden ajusta significativamente peor que las correlaciones libres — reporte la confiabilidad por factor (CR/ω/H de arriba) en vez de un único puntaje de factor general, a menos que haya una razón teórica fuerte para insistir en uno."), "</li>") else "",
@@ -584,7 +664,7 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
                 if (length(low_relg) > 0L)
                     paste0("<li>", tr("For the flagged factor(s), report and interpret that subscale's own score rather than folding it into a total/general-factor score.",
                                       "Para el/los factor(es) marcados, reporte e interprete el puntaje propio de esa subescala en vez de incorporarlo a un puntaje total/de factor general."), "</li>") else "",
-                if ((is.null(lrt) || is.na(lrt$p) || lrt$p >= .05) && length(mi_rows) == 0L && identical(cf_verdict, tr("Good","Bueno")) &&
+                if (!any_flagged && (is.null(lrt) || is.na(lrt$p) || lrt$p >= .05) && length(mi_rows) == 0L && identical(cf_verdict, tr("Good","Bueno")) &&
                     length(worst_ave) == 0L && length(worst_htmt) == 0L && length(low_relg) == 0L)
                     paste0("<li>", tr("No specific corrective action indicated from the advanced analysis.",
                                       "No se indica ninguna acción correctiva específica desde el análisis avanzado."), "</li>") else "",
