@@ -675,6 +675,26 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
                    "Los ítems se trataron como continuos, ajustados con MLR (robusto a la no normalidad). El &chi;&sup2;, CFI, TLI y RMSEA de abajo son las versiones escaladas/robustas que MLR recomienda, no las simples.")
                 else
                 tr("Items were treated as continuous, fit with ML.", "Los ítems se trataron como continuos, ajustados con ML.")
+            # EN: Both the estimator and the missing-data options are
+            # silently overridden when items are ordinal (WLSMV always
+            # wins, and FIML has no ordinal/WLSMV equivalent) -- surfacing
+            # that here so a user who explicitly picked ML/MLR or FIML
+            # does not assume their choice was honored.
+            # ES: Tanto el estimador como la opción de datos faltantes se
+            # sobrescriben silenciosamente cuando los ítems son ordinales
+            # (WLSMV siempre gana, y FIML no tiene equivalente ordinal/
+            # WLSMV) -- se hace visible aquí para que un usuario que eligió
+            # explícitamente ML/MLR o FIML no asuma que su elección se
+            # respetó.
+            override_desc <- if (item_is_ordinal && opt$estimator %in% c("ml", "mlr"))
+                paste0(" ", tr(
+                    paste0("You selected ", toupper(opt$estimator), ", but WLSMV was used instead because the items are ordinal."),
+                    paste0("Usted seleccionó ", toupper(opt$estimator), ", pero se usó WLSMV en su lugar porque los ítems son ordinales.")))
+                else if (item_is_ordinal && identical(opt$missingData, "fiml"))
+                paste0(" ", tr(
+                    "You selected FIML, but listwise deletion was used instead because FIML has no equivalent for ordinal/WLSMV items.",
+                    "Usted seleccionó FIML, pero se usó eliminación por lista en su lugar porque FIML no tiene equivalente para ítems ordinales/WLSMV."))
+                else ""
             missing_desc <- if (identical(missing_eff, "fiml"))
                 paste0(" ", tr(
                     "Missing values were handled with Full Information Maximum Likelihood (FIML), which uses all available information per case under the assumption that data are missing at random conditional on the model's variables, rather than discarding any case outright.",
@@ -685,7 +705,7 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
                                paste0("Se usaron ", n_adv, " de ", n_available, " casos disponibles.")))
                 else ""
             res$fitNote$setContent(.fl_prose(
-                "<p>", estim_desc, missing_desc, n_desc, "</p>",
+                "<p>", estim_desc, override_desc, missing_desc, n_desc, "</p>",
                 "<p>", tr(
                     "CFI and TLI (both 0-1) reward explaining more covariance than a null (no-correlation) model; RMSEA and SRMR (both 0-1, lower is better) penalize model complexity and average residual correlation, respectively. Hu &amp; Bentler (1999): CFI/TLI &ge; .95, RMSEA &le; .06, SRMR &le; .08 for Good; CFI/TLI &ge; .90, RMSEA &le; .08, SRMR &le; .10 for Acceptable. These are conventional descriptive benchmarks from simulation studies under specific conditions, not universal pass/fail laws -- treat the Good/Acceptable/Poor verdict as a starting point for judgment, not a substitute for it, and weigh it alongside the loadings, residuals, and theoretical plausibility of the model. When the estimator is robust (MLR or WLSMV), the robust CFI/TLI/RMSEA columns — not the plain ones — are what these cutoffs and the Fit verdict use.",
                     "El CFI y el TLI (ambos 0-1) premian explicar más covarianza que un modelo nulo (sin correlación); el RMSEA y el SRMR (ambos 0-1, menor es mejor) penalizan la complejidad del modelo y la correlación residual promedio, respectivamente. Hu &amp; Bentler (1999): CFI/TLI &ge; .95, RMSEA &le; .06, SRMR &le; .08 para Bueno; CFI/TLI &ge; .90, RMSEA &le; .08, SRMR &le; .10 para Aceptable. Estos son puntos de referencia descriptivos convencionales de estudios de simulación bajo condiciones específicas, no leyes universales de aprobado/reprobado -- trate el veredicto Bueno/Aceptable/Pobre como un punto de partida para el juicio, no como un sustituto de él, y sopéselo junto con las cargas, los residuos y la plausibilidad teórica del modelo. Cuando el estimador es robusto (MLR o WLSMV), las columnas CFI/TLI/RMSEA robustas — no las simples — son las que usan estos umbrales y el veredicto de Ajuste."),
