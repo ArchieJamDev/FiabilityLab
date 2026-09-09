@@ -58,6 +58,72 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
             gsub(">", "&gt;", x, fixed = TRUE)
         },
 
+        # ── Classify one invariance-sequence step from its LRT p-value and
+        # its ΔCFI, both against the model just before it. EN: previously
+        # this was a plain OR ("either criterion passing counts as
+        # holding"), which silently treated LRT-non-significant-but-large-
+        # ΔCFI-drop the same as LRT-significant-but-small-ΔCFI-drop --
+        # collapsing two criteria with different sensitivities (the LRT is
+        # hypersensitive in large samples, which is WHY Cheung & Rensvold's
+        # (2002) ΔCFI is used as a complement; but a real drop the ΔCFI
+        # flags should not be waved away just because the LRT (which can be
+        # underpowered in a small sample) happened not to reach
+        # significance). This now reports which criterion(a) actually
+        # support the restriction, so a genuine disagreement between them
+        # is visible rather than silently resolved in the restriction's
+        # favor.
+        # ES: antes esto era un simple OR ("basta con que un criterio se
+        # cumpla"), que trataba por igual el caso LRT-no-significativo-
+        # pero-con-caída-grande-de-ΔCFI y el caso LRT-significativo-pero-
+        # con-caída-pequeña-de-ΔCFI -- colapsando dos criterios con
+        # sensibilidades distintas (el LRT es hipersensible en muestras
+        # grandes, que es justamente POR QUÉ se usa el ΔCFI de Cheung &
+        # Rensvold (2002) como complemento; pero una caída real que el
+        # ΔCFI señala no debería descartarse solo porque el LRT -- que
+        # puede tener poca potencia en una muestra pequeña -- no haya
+        # resultado significativo). Ahora esto reporta qué criterio(s)
+        # realmente respaldan la restricción, de modo que un desacuerdo
+        # genuino entre ellos sea visible en vez de resolverse
+        # silenciosamente a favor de la restricción.
+        .invariance_verdict = function(p_val, dcfi) {
+            tr <- private$.tr
+            lrt_ok <- !is.na(p_val); cfi_ok <- !is.na(dcfi)
+            lrt_holds <- lrt_ok && p_val >= .05
+            cfi_holds <- cfi_ok && dcfi >= -.01
+            if (!lrt_ok && !cfi_ok) return(tr("Unable to determine", "No se pudo determinar"))
+            if (lrt_holds && cfi_holds) return(tr("Supported by both criteria", "Respaldado por ambos criterios"))
+            if (lrt_holds) return(tr("Supported by LRT only", "Respaldado solo por LRT"))
+            if (cfi_holds) return(tr("Supported by ΔCFI only", "Respaldado solo por ΔCFI"))
+            tr("Not supported", "No respaldado")
+        },
+
+        # ── Fit measures that prefer the scaled/robust chi-square/df/p and
+        # robust CFI/RMSEA under a robust estimator (MLR or WLSMV) --
+        # matching advancedreliability.b.R's own .fit_measures_ext(). WLSMV's
+        # *plain* chi-square/CFI/RMSEA are not the recommended numbers and
+        # can even fall outside [0,1]; a ΔCFI computed from the plain CFI
+        # would inherit that unreliability, which previously went
+        # unaddressed here even though Advanced Reliability already solved
+        # it. ──────────────────────────────────────────────────────────────
+        .fit_measures_ext = function(fit, estimator_eff) {
+            is_robust <- estimator_eff %in% c("MLR", "WLSMV")
+            chisq_names <- if (is_robust) c("chisq.scaled", "df.scaled", "pvalue.scaled") else c("chisq", "df", "pvalue")
+            fit_names <- c("cfi", "rmsea")
+            robust_names <- if (is_robust) c("cfi.robust", "rmsea.robust") else character(0)
+            all_names <- c(chisq_names, fit_names, robust_names)
+            fm <- tryCatch(lavaan::fitMeasures(fit, all_names), error = function(e) NULL)
+            out <- stats::setNames(rep(NA_real_, length(all_names)), all_names)
+            if (!is.null(fm)) out[names(fm)] <- fm
+            if (is_robust) {
+                names(out)[names(out) == "chisq.scaled"] <- "chisq"
+                names(out)[names(out) == "df.scaled"] <- "df"
+                names(out)[names(out) == "pvalue.scaled"] <- "pvalue"
+                if (!is.na(out["cfi.robust"])) out["cfi"] <- out["cfi.robust"]
+                if (!is.na(out["rmsea.robust"])) out["rmsea"] <- out["rmsea.robust"]
+            }
+            out
+        },
+
         .fit_cfa_group = function(model_syntax, data, group_var, ordered_items, estimator, group_equal) {
             fit_args <- list(model = model_syntax, data = data, group = group_var, std.lv = TRUE, group.equal = group_equal)
             if (!is.null(ordered_items)) {
@@ -162,8 +228,7 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
                 return()
             }
 
-            fm_names <- c("chisq", "df", "cfi", "rmsea")
-            fm_list <- lapply(fits, function(f) if (is.null(f)) NULL else tryCatch(lavaan::fitMeasures(f, fm_names), error = function(e) NULL))
+            fm_list <- lapply(fits, function(f) if (is.null(f)) NULL else private$.fit_measures_ext(f, estimator_eff))
 
             inv_rows <- list()
             prev_cfi <- NA_real_
@@ -186,9 +251,7 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
                         p_val  <- lrt_out[["Pr(>Chisq)"]][2]
                     }
                     dcfi <- unname(fm["cfi"]) - prev_cfi
-                    lrt_holds <- is.na(p_val) || p_val >= .05
-                    cfi_holds <- is.na(dcfi) || dcfi >= -.01
-                    verdict <- if (lrt_holds || cfi_holds) tr("Held", "Se sostiene") else tr("Not held", "No se sostiene")
+                    verdict <- private$.invariance_verdict(p_val, dcfi)
                 }
                 inv_rows[[length(inv_rows) + 1L]] <- list(
                     model = levels_seq[[i]]$name,
@@ -204,22 +267,23 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
             private$.reset_table(it, length(inv_rows))
             for (i in seq_along(inv_rows)) it$setRow(rowNo = i, values = inv_rows[[i]])
 
-            not_held <- Filter(function(r) identical(r$verdict, tr("Not held", "No se sostiene")), inv_rows)
-            first_not_held <- if (length(not_held) > 0L) not_held[[1]]$model else NULL
+            not_supported <- Filter(function(r) identical(r$verdict, tr("Not supported", "No respaldado")), inv_rows)
+            discordant <- Filter(function(r) identical(r$verdict, tr("Supported by LRT only", "Respaldado solo por LRT")) ||
+                                              identical(r$verdict, tr("Supported by ΔCFI only", "Respaldado solo por ΔCFI")), inv_rows)
             failed_to_converge <- Filter(function(r) identical(r$verdict, tr("Did not converge", "No convergió")), inv_rows)
 
             estim_desc <- if (item_is_ordinal)
-                tr("Items were treated as ordinal (WLSMV estimator on polychoric/tetrachoric correlations).",
-                   "Los ítems se trataron como ordinales (estimador WLSMV sobre correlaciones policóricas/tetracóricas).")
+                tr("Items were treated as ordinal (WLSMV estimator on polychoric/tetrachoric correlations). χ², CFI and RMSEA below are the scaled/robust versions WLSMV recommends, not the plain ones.",
+                   "Los ítems se trataron como ordinales (estimador WLSMV sobre correlaciones policóricas/tetracóricas). El χ², CFI y RMSEA de abajo son las versiones escaladas/robustas que WLSMV recomienda, no las simples.")
                 else if (identical(estimator_eff, "MLR"))
-                tr("Items were treated as continuous, fit with MLR (robust to non-normality).",
-                   "Los ítems se trataron como continuos, ajustados con MLR (robusto a la no normalidad).")
+                tr("Items were treated as continuous, fit with MLR (robust to non-normality). χ², CFI and RMSEA below are the scaled/robust versions MLR recommends, not the plain ones.",
+                   "Los ítems se trataron como continuos, ajustados con MLR (robusto a la no normalidad). El χ², CFI y RMSEA de abajo son las versiones escaladas/robustas que MLR recomienda, no las simples.")
                 else tr("Items were treated as continuous, fit with ML.", "Los ítems se trataron como continuos, ajustados con ML.")
 
             res$invarianceNote$setContent(.fl_prose(
                 "<p>", estim_desc, " ", tr(
-                    paste0("Each row after Configural is tested against the row just before it (not against Configural directly): a nonsignificant likelihood-ratio test (p &ge; .05) or a small drop in CFI (&Delta;CFI &ge; -.01, the sample-size-robust criterion of Cheung &amp; Rensvold, 2002) both count as the added restriction \"holding\" -- the LRT alone gets hypersensitive to trivial misfit in large samples, which is why both criteria are shown."),
-                    paste0("Cada fila después de Configural se prueba contra la fila justo anterior (no contra Configural directamente): una prueba de razón de verosimilitud no significativa (p &ge; .05) o una caída pequeña en el CFI (&Delta;CFI &ge; -.01, el criterio robusto al tamaño muestral de Cheung &amp; Rensvold, 2002) cuentan como que la restricción agregada \"se sostiene\" -- el LRT por sí solo se vuelve hipersensible a desajustes triviales en muestras grandes, por lo que se muestran ambos criterios.")),
+                    paste0("Each row after Configural is tested against the row just before it (not against Configural directly), on two criteria: a likelihood-ratio test (LRT; significant at p &lt; .05 means the added restriction costs a real amount of fit) and the change in CFI (&Delta;CFI &lt; -.01 is Cheung &amp; Rensvold's, 2002, sample-size-robust threshold for the same question). The LRT alone gets hypersensitive to trivial misfit in large samples -- part of why &Delta;CFI is reported alongside it -- but the two do not always agree: this report shows \"Supported by both criteria\" only when they do, and names which single criterion supports the restriction when they disagree, rather than treating either criterion passing as sufficient on its own."),
+                    paste0("Cada fila después de Configural se prueba contra la fila justo anterior (no contra Configural directamente), con dos criterios: una prueba de razón de verosimilitud (LRT; significativa en p &lt; .05 significa que la restricción agregada cuesta una cantidad real de ajuste) y el cambio en CFI (&Delta;CFI &lt; -.01 es el umbral robusto al tamaño muestral de Cheung &amp; Rensvold, 2002, para la misma pregunta). El LRT por sí solo se vuelve hipersensible a desajustes triviales en muestras grandes -- parte de por qué se reporta el &Delta;CFI junto a él -- pero ambos no siempre coinciden: este informe muestra \"Respaldado por ambos criterios\" solo cuando coinciden, y nombra qué criterio único respalda la restricción cuando discrepan, en vez de tratar que cualquiera de los dos se cumpla como suficiente por sí solo.")),
                 "</p>",
                 "<p>", tr(
                     "Configural invariance means the same items load on the same factors in every group, with everything else free -- the minimum requirement for the construct to even be comparable across groups. Metric (weak) invariance -- equal loadings -- is required before comparing regression/correlation coefficients involving the factor across groups. Scalar (strong) invariance -- also equal intercepts/thresholds -- is required before comparing group means or observed scores; without it, an observed mean difference may reflect item functioning differences, not a real difference on the construct. Strict invariance -- also equal residual variances -- is a stronger, less commonly required condition.",
@@ -228,11 +292,14 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
                 if (length(failed_to_converge) > 0L) paste0("<p>&#9888; ", tr(
                         "One or more models in the sequence did not converge -- the invariance question cannot be answered past that point with this data/structure.",
                         "Uno o más modelos de la secuencia no convergieron -- la pregunta de invariancia no puede responderse más allá de ese punto con estos datos/estructura."), "</p>")
-                    else if (!is.null(first_not_held)) paste0("<p>&#9888; ", tr(
-                        paste0(first_not_held, " invariance does not hold -- do not compare whatever that level of invariance is required for (see above) across ", esc(group_name), " groups without first identifying which specific parameters differ (partial invariance) via semTools::partialInvariance()/partialInvarianceCat()."),
-                        paste0("La invariancia ", first_not_held, " no se sostiene -- no compare aquello para lo que se requiere ese nivel de invariancia (vea arriba) entre grupos de ", esc(group_name), " sin antes identificar qué parámetros específicos difieren (invariancia parcial) vía semTools::partialInvariance()/partialInvarianceCat().")), "</p>")
-                    else paste0("<p>&#10003; ", tr("Full invariance holds through every level tested -- comparing group means/scores on this construct across these groups is on solid footing.",
-                                                     "La invariancia completa se sostiene en todos los niveles probados -- comparar medias/puntajes de grupo en este constructo entre estos grupos está en una base sólida."), "</p>")))
+                    else if (length(not_supported) > 0L) paste0("<p>&#9888; ", tr(
+                        paste0(not_supported[[1]]$model, " invariance is not supported by either criterion -- do not compare whatever that level of invariance is required for (see above) across ", esc(group_name), " groups without first identifying which specific parameters differ (partial invariance) via semTools::partialInvariance()/partialInvarianceCat()."),
+                        paste0("La invariancia ", not_supported[[1]]$model, " no está respaldada por ningún criterio -- no compare aquello para lo que se requiere ese nivel de invariancia (vea arriba) entre grupos de ", esc(group_name), " sin antes identificar qué parámetros específicos difieren (invariancia parcial) vía semTools::partialInvariance()/partialInvarianceCat().")), "</p>")
+                    else if (length(discordant) > 0L) paste0("<p>&#9888; ", tr(
+                        paste0(discordant[[1]]$model, " invariance is supported by only one of the two criteria -- treat this level with real caution rather than as settled. Investigate partial invariance to see whether the discordance traces to specific items before relying on comparisons that require this level."),
+                        paste0("La invariancia ", discordant[[1]]$model, " está respaldada por solo uno de los dos criterios -- trate este nivel con verdadera cautela en vez de darlo por resuelto. Investigue la invariancia parcial para ver si la discordancia se debe a ítems específicos antes de confiar en comparaciones que requieran este nivel.")), "</p>")
+                    else paste0("<p>&#10003; ", tr("Full invariance is supported by both criteria through every level tested -- comparing group means/scores on this construct across these groups is on solid footing.",
+                                                     "La invariancia completa está respaldada por ambos criterios en todos los niveles probados -- comparar medias/puntajes de grupo en este constructo entre estos grupos está en una base sólida."), "</p>")))
 
             private$.fitcmp_data <- data.frame(
                 level = vapply(inv_rows, function(r) r$model, character(1)),
@@ -252,9 +319,12 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
                 if (length(failed_to_converge) > 0L)
                     paste0("<li>", tr("Resolve the convergence failure first -- fewer groups/factors, more items per factor, or more cases per group may help.",
                                       "Resuelva primero la falla de convergencia -- menos grupos/factores, más ítems por factor, o más casos por grupo pueden ayudar."), "</li>")
-                else if (!is.null(first_not_held))
+                else if (length(not_supported) > 0L)
                     paste0("<li>", tr("Before comparing group means or scores, investigate partial invariance to find which specific items break the restriction, rather than abandoning the comparison or forcing full invariance.",
                                       "Antes de comparar medias o puntajes de grupo, investigue la invariancia parcial para encontrar qué ítems específicos rompen la restricción, en vez de abandonar la comparación o forzar la invariancia completa."), "</li>")
+                else if (length(discordant) > 0L)
+                    paste0("<li>", tr("At least one level is supported by only one criterion (LRT or ΔCFI, not both) -- treat comparisons requiring that level with caution and consider investigating partial invariance before relying on them.",
+                                      "Al menos un nivel está respaldado por solo un criterio (LRT o ΔCFI, no ambos) -- trate con cautela las comparaciones que requieran ese nivel y considere investigar invariancia parcial antes de confiar en ellas."), "</li>")
                 else
                     paste0("<li>", tr("Group comparisons on this construct's means/scores are supported by this invariance sequence.",
                                       "Las comparaciones de grupo sobre las medias/puntajes de este constructo están respaldadas por esta secuencia de invariancia."), "</li>"),
