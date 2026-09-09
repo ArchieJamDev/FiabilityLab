@@ -89,3 +89,70 @@ test_that("KR-20/21 compute a real coefficient on genuinely binary 0/1 data", {
     expect_gte(kr20$value, 0)
     expect_lte(kr20$value, 1)
 })
+
+# -----------------------------------------------------------------------------
+# internalConsistency edge-case tests.
+# ES: Pruebas de casos límite de internalConsistency.
+#
+# jamovi's own submission guidance calls for testing pathological input:
+# special characters in variable names, missing data, and near-empty data
+# sets. These tests do not assert any particular numeric result -- they
+# assert that pathological input is met with the module's own explanatory
+# note (rendered through self$results$autoDetectNote$setContent() and
+# similar), never with an uncaught R error, mirroring the edge-case suite
+# already established for AssumptionsLab.
+#
+# ES: La propia guía de envío de jamovi pide probar entrada patológica:
+# caracteres especiales en nombres de variable, datos faltantes y
+# conjuntos de datos casi vacíos. Estas pruebas no verifican ningún
+# resultado numérico particular -- verifican que la entrada patológica se
+# resuelva con la propia nota explicativa del módulo (renderizada mediante
+# self$results$autoDetectNote$setContent() y similares), nunca con un
+# error no controlado de R, siguiendo la misma suite de casos límite ya
+# establecida para AssumptionsLab.
+# -----------------------------------------------------------------------------
+
+test_that("internalConsistency tolerates accented and symbol item names", {
+
+    d <- edgeItemsSpecialNameData()
+
+    expect_no_error(
+        internalConsistency(data = d, items = names(d), reportLang = "en")
+    )
+})
+
+test_that("internalConsistency tolerates a single-row data set", {
+
+    d <- edgeSingleRowItemsData()
+
+    expect_no_error(
+        internalConsistency(data = d, items = names(d), reportLang = "en")
+    )
+})
+
+test_that("internalConsistency tolerates an item column that is entirely NA", {
+
+    d <- edgeAllNaData(edgeItemsBaseData(), "item1")
+
+    expect_no_error(
+        internalConsistency(data = d, items = names(d), reportLang = "en")
+    )
+})
+
+test_that("internalConsistency tolerates a zero-variance item column", {
+
+    d <- edgeConstantData(edgeItemsBaseData(), "item1")
+
+    expect_no_error(
+        internalConsistency(data = d, items = names(d), reportLang = "en")
+    )
+})
+
+test_that("internalConsistency tolerates fewer than 2 items", {
+
+    d <- edgeItemsBaseData(n_items = 1)
+
+    expect_no_error(
+        internalConsistency(data = d, items = names(d), reportLang = "en")
+    )
+})

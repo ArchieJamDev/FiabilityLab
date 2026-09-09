@@ -108,3 +108,70 @@ test_that("ICC's Levene check flags a rater with genuinely larger residual error
     expect_lt(lev$p_value, .05)
     expect_equal(lev$verdict, "Violated")
 })
+
+# -----------------------------------------------------------------------------
+# interRater edge-case tests.
+# ES: Pruebas de casos límite de interRater.
+#
+# jamovi's own submission guidance calls for testing pathological input:
+# special characters in variable names, missing data, and near-empty data
+# sets. These tests do not assert any particular numeric result -- they
+# assert that pathological input is met with the module's own explanatory
+# note (rendered through self$results$autoDetectNote$setContent() and
+# similar), never with an uncaught R error, mirroring the edge-case suite
+# already established for AssumptionsLab.
+#
+# ES: La propia guía de envío de jamovi pide probar entrada patológica:
+# caracteres especiales en nombres de variable, datos faltantes y
+# conjuntos de datos casi vacíos. Estas pruebas no verifican ningún
+# resultado numérico particular -- verifican que la entrada patológica se
+# resuelva con la propia nota explicativa del módulo (renderizada mediante
+# self$results$autoDetectNote$setContent() y similares), nunca con un
+# error no controlado de R, siguiendo la misma suite de casos límite ya
+# establecida para AssumptionsLab.
+# -----------------------------------------------------------------------------
+
+test_that("interRater tolerates accented and symbol rater names", {
+
+    d <- edgeRatersSpecialNameData()
+
+    expect_no_error(
+        interRater(data = d, ratings = names(d), dataType = "continuous", reportLang = "en")
+    )
+})
+
+test_that("interRater tolerates a single-row data set", {
+
+    d <- edgeSingleRowRatersData()
+
+    expect_no_error(
+        interRater(data = d, ratings = names(d), dataType = "continuous", reportLang = "en")
+    )
+})
+
+test_that("interRater tolerates a rater column that is entirely NA", {
+
+    d <- edgeAllNaData(edgeRatersBaseData(), "rater1")
+
+    expect_no_error(
+        interRater(data = d, ratings = names(d), dataType = "continuous", reportLang = "en")
+    )
+})
+
+test_that("interRater tolerates a zero-variance rater column", {
+
+    d <- edgeConstantData(edgeRatersBaseData(), "rater1", constantValue = 50)
+
+    expect_no_error(
+        interRater(data = d, ratings = names(d), dataType = "continuous", reportLang = "en")
+    )
+})
+
+test_that("interRater tolerates fewer than 2 raters", {
+
+    d <- edgeRatersBaseData(k = 1)
+
+    expect_no_error(
+        interRater(data = d, ratings = names(d), dataType = "continuous", reportLang = "en")
+    )
+})

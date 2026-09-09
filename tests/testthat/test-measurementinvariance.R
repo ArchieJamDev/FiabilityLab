@@ -84,3 +84,98 @@ test_that("a known scalar-invariance violation is caught specifically at the Sca
     expect_equal(metric$verdict, "Supported by both criteria")
     expect_equal(scalar$verdict, "Not supported")
 })
+
+# -----------------------------------------------------------------------------
+# measurementInvariance edge-case tests.
+# ES: Pruebas de casos límite de measurementInvariance.
+#
+# jamovi's own submission guidance calls for testing pathological input:
+# special characters in variable names, missing data, and near-empty data
+# sets. Measurement Invariance additionally guards on having at least 2
+# group levels before it attempts to fit the configural/metric/scalar/
+# strict sequence (length(group_levels) < 2L in
+# measurementinvariance.b.R). These tests do not assert any particular
+# numeric result -- they assert that pathological input is met with the
+# module's own explanatory note, never with an uncaught R or lavaan
+# error, mirroring the edge-case suite already established for
+# AssumptionsLab.
+#
+# ES: La propia guía de envío de jamovi pide probar entrada patológica:
+# caracteres especiales en nombres de variable, datos faltantes y
+# conjuntos de datos casi vacíos. Measurement Invariance además exige al
+# menos 2 niveles de grupo antes de intentar ajustar la secuencia
+# configural/métrica/escalar/estricta (length(group_levels) < 2L en
+# measurementinvariance.b.R). Estas pruebas no verifican ningún resultado
+# numérico particular -- verifican que la entrada patológica se resuelva
+# con la propia nota explicativa del módulo, nunca con un error no
+# controlado de R o de lavaan, siguiendo la misma suite de casos límite ya
+# establecida para AssumptionsLab.
+# -----------------------------------------------------------------------------
+
+test_that("measurementInvariance tolerates accented and symbol item names", {
+
+    d <- edgeGroupItemsSpecialNameData()
+    items <- setdiff(names(d), "group")
+    factors <- list(list(label = "F1", vars = items))
+
+    expect_no_error(
+        measurementInvariance(
+            data = d, group = "group", factors = factors,
+            itemType = "continuous", estimator = "ml", reportLang = "en"
+        )
+    )
+})
+
+test_that("measurementInvariance tolerates a single-row data set", {
+
+    d <- edgeGroupItemsSingleRowData()
+    items <- setdiff(names(d), "group")
+    factors <- list(list(label = "F1", vars = items))
+
+    expect_no_error(
+        measurementInvariance(
+            data = d, group = "group", factors = factors,
+            itemType = "continuous", estimator = "ml", reportLang = "en"
+        )
+    )
+})
+
+test_that("measurementInvariance tolerates an item column that is entirely NA", {
+
+    d <- edgeAllNaData(fixtureInvariantTwoGroupData(n_per_group = 30), "item1")
+
+    expect_no_error(
+        measurementInvariance(
+            data = d, group = "group",
+            factors = list(list(label = "F1", vars = paste0("item", 1:4))),
+            itemType = "continuous", estimator = "ml", reportLang = "en"
+        )
+    )
+})
+
+test_that("measurementInvariance tolerates a zero-variance item column", {
+
+    d <- edgeConstantData(fixtureInvariantTwoGroupData(n_per_group = 30), "item1")
+
+    expect_no_error(
+        measurementInvariance(
+            data = d, group = "group",
+            factors = list(list(label = "F1", vars = paste0("item", 1:4))),
+            itemType = "continuous", estimator = "ml", reportLang = "en"
+        )
+    )
+})
+
+test_that("measurementInvariance tolerates a grouping variable with a single level", {
+
+    d <- edgeGroupItemsSingleLevelData()
+    items <- setdiff(names(d), "group")
+    factors <- list(list(label = "F1", vars = items))
+
+    expect_no_error(
+        measurementInvariance(
+            data = d, group = "group", factors = factors,
+            itemType = "continuous", estimator = "ml", reportLang = "en"
+        )
+    )
+})
