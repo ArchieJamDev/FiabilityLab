@@ -20,6 +20,8 @@ options:
         title: Item Response Theory
       - name: sem
         title: Advanced Reliability (SEM)
+      - name: invariance
+        title: Measurement Invariance
   - name: citationStyle
     type: List
     options:

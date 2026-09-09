@@ -16,6 +16,8 @@ options:
         title: Inter-Rater Agreement
       - name: advanced
         title: Advanced Reliability (SEM)
+      - name: invariance
+        title: Measurement Invariance
       - name: foundations
         title: Theoretical Foundations
       - name: errors

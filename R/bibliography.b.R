@@ -135,7 +135,20 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
         list(topics = "sem", authors = list(c("MacCallum", "R. C."), c("Roznowski", "M."), c("Necowitz", "L. B.")), year = "1992",
              title = "Model modifications in covariance structure analysis: The problem of capitalization on chance",
              journal = "Psychological Bulletin", volume = "111", issue = "3", pages = "490-504",
-             doi = "10.1037/0033-2909.111.3.490", ref_type = "methodological")
+             doi = "10.1037/0033-2909.111.3.490", ref_type = "methodological"),
+        list(topics = "sem", authors = list(c("Horn", "J. L.")), year = "1965",
+             title = "A rationale and test for the number of factors in factor analysis",
+             journal = "Psychometrika", volume = "30", issue = "2", pages = "179-185",
+             doi = "10.1007/BF02289447", ref_type = "seminal"),
+
+        list(topics = "invariance", authors = list(c("Cheung", "G. W."), c("Rensvold", "R. B.")), year = "2002",
+             title = "Evaluating goodness-of-fit indexes for testing measurement invariance",
+             journal = "Structural Equation Modeling", volume = "9", issue = "2", pages = "233-255",
+             doi = "10.1207/S15328007SEM0902_5", ref_type = "methodological"),
+        list(topics = "invariance", authors = list(c("Vandenberg", "R. J."), c("Lance", "C. E.")), year = "2000",
+             title = "A review and synthesis of the measurement invariance literature: Suggestions, practices, and recommendations for organizational research",
+             journal = "Organizational Research Methods", volume = "3", issue = "1", pages = "4-70",
+             doi = "10.1177/109442810031002", ref_type = "review")
       )
 
       # -----------------------------------------------------------------------
@@ -170,7 +183,10 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
         "Fornell|1981"  = list(citations = "70924", source = "OpenAlex", other = ""),
         "Henseler|2015" = list(citations = "36358", source = "OpenAlex", other = ""),
         "Hu|1999"       = list(citations = "108216", source = "OpenAlex", other = ""),
-        "MacCallum|1992" = list(citations = "1586",  source = "OpenAlex", other = "")
+        "MacCallum|1992" = list(citations = "1586",  source = "OpenAlex", other = ""),
+        "Horn|1965"      = list(citations = "8803",  source = "OpenAlex", other = "Crossref API (6652)"),
+        "Cheung|2002"    = list(citations = "16119", source = "OpenAlex", other = "Crossref API (13311)"),
+        "Vandenberg|2000" = list(citations = "7958", source = "OpenAlex", other = "Crossref API (6231)")
       )
 
       journal_biblio <- list(
@@ -187,7 +203,8 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
           quartile = tr("Q3-Q4 (SJR, varies by subject category)", "Q3-Q4 (SJR, varía según categoría temática)")),
         "Journal of Marketing Research" = list(scopus = TRUE, wos = TRUE, other = "", quartile = "Q1"),
         "Journal of the Academy of Marketing Science" = list(scopus = TRUE, wos = TRUE, other = "", quartile = "Q1"),
-        "Structural Equation Modeling" = list(scopus = TRUE, wos = TRUE, other = "", quartile = "Q1")
+        "Structural Equation Modeling" = list(scopus = TRUE, wos = TRUE, other = "", quartile = "Q1"),
+        "Organizational Research Methods" = list(scopus = TRUE, wos = TRUE, other = "", quartile = "Q1")
       )
 
       in_text_cite <- function(r) {

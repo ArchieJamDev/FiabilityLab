@@ -19,6 +19,10 @@ items:
     type: Html
     title: Advanced Reliability (SEM)
 
+  - name: invariance
+    type: Html
+    title: Measurement Invariance
+
   - name: foundations
     type: Html
     title: Theoretical Foundations
