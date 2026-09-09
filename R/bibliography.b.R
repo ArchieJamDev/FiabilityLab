@@ -5,16 +5,10 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
     .run = function() {
       lang  <- .fl_normalize_lang(self$options$reportLang)
       topic <- self$options$topic
-      style <- self$options$citationStyle
 
       tr <- function(en, es) if (identical(lang, "es")) es else en
 
-      style_label <- switch(style,
-        apa = "APA 7th",
-        vancouver = "Vancouver",
-        ieee = "IEEE",
-        "APA 7th"
-      )
+      style_label <- "APA 7th"
 
       esc <- function(x) {
         x <- gsub("&", "&amp;", x, fixed = TRUE)
@@ -391,8 +385,8 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
         hanging(inner)
       }
 
-      # FiabilityLab currently only implements APA 7th formatting; the
-      # citationStyle option's other values are a placeholder for future work.
+      # FiabilityLab formats every reference in APA 7th -- the sole style
+      # this module supports (no Vancouver/IEEE selector).
       format_ref <- format_apa
 
       # -----------------------------------------------------------------------

@@ -7,7 +7,6 @@ bibliographyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
     public = list(
         initialize = function(
             topic = NULL,
-            citationStyle = NULL,
             reportLang = NULL, ...) {
 
             super$initialize(
@@ -27,13 +26,6 @@ bibliographyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
                     "irt",
                     "sem",
                     "invariance"))
-            private$..citationStyle <- jmvcore::OptionList$new(
-                "citationStyle",
-                citationStyle,
-                options=list(
-                    "apa",
-                    "vancouver",
-                    "ieee"))
             private$..reportLang <- jmvcore::OptionList$new(
                 "reportLang",
                 reportLang,
@@ -42,16 +34,13 @@ bibliographyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
                     "es"))
 
             self$.addOption(private$..topic)
-            self$.addOption(private$..citationStyle)
             self$.addOption(private$..reportLang)
         }),
     active = list(
         topic = function() private$..topic$value,
-        citationStyle = function() private$..citationStyle$value,
         reportLang = function() private$..reportLang$value),
     private = list(
         ..topic = NA,
-        ..citationStyle = NA,
         ..reportLang = NA)
 )
 
@@ -117,7 +106,6 @@ bibliographyBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'
 #' 
 #' @param topic .
-#' @param citationStyle .
 #' @param reportLang .
 #' @return A results object containing:
 #' \tabular{llllll}{
@@ -131,7 +119,6 @@ bibliographyBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #' @export
 bibliography <- function(
     topic,
-    citationStyle,
     reportLang) {
 
     if ( ! requireNamespace("jmvcore", quietly=TRUE))
@@ -140,7 +127,6 @@ bibliography <- function(
 
     options <- bibliographyOptions$new(
         topic = topic,
-        citationStyle = citationStyle,
         reportLang = reportLang)
 
     analysis <- bibliographyClass$new(

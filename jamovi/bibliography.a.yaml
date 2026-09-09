@@ -22,15 +22,6 @@ options:
         title: Advanced Reliability (SEM)
       - name: invariance
         title: Measurement Invariance
-  - name: citationStyle
-    type: List
-    options:
-      - name: apa
-        title: APA 7th
-      - name: vancouver
-        title: Vancouver
-      - name: ieee
-        title: IEEE
   - name: reportLang
     type: List
     options:

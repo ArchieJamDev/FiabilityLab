@@ -18,16 +18,10 @@ children:
         name: gtheory
       - title: Item Response Theory
         name: irt
-  - type: ComboBox
-    name: citationStyle
-    label: Citation Style
-    options:
-      - title: APA 7th
-        name: apa
-      - title: Vancouver
-        name: vancouver
-      - title: IEEE
-        name: ieee
+      - title: Advanced Reliability (SEM)
+        name: sem
+      - title: Measurement Invariance
+        name: invariance
   - type: CollapseBox
     label: Report Language
     collapsed: false
