@@ -541,25 +541,52 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             }
 
             # ── 8f. KR-20 / KR-21 (dichotomous) ─────────────────────────────
+            # EN: The formulas below treat every item value as a 0/1
+            # "correct" indicator (p_i is a proportion, q_i = 1 - p_i is
+            # meaningful only in [0,1]). If the user forces
+            # measureLevel = "dichotomous" on data that merely has 2
+            # categories but isn't coded 0/1 (e.g. 1/2, or a recoded
+            # Likert subset), p_i and q_i stop being valid proportions
+            # (q_i can even go negative) and the formulas would silently
+            # produce a number with no real meaning. Verified here
+            # instead of assumed.
+            # ES: Las fórmulas de abajo tratan cada valor de ítem como un
+            # indicador 0/1 de "correcto" (p_i es una proporción, q_i =
+            # 1 - p_i solo tiene sentido en [0,1]). Si el usuario fuerza
+            # measureLevel = "dichotomous" sobre datos que solo tienen 2
+            # categorías pero no están codificados 0/1 (p. ej. 1/2, o un
+            # subconjunto Likert recodificado), p_i y q_i dejan de ser
+            # proporciones válidas (q_i puede incluso volverse negativo) y
+            # las fórmulas producirían en silencio un número sin
+            # significado real. Verificado aquí en vez de asumido.
             if (level == "dichotomous" || opt$measureLevel == "dichotomous") {
+                is_binary_01 <- all(unlist(df) %in% c(0, 1))
                 p_i     <- colMeans(df, na.rm = TRUE)
                 q_i     <- 1 - p_i
                 vt      <- var(rowSums(df, na.rm = TRUE), na.rm = TRUE)
                 M_score <- mean(rowSums(df, na.rm = TRUE), na.rm = TRUE)
 
-                if (opt$kr20 && is.finite(vt) && vt > 0) {
+                if (opt$kr20 && !is_binary_01) {
+                    add_stat("KR-20 (Kuder-Richardson)", NA_real_, NA_real_,
+                        tr("⚠ Not computed: items are not coded 0/1 (KR-20 requires genuinely binary items, not merely 2 categories)",
+                           "⚠ No calculado: los ítems no están codificados 0/1 (el KR-20 requiere ítems genuinamente binarios, no solo 2 categorías)"))
+                } else if (opt$kr20 && is.finite(vt) && vt > 0) {
                     kr20_val <- (k/(k-1)) * (1 - sum(p_i*q_i)/vt)
                     add_stat(
                         "KR-20 (Kuder-Richardson)",
                         kr20_val, kr20_val,
-                        tr("Dichotomous (0/1) items only; equivalent to \u03B1 for binary data",
-                           "Solo ítems dicotómicos (0/1); equivalente al \u03B1 para datos binarios"),
+                        tr("Dichotomous (0/1) items only; equivalent to α for binary data",
+                           "Solo ítems dicotómicos (0/1); equivalente al α para datos binarios"),
                         function(d) {
                             p <- colMeans(d); q <- 1-p; vv <- var(rowSums(d))
                             kk <- ncol(d); (kk/(kk-1))*(1 - sum(p*q)/vv)
                         })
                 }
-                if (opt$kr21 && is.finite(vt) && vt > 0) {
+                if (opt$kr21 && !is_binary_01) {
+                    add_stat("KR-21", NA_real_, NA_real_,
+                        tr("⚠ Not computed: items are not coded 0/1 (KR-21 requires genuinely binary items, not merely 2 categories)",
+                           "⚠ No calculado: los ítems no están codificados 0/1 (el KR-21 requiere ítems genuinamente binarios, no solo 2 categorías)"))
+                } else if (opt$kr21 && is.finite(vt) && vt > 0) {
                     kr21_val <- (k/(k-1)) * (1 - (M_score*(k - M_score))/(k * vt))
                     add_stat(
                         "KR-21",
