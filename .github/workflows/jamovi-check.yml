@@ -1,0 +1,67 @@
+name: Validar Módulo jamovi
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  jamovi-check:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Descargar el código del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar R en la máquina virtual
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+
+      - name: Configurar dependencias del sistema de Linux
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
+
+      - name: Instalar herramientas y verificar módulo jamovi
+        run: |
+          Rscript -e "install.packages(c('remotes', 'rcmdcheck'), repos = 'https://cloud.r-project.org')"
+          Rscript -e "install.packages('jmvtools', repos = c('https://repo.jamovi.org', 'https://cloud.r-project.org'))"
+          Rscript -e "remotes::install_deps(dependencies = TRUE, upgrade = 'never')"
+          Rscript -e "jmvtools::check()"
+
+      # jmvtools::check() (above) only verifies that a compatible jamovi
+      # Desktop/server installation is reachable - it never touches tests/
+      # or runs testthat, so a green run of that step alone is not proof the
+      # test suite passes. This step is therefore explicit and separate: it
+      # installs FiabilityLab itself as a plain R package (the committed
+      # R/*.h.R wrapper functions and the root NAMESPACE's exportPattern are
+      # enough for a standard R CMD INSTALL - no jamovi Desktop/Node
+      # toolchain required) with dependencies=TRUE so Suggests-only packages
+      # used by Advanced Reliability and Measurement Invariance (lavaan,
+      # semTools) are actually installed, then runs the full
+      # tests/testthat/ suite against the source tree directly - the same
+      # test_dir() approach documented in DEVELOPER_GUIDE.md, since
+      # jmvtools::install() does not bundle tests/ into the installed copy.
+      # ES: jmvtools::check() (arriba) solo verifica que haya una instalación
+      # de jamovi Desktop/server compatible alcanzable - nunca toca tests/ ni
+      # ejecuta testthat, así que una ejecución en verde de ese paso por sí
+      # sola no es prueba de que la suite de pruebas pase. Por eso este paso
+      # es explícito y separado: instala FiabilityLab como un paquete de R
+      # normal (las funciones envoltorio R/*.h.R ya generadas y el
+      # exportPattern del NAMESPACE raíz bastan para un R CMD INSTALL
+      # estándar - no se requiere el toolchain de jamovi Desktop/Node) con
+      # dependencies=TRUE para que los paquetes solo-Suggests que usan
+      # Advanced Reliability y Measurement Invariance (lavaan, semTools)
+      # queden realmente instalados, y luego ejecuta la suite completa de
+      # tests/testthat/ contra el directorio fuente directamente - el mismo
+      # enfoque test_dir() documentado en DEVELOPER_GUIDE.md, ya que
+      # jmvtools::install() no empaqueta tests/ en la copia instalada.
+      - name: Instalar FiabilityLab y ejecutar la suite de pruebas
+        run: |
+          Rscript -e "if (!requireNamespace('testthat', quietly = TRUE)) install.packages('testthat', repos = 'https://cloud.r-project.org')"
+          R CMD INSTALL --no-multiarch --with-keep.source .
+          Rscript -e "testthat::test_dir('tests/testthat')"

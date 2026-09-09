@@ -1,0 +1,9 @@
+bibentry(
+    bibtype = "Manual",
+    title = "FiabilityLab",
+    author = person("Arquímedes De León", "Chacón Chacón"),
+    year = "2026",
+    note = "Version 1.0.0 [jamovi module]",
+    url = "https://github.com/ArchieJamDev/FiabilityLab",
+    textVersion = "Chacón Chacón, A. D. L. (2026). FiabilityLab (Version 1.0.0) [jamovi module]. https://github.com/ArchieJamDev/FiabilityLab"
+)

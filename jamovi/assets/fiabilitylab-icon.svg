@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- test tube outline -->
+  <g fill="none" stroke="#034d89" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+    <!-- rim -->
+    <line x1="60" y1="42" x2="134" y2="42"/>
+    <!-- body with rounded bottom -->
+    <path d="M 70 42 L 70 172 A 27 27 0 0 0 124 172 L 124 42"/>
+  </g>
+
+  <!-- tiny SEM / path-analysis diagram, upper part of the tube -->
+  <g stroke="#e02020" stroke-width="3" transform="translate(4 0) rotate(30 97 75)">
+    <line x1="97" y1="60" x2="83" y2="82" fill="none"/>
+    <line x1="97" y1="60" x2="111" y2="82" fill="none"/>
+    <line x1="83" y1="82" x2="111" y2="82" fill="none"/>
+    <circle cx="97" cy="60" r="6" fill="white"/>
+    <circle cx="83" cy="82" r="5" fill="white"/>
+    <circle cx="111" cy="82" r="5" fill="white"/>
+  </g>
+
+  <!-- ascending bar chart, lower part of the tube -->
+  <g fill="#034d89">
+    <rect x="77"  y="146" width="10" height="22" rx="2"/>
+    <rect x="91"  y="128" width="10" height="40" rx="2"/>
+    <rect x="105" y="104" width="10" height="64" rx="2"/>
+  </g>
+
+  <!-- checkmark, nested against the tube's lower-right edge -->
+  <path d="M 108 168 L 138 196 L 200 122"
+        fill="none" stroke="#23b14f" stroke-width="17"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
