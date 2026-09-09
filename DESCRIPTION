@@ -16,4 +16,5 @@ LazyData: true
 Jas: '1.2'
 Jmv: '2.0.0'
 Imports: jmvcore (>= 0.8.5), R6, psych, ggplot2
-Suggests: gridExtra, irr, irrCAC, lavaan, semTools
+Suggests: gridExtra, irr, irrCAC, lavaan, semTools, testthat (>= 3.0.0)
+Config/testthat/edition: 3

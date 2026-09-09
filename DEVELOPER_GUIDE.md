@@ -236,6 +236,15 @@ Follow [`CODE_STYLE.md`](CODE_STYLE.md). Tests must cover parsing, option/YAML
 consistency, normal and boundary inputs, missingness, unsupported designs,
 numerical reference cases, bilingual output and Jamovi result-object integration.
 
+Run the suite with `Rscript tests/testthat.R` from the project root, after
+installing the module with `jmvtools::install()`. Do not use `R CMD check` or
+`devtools::test()` for this: jmvtools installs the module into jamovi's own
+module library, not a standard R library via `R CMD INSTALL`, and does not
+bundle the `tests/` directory into that installed copy -- `testthat::test_check()`
+would fail with "No test files found" even though the module itself installed
+correctly. `tests/testthat.R` instead runs `test_dir()` against the source
+`tests/testthat/` directory directly, against the installed package's code.
+
 Every change should be small and traceable. Commit or review descriptions must
 state the scientific motivation, files affected, evidence used, validation
 performed and remaining risks. Generated artifacts should be rebuilt only from a
