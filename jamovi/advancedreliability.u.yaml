@@ -4,31 +4,6 @@ jus: '3.0'
 stage: 0
 compilerMode: tame
 children:
-  - type: CollapseBox
-    label: Report Language
-    collapsed: false
-    children:
-      - type: ComboBox
-        name: reportLang
-  - type: Label
-    label: >-
-      Assign items to at least one factor below (3+ items per factor). A
-      second-order general factor needs at least 3 first-order factors to be
-      identified. Factor names are used as-is in tables and text.
-  - type: CheckBox
-    name: secondOrder
-    label: Fit a second-order (hierarchical) general factor
-  - type: CollapseBox
-    label: Diagnostic Plot
-    collapsed: true
-    children:
-      - type: CheckBox
-        name: showPlots
-        label: Show reliability comparison plot
-      - type: ComboBox
-        name: plotStyle
-        label: Plot style
-        enable: (showPlots)
   - type: VariableSupplier
     persistentItems: true
     stretchFactor: 1
@@ -65,3 +40,42 @@ children:
                   isTarget: true
                   height: auto
                   ghostText: drag variables here
+  - type: Label
+    label: >-
+      Assign items to at least one factor above (3+ items per factor). A
+      second-order general factor needs at least 3 first-order factors to be
+      identified. Factor names are used as-is in tables and text.
+  - type: CheckBox
+    name: secondOrder
+    label: Fit a second-order (hierarchical) general factor
+  - type: CollapseBox
+    label: Report Language
+    collapsed: false
+    children:
+      - type: ComboBox
+        name: reportLang
+  - type: CollapseBox
+    label: Estimation
+    collapsed: true
+    children:
+      - type: ComboBox
+        name: itemType
+        label: Item type
+      - type: ComboBox
+        name: estimator
+        label: Estimator
+      - type: ComboBox
+        name: missingData
+        label: Missing data
+        enable: (itemType != ordinal && estimator != wlsmv)
+  - type: CollapseBox
+    label: Diagnostic Plot
+    collapsed: true
+    children:
+      - type: CheckBox
+        name: showPlots
+        label: Show reliability comparison plot
+      - type: ComboBox
+        name: plotStyle
+        label: Plot style
+        enable: (showPlots)

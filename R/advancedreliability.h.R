@@ -7,6 +7,9 @@ advancedReliabilityOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
     public = list(
         initialize = function(
             secondOrder = FALSE,
+            itemType = "auto",
+            estimator = "auto",
+            missingData = "listwise",
             factors = list(
                 list(label="Factor 1", vars=list())),
             showPlots = TRUE,
@@ -23,6 +26,30 @@ advancedReliabilityOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
                 "secondOrder",
                 secondOrder,
                 default=FALSE)
+            private$..itemType <- jmvcore::OptionList$new(
+                "itemType",
+                itemType,
+                options=list(
+                    "auto",
+                    "continuous",
+                    "ordinal"),
+                default="auto")
+            private$..estimator <- jmvcore::OptionList$new(
+                "estimator",
+                estimator,
+                options=list(
+                    "auto",
+                    "ml",
+                    "mlr",
+                    "wlsmv"),
+                default="auto")
+            private$..missingData <- jmvcore::OptionList$new(
+                "missingData",
+                missingData,
+                options=list(
+                    "listwise",
+                    "fiml"),
+                default="listwise")
             private$..factors <- jmvcore::OptionArray$new(
                 "factors",
                 factors,
@@ -67,6 +94,9 @@ advancedReliabilityOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
                 default="en")
 
             self$.addOption(private$..secondOrder)
+            self$.addOption(private$..itemType)
+            self$.addOption(private$..estimator)
+            self$.addOption(private$..missingData)
             self$.addOption(private$..factors)
             self$.addOption(private$..showPlots)
             self$.addOption(private$..plotStyle)
@@ -74,12 +104,18 @@ advancedReliabilityOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
         }),
     active = list(
         secondOrder = function() private$..secondOrder$value,
+        itemType = function() private$..itemType$value,
+        estimator = function() private$..estimator$value,
+        missingData = function() private$..missingData$value,
         factors = function() private$..factors$value,
         showPlots = function() private$..showPlots$value,
         plotStyle = function() private$..plotStyle$value,
         reportLang = function() private$..reportLang$value),
     private = list(
         ..secondOrder = NA,
+        ..itemType = NA,
+        ..estimator = NA,
+        ..missingData = NA,
         ..factors = NA,
         ..showPlots = NA,
         ..plotStyle = NA,
@@ -166,6 +202,31 @@ advancedReliabilityResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
                         `type`="number", 
                         `format`="zto,digits=3"),
                     list(
+                        `name`="aic", 
+                        `title`="AIC", 
+                        `type`="number", 
+                        `format`="zto,digits=1"),
+                    list(
+                        `name`="bic", 
+                        `title`="BIC", 
+                        `type`="number", 
+                        `format`="zto,digits=1"),
+                    list(
+                        `name`="cfi_robust", 
+                        `title`="CFI (robust)", 
+                        `type`="number", 
+                        `format`="zto,digits=3"),
+                    list(
+                        `name`="tli_robust", 
+                        `title`="TLI (robust)", 
+                        `type`="number", 
+                        `format`="zto,digits=3"),
+                    list(
+                        `name`="rmsea_robust", 
+                        `title`="RMSEA (robust)", 
+                        `type`="number", 
+                        `format`="zto,digits=3"),
+                    list(
                         `name`="verdict", 
                         `title`="Fit", 
                         `type`="text"))))
@@ -204,6 +265,10 @@ advancedReliabilityResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
                         `title`="Max. Latent Correlation", 
                         `type`="number", 
                         `format`="zto,digits=3"),
+                    list(
+                        `name`="emptyCellPairs", 
+                        `title`="Item Pairs with Empty Cells", 
+                        `type`="integer"),
                     list(
                         `name`="nAnalyzed", 
                         `title`="n Analyzed", 
@@ -423,6 +488,9 @@ advancedReliabilityBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
 #' 
 #' @param data .
 #' @param secondOrder .
+#' @param itemType .
+#' @param estimator .
+#' @param missingData .
 #' @param factors .
 #' @param showPlots .
 #' @param plotStyle .
@@ -461,6 +529,9 @@ advancedReliabilityBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
 advancedReliability <- function(
     data,
     secondOrder = FALSE,
+    itemType = "auto",
+    estimator = "auto",
+    missingData = "listwise",
     factors = list(
                 list(label="Factor 1", vars=list())),
     showPlots = TRUE,
@@ -477,6 +548,9 @@ advancedReliability <- function(
 
     options <- advancedReliabilityOptions$new(
         secondOrder = secondOrder,
+        itemType = itemType,
+        estimator = estimator,
+        missingData = missingData,
         factors = factors,
         showPlots = showPlots,
         plotStyle = plotStyle,

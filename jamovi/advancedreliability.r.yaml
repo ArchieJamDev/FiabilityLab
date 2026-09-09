@@ -42,6 +42,26 @@ items:
         title: SRMR
         type: number
         format: zto,digits=3
+      - name: aic
+        title: AIC
+        type: number
+        format: zto,digits=1
+      - name: bic
+        title: BIC
+        type: number
+        format: zto,digits=1
+      - name: cfi_robust
+        title: CFI (robust)
+        type: number
+        format: zto,digits=3
+      - name: tli_robust
+        title: TLI (robust)
+        type: number
+        format: zto,digits=3
+      - name: rmsea_robust
+        title: RMSEA (robust)
+        type: number
+        format: zto,digits=3
       - name: verdict
         title: Fit
         type: text
@@ -74,6 +94,9 @@ items:
         title: Max. Latent Correlation
         type: number
         format: zto,digits=3
+      - name: emptyCellPairs
+        title: Item Pairs with Empty Cells
+        type: integer
       - name: nAnalyzed
         title: n Analyzed
         type: integer

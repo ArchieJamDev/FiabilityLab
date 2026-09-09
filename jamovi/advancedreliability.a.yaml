@@ -13,6 +13,46 @@ options:
     type: Bool
     default: false
 
+  # Estimation options. Ordinal items always fit via WLSMV (the standard
+  # categorical estimator), which requires listwise deletion -- FIML
+  # combines only with ML/MLR for continuous items with missing values
+  # plausibly missing-at-random.
+  - name: itemType
+    title: Item type
+    type: List
+    options:
+      - name: auto
+        title: Auto-detect
+      - name: continuous
+        title: Continuous
+      - name: ordinal
+        title: Ordinal
+    default: auto
+
+  - name: estimator
+    title: Estimator
+    type: List
+    options:
+      - name: auto
+        title: Auto (ML, or WLSMV if items are ordinal)
+      - name: ml
+        title: ML
+      - name: mlr
+        title: MLR (robust to non-normality)
+      - name: wlsmv
+        title: WLSMV (for ordinal items)
+    default: auto
+
+  - name: missingData
+    title: Missing data
+    type: List
+    options:
+      - name: listwise
+        title: Listwise deletion
+      - name: fiml
+        title: FIML
+    default: listwise
+
   # Same Array/Group option pattern as jamovi's own built-in Confirmatory
   # Factor Analysis: an unlimited, user-extendable list of named factors,
   # each with its own set of assigned items (paired with the ListBox +

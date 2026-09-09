@@ -70,6 +70,52 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
             gsub(">", "&gt;", x, fixed = TRUE)
         },
 
+        # ── Fit a CFA with the estimator/missing-data strategy resolved
+        # once for the whole run (ordinal items always use WLSMV, which
+        # requires listwise deletion; continuous items use ML/MLR, with
+        # FIML available for plausibly-MAR missingness). Shared by the
+        # correlated-factors and second-order models so both are estimated
+        # consistently. ──────────────────────────────────────────────────
+        .fit_cfa = function(model_syntax, data, ordered_items, estimator, missing_eff) {
+            fit_args <- list(model = model_syntax, data = data, std.lv = TRUE)
+            if (!is.null(ordered_items)) {
+                fit_args$ordered <- ordered_items
+                fit_args$estimator <- "WLSMV"
+            } else {
+                fit_args$estimator <- estimator
+                if (identical(missing_eff, "fiml")) fit_args$missing <- "fiml"
+            }
+            tryCatch(do.call(lavaan::cfa, fit_args), error = function(e) NULL)
+        },
+
+        # ── Fit measures extended with AIC/BIC (only meaningful under full
+        # ML/MLR, not WLSMV's limited-information estimation) and robust
+        # variants (available whenever the estimator is MLR or WLSMV) --
+        # missing measures come back as NA rather than erroring. ──────────
+        .fit_measures_ext = function(fit, estimator_eff) {
+            is_robust <- estimator_eff %in% c("MLR", "WLSMV")
+            # Under a robust/categorical estimator, the plain chisq/df/p are
+            # not the recommended test (WLSMV's plain CFI/TLI/RMSEA can even
+            # fall outside [0,1]) -- the scaled chi-square/df/p is, so we
+            # read those into the same "chisq"/"df"/"pvalue" names the rest
+            # of the code already expects, rather than adding parallel
+            # columns nothing downstream would know to prefer.
+            chisq_names <- if (is_robust) c("chisq.scaled", "df.scaled", "pvalue.scaled") else c("chisq", "df", "pvalue")
+            fit_names <- c("cfi", "tli", "rmsea", "rmsea.ci.lower", "rmsea.ci.upper", "srmr")
+            robust_names <- if (is_robust) c("cfi.robust", "tli.robust", "rmsea.robust") else character(0)
+            ic_names <- if (estimator_eff %in% c("ML", "MLR")) c("aic", "bic") else character(0)
+            all_names <- c(chisq_names, fit_names, robust_names, ic_names)
+            fm <- tryCatch(lavaan::fitMeasures(fit, all_names), error = function(e) NULL)
+            out <- stats::setNames(rep(NA_real_, length(all_names)), all_names)
+            if (!is.null(fm)) out[names(fm)] <- fm
+            if (is_robust) {
+                names(out)[names(out) == "chisq.scaled"] <- "chisq"
+                names(out)[names(out) == "df.scaled"] <- "df"
+                names(out)[names(out) == "pvalue.scaled"] <- "pvalue"
+            }
+            out
+        },
+
         .fit_verdict = function(cfi, rmsea, srmr) {
             tr <- private$.tr
             if (any(is.na(c(cfi, rmsea, srmr)))) return(tr("N/A", "N/D"))
@@ -87,7 +133,7 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
         # note can name them) and the largest latent correlation (near/at 1
         # signals two factors may not be empirically distinct regardless of
         # what HTMT says about their indicators). ──────────────────────────
-        .solution_diag = function(fit, items, factor_ids, n_analyzed, n_available) {
+        .solution_diag = function(fit, items, factor_ids, n_analyzed, n_available, item_is_ordinal = FALSE, ordinal_data = NULL) {
             tr <- private$.tr
             post_ok <- tryCatch(isTRUE(lavaan::lavInspect(fit, "post.check")), error = function(e) NA)
             ss <- tryCatch(lavaan::standardizedSolution(fit), error = function(e) NULL)
@@ -104,11 +150,25 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
                     if (nrow(corr_rows) > 0L) max_corr <- max(abs(corr_rows$est.std), na.rm = TRUE)
                 }
             }
+            # For ordinal items (polychoric/tetrachoric correlations under
+            # WLSMV), an empty cell in a pair's contingency table makes that
+            # pair's correlation unstable or inestimable -- worth flagging
+            # directly rather than only via a downstream convergence
+            # failure that gives no hint of the cause.
+            empty_cells <- NA_integer_
+            if (isTRUE(item_is_ordinal) && !is.null(ordinal_data) && length(items) >= 2L) {
+                pairs <- utils::combn(items, 2, simplify = FALSE)
+                empty_cells <- as.integer(sum(vapply(pairs, function(p) {
+                    tb <- table(ordinal_data[[p[1]]], ordinal_data[[p[2]]])
+                    any(tb == 0L)
+                }, logical(1))))
+            }
             admissible <- if (is.na(post_ok)) tr("N/A", "N/D") else if (post_ok) tr("Yes", "Sí") else tr("No", "No")
             list(converged = tr("Yes", "Sí"), admissible = admissible,
                  negVariances = as.integer(neg_var), loadingsOutOfBounds = as.integer(out_of_bounds),
-                 maxLatentCorr = .fl_clean_na(max_corr), nAnalyzed = as.integer(n_analyzed), nAvailable = as.integer(n_available),
-                 flagged = isTRUE(!post_ok) || neg_var > 0L || out_of_bounds > 0L)
+                 maxLatentCorr = .fl_clean_na(max_corr), emptyCellPairs = .fl_clean_na(empty_cells),
+                 nAnalyzed = as.integer(n_analyzed), nAvailable = as.integer(n_available),
+                 flagged = isTRUE(!post_ok) || neg_var > 0L || out_of_bounds > 0L || isTRUE(empty_cells > 0L))
         },
 
         .run = function() {
@@ -164,7 +224,22 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
             df_raw <- self$data[, all_items, drop = FALSE]
             n_available <- nrow(df_raw)
             for (col in names(df_raw)) df_raw[[col]] <- suppressWarnings(as.numeric(df_raw[[col]]))
-            df_adv <- na.omit(df_raw)
+
+            # ── Resolve estimator/item-type/missing-data strategy once for
+            # the whole run. Ordinal items always take WLSMV (which needs
+            # listwise deletion -- FIML has no ordinal/WLSMV equivalent
+            # here); otherwise ML or MLR, optionally with FIML. ────────────
+            item_is_ordinal <- identical(opt$itemType, "ordinal") || identical(opt$estimator, "wlsmv") ||
+                (identical(opt$itemType, "auto") && .fl_is_low_cardinality(df_raw))
+            if (item_is_ordinal) {
+                estimator_eff <- "WLSMV"
+                missing_eff <- "listwise"
+            } else {
+                estimator_eff <- switch(opt$estimator, mlr = "MLR", ml = "ML", "ML")
+                missing_eff <- if (identical(opt$missingData, "fiml")) "fiml" else "listwise"
+            }
+            ordered_items <- if (item_is_ordinal) all_items else NULL
+            df_adv <- if (identical(missing_eff, "fiml")) df_raw else na.omit(df_raw)
             n_adv <- nrow(df_adv)
             if (n_adv < 20L || length(all_items) < 3L) {
                 bail("Not enough complete cases to fit a confirmatory factor model (minimum 20 required).",
@@ -174,8 +249,10 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
 
             model_cf <- paste(vapply(factors, function(f)
                 paste0(f$id, " =~ ", paste(f$items, collapse = " + ")), character(1)), collapse = "\n")
-            fit_cf <- tryCatch(lavaan::cfa(model_cf, data = df_adv, std.lv = TRUE), error = function(e) NULL)
+            fit_cf <- private$.fit_cfa(model_cf, df_adv, ordered_items, estimator_eff, missing_eff)
             cf_ok  <- !is.null(fit_cf) && isTRUE(tryCatch(lavaan::lavInspect(fit_cf, "converged"), error = function(e) FALSE))
+            if (cf_ok && identical(missing_eff, "fiml"))
+                n_adv <- tryCatch(lavaan::lavInspect(fit_cf, "ntotal"), error = function(e) n_adv)
             if (!cf_ok) {
                 bail("The confirmatory factor model did not converge on this data/structure -- try fewer factors, more items per factor, or check the item assignments.",
                      "El modelo factorial confirmatorio no convergió con estos datos/estructura -- intente con menos factores, más ítems por factor, o revise las asignaciones.")
@@ -186,19 +263,23 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
             factor_ids <- vapply(factors, function(f) f$id, character(1))
 
             diag_rows <- list()
-            diag_cf <- private$.solution_diag(fit_cf, all_items, factor_ids, n_adv, n_available)
+            diag_cf <- private$.solution_diag(fit_cf, all_items, factor_ids, n_adv, n_available, item_is_ordinal, df_adv)
             diag_rows[[length(diag_rows) + 1L]] <- c(list(model = tr("Correlated factors", "Factores correlacionados")), diag_cf[names(diag_cf) != "flagged"])
 
-            fm_cf <- lavaan::fitMeasures(fit_cf, c("chisq","df","pvalue","cfi","tli","rmsea","rmsea.ci.lower","rmsea.ci.upper","srmr"))
-            cf_verdict <- fit_verdict(fm_cf["cfi"], fm_cf["rmsea"], fm_cf["srmr"])
+            fm_cf <- private$.fit_measures_ext(fit_cf, estimator_eff)
+            pick <- function(fm, robust_name, plain_name) if (!is.na(fm[robust_name])) unname(fm[robust_name]) else unname(fm[plain_name])
+            cf_verdict <- fit_verdict(pick(fm_cf, "cfi.robust", "cfi"), pick(fm_cf, "rmsea.robust", "rmsea"), fm_cf["srmr"])
             fit_rows <- list(list(
                 model = tr("Correlated factors", "Factores correlacionados"),
                 chisq = .fl_clean_na(unname(fm_cf["chisq"])), df = unname(fm_cf["df"]),
                 pvalue = .fl_clean_na(unname(fm_cf["pvalue"])),
                 cfi = .fl_clean_na(unname(fm_cf["cfi"])), tli = .fl_clean_na(unname(fm_cf["tli"])),
                 rmsea = .fl_clean_na(unname(fm_cf["rmsea"])),
-                rmsea_ci = paste0("[", round(fm_cf["rmsea.ci.lower"], 3), ", ", round(fm_cf["rmsea.ci.upper"], 3), "]"),
+                rmsea_ci = if (is.na(fm_cf["rmsea.ci.lower"])) "" else paste0("[", round(fm_cf["rmsea.ci.lower"], 3), ", ", round(fm_cf["rmsea.ci.upper"], 3), "]"),
                 srmr = .fl_clean_na(unname(fm_cf["srmr"])),
+                aic = .fl_clean_na(unname(fm_cf["aic"])), bic = .fl_clean_na(unname(fm_cf["bic"])),
+                cfi_robust = .fl_clean_na(unname(fm_cf["cfi.robust"])), tli_robust = .fl_clean_na(unname(fm_cf["tli.robust"])),
+                rmsea_robust = .fl_clean_na(unname(fm_cf["rmsea.robust"])),
                 verdict = cf_verdict))
             fitcmp_rows <- list(
                 list(model = tr("Correlated factors", "Factores correlacionados"), index = "CFI", value = unname(fm_cf["cfi"])),
@@ -300,22 +381,25 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
             need_more_factors <- isTRUE(opt$secondOrder) && length(factors) < 3L
             if (isTRUE(opt$secondOrder) && length(factors) >= 3L) {
                 model_2nd <- paste0(model_cf, "\nG =~ ", paste(vapply(factors, function(f) f$id, character(1)), collapse = " + "))
-                fit_2nd <- tryCatch(lavaan::cfa(model_2nd, data = df_adv, std.lv = TRUE), error = function(e) NULL)
+                fit_2nd <- private$.fit_cfa(model_2nd, df_adv, ordered_items, estimator_eff, missing_eff)
                 ho_ok <- !is.null(fit_2nd) && isTRUE(tryCatch(lavaan::lavInspect(fit_2nd, "converged"), error = function(e) FALSE))
                 if (ho_ok) {
-                    diag_2nd <- private$.solution_diag(fit_2nd, all_items, c(factor_ids, "G"), n_adv, n_available)
+                    diag_2nd <- private$.solution_diag(fit_2nd, all_items, c(factor_ids, "G"), n_adv, n_available, item_is_ordinal, df_adv)
                     diag_rows[[length(diag_rows) + 1L]] <- c(list(model = tr("Second-order (general factor)", "Segundo orden (factor general)")), diag_2nd[names(diag_2nd) != "flagged"])
 
-                    fm_2nd <- lavaan::fitMeasures(fit_2nd, c("chisq","df","pvalue","cfi","tli","rmsea","rmsea.ci.lower","rmsea.ci.upper","srmr"))
-                    ho_verdict <- fit_verdict(fm_2nd["cfi"], fm_2nd["rmsea"], fm_2nd["srmr"])
+                    fm_2nd <- private$.fit_measures_ext(fit_2nd, estimator_eff)
+                    ho_verdict <- fit_verdict(pick(fm_2nd, "cfi.robust", "cfi"), pick(fm_2nd, "rmsea.robust", "rmsea"), fm_2nd["srmr"])
                     fit_rows[[length(fit_rows) + 1L]] <- list(
                         model = tr("Second-order (general factor)", "Segundo orden (factor general)"),
                         chisq = .fl_clean_na(unname(fm_2nd["chisq"])), df = unname(fm_2nd["df"]),
                         pvalue = .fl_clean_na(unname(fm_2nd["pvalue"])),
                         cfi = .fl_clean_na(unname(fm_2nd["cfi"])), tli = .fl_clean_na(unname(fm_2nd["tli"])),
                         rmsea = .fl_clean_na(unname(fm_2nd["rmsea"])),
-                        rmsea_ci = paste0("[", round(fm_2nd["rmsea.ci.lower"], 3), ", ", round(fm_2nd["rmsea.ci.upper"], 3), "]"),
+                        rmsea_ci = if (is.na(fm_2nd["rmsea.ci.lower"])) "" else paste0("[", round(fm_2nd["rmsea.ci.lower"], 3), ", ", round(fm_2nd["rmsea.ci.upper"], 3), "]"),
                         srmr = .fl_clean_na(unname(fm_2nd["srmr"])),
+                        aic = .fl_clean_na(unname(fm_2nd["aic"])), bic = .fl_clean_na(unname(fm_2nd["bic"])),
+                        cfi_robust = .fl_clean_na(unname(fm_2nd["cfi.robust"])), tli_robust = .fl_clean_na(unname(fm_2nd["tli.robust"])),
+                        rmsea_robust = .fl_clean_na(unname(fm_2nd["rmsea.robust"])),
                         verdict = ho_verdict)
                     fitcmp_rows[[length(fitcmp_rows) + 1L]] <- list(model = tr("Second-order", "Segundo orden"), index = "CFI", value = unname(fm_2nd["cfi"]))
                     fitcmp_rows[[length(fitcmp_rows) + 1L]] <- list(model = tr("Second-order", "Segundo orden"), index = "TLI", value = unname(fm_2nd["tli"]))
@@ -392,8 +476,8 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
             any_flagged <- isTRUE(diag_cf$flagged) || (isTRUE(opt$secondOrder) && ho_ok && isTRUE(diag_2nd$flagged))
             res$solutionDiagnosticsNote$setContent(.fl_prose(
                 "<p>", tr(
-                    "Convergence only means the optimizer stopped at some solution; it does not mean that solution is admissible. \"Admissible\" (from lavaan's own post-estimation check) means no negative residual variances, no non-positive-definite covariance matrix, and no other Heywood-case symptom -- a prerequisite for trusting CR, AVE, H, HTMT or omega hierarchical from that model. Negative residual variances and standardized loadings at or beyond 1 are two common, visible symptoms of an inadmissible solution; the largest latent correlation flags whether two factors may not be empirically distinct.",
-                    "La convergencia solo significa que el optimizador se detuvo en alguna solución; no significa que esa solución sea admisible. \"Admisible\" (de la propia verificación posterior a la estimación de lavaan) significa sin varianzas residuales negativas, sin matriz de covarianza no definida positiva, y sin otro síntoma de caso Heywood -- un requisito previo para confiar en el CR, AVE, H, HTMT u omega jerárquico de ese modelo. Las varianzas residuales negativas y las cargas estandarizadas iguales o mayores a 1 son dos síntomas comunes y visibles de una solución inadmisible; la correlación latente máxima señala si dos factores podrían no ser empíricamente distintos."),
+                    "Convergence only means the optimizer stopped at some solution; it does not mean that solution is admissible. \"Admissible\" (from lavaan's own post-estimation check) means no negative residual variances, no non-positive-definite covariance matrix, and no other Heywood-case symptom -- a prerequisite for trusting CR, AVE, H, HTMT or omega hierarchical from that model. Negative residual variances and standardized loadings at or beyond 1 are two common, visible symptoms of an inadmissible solution; the largest latent correlation flags whether two factors may not be empirically distinct. For ordinal items, an item pair with an empty cell in its contingency table (some combination of categories that no one in the sample chose) makes that pair's underlying polychoric/tetrachoric correlation unstable or inestimable, which can silently degrade everything downstream even when the model still converges.",
+                    "La convergencia solo significa que el optimizador se detuvo en alguna solución; no significa que esa solución sea admisible. \"Admisible\" (de la propia verificación posterior a la estimación de lavaan) significa sin varianzas residuales negativas, sin matriz de covarianza no definida positiva, y sin otro síntoma de caso Heywood -- un requisito previo para confiar en el CR, AVE, H, HTMT u omega jerárquico de ese modelo. Las varianzas residuales negativas y las cargas estandarizadas iguales o mayores a 1 son dos síntomas comunes y visibles de una solución inadmisible; la correlación latente máxima señala si dos factores podrían no ser empíricamente distintos. Para ítems ordinales, un par de ítems con una celda vacía en su tabla de contingencia (alguna combinación de categorías que nadie en la muestra eligió) hace que la correlación policórica/tetracórica subyacente de ese par sea inestable o inestimable, lo cual puede degradar silenciosamente todo lo que depende de ella aunque el modelo aún converja."),
                 "</p>",
                 if (any_flagged) paste0("<p>&#9888; ", tr(
                         "At least one model above shows a symptom of an inadmissible or borderline solution. Do not interpret CR, AVE, H, HTMT or omega hierarchical from that model until this is resolved -- common causes are too few cases for the number of parameters, near-perfectly correlated items, or a factor defined by too few (or too similar) indicators.",
@@ -523,10 +607,28 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
             }
 
             # ── Fit note (always shown) ────────────────────────────────────
+            estim_desc <- if (item_is_ordinal)
+                tr("Items were treated as ordinal (WLSMV estimator on polychoric/tetrachoric correlations), which requires complete cases. &chi;&sup2;, CFI, TLI and RMSEA below are the scaled/robust versions WLSMV recommends, not the plain ones.",
+                   "Los ítems se trataron como ordinales (estimador WLSMV sobre correlaciones policóricas/tetracóricas), lo cual requiere casos completos. El &chi;&sup2;, CFI, TLI y RMSEA de abajo son las versiones escaladas/robustas que WLSMV recomienda, no las simples.")
+                else if (identical(estimator_eff, "MLR"))
+                tr("Items were treated as continuous, fit with MLR (robust to non-normality). &chi;&sup2;, CFI, TLI and RMSEA below are the scaled/robust versions MLR recommends, not the plain ones.",
+                   "Los ítems se trataron como continuos, ajustados con MLR (robusto a la no normalidad). El &chi;&sup2;, CFI, TLI y RMSEA de abajo son las versiones escaladas/robustas que MLR recomienda, no las simples.")
+                else
+                tr("Items were treated as continuous, fit with ML.", "Los ítems se trataron como continuos, ajustados con ML.")
+            missing_desc <- if (identical(missing_eff, "fiml"))
+                paste0(" ", tr(
+                    "Missing values were handled with Full Information Maximum Likelihood (FIML), which uses all available information per case under the assumption that data are missing at random conditional on the model's variables, rather than discarding any case outright.",
+                    "Los valores faltantes se manejaron con Máxima Verosimilitud de Información Completa (FIML), que usa toda la información disponible por caso bajo el supuesto de que los datos faltan al azar condicional a las variables del modelo, en vez de descartar cualquier caso por completo."))
+                else ""
+            n_desc <- if (n_available > n_adv)
+                paste0(" ", tr(paste0(n_adv, " of ", n_available, " available cases were used."),
+                               paste0("Se usaron ", n_adv, " de ", n_available, " casos disponibles.")))
+                else ""
             res$fitNote$setContent(.fl_prose(
+                "<p>", estim_desc, missing_desc, n_desc, "</p>",
                 "<p>", tr(
-                    "CFI and TLI (both 0-1) reward explaining more covariance than a null (no-correlation) model; RMSEA and SRMR (both 0-1, lower is better) penalize model complexity and average residual correlation, respectively. Hu &amp; Bentler (1999): CFI/TLI &ge; .95, RMSEA &le; .06, SRMR &le; .08 for Good; CFI/TLI &ge; .90, RMSEA &le; .08, SRMR &le; .10 for Acceptable.",
-                    "El CFI y el TLI (ambos 0-1) premian explicar más covarianza que un modelo nulo (sin correlación); el RMSEA y el SRMR (ambos 0-1, menor es mejor) penalizan la complejidad del modelo y la correlación residual promedio, respectivamente. Hu &amp; Bentler (1999): CFI/TLI &ge; .95, RMSEA &le; .06, SRMR &le; .08 para Bueno; CFI/TLI &ge; .90, RMSEA &le; .08, SRMR &le; .10 para Aceptable."),
+                    "CFI and TLI (both 0-1) reward explaining more covariance than a null (no-correlation) model; RMSEA and SRMR (both 0-1, lower is better) penalize model complexity and average residual correlation, respectively. Hu &amp; Bentler (1999): CFI/TLI &ge; .95, RMSEA &le; .06, SRMR &le; .08 for Good; CFI/TLI &ge; .90, RMSEA &le; .08, SRMR &le; .10 for Acceptable. When the estimator is robust (MLR or WLSMV), the robust CFI/TLI/RMSEA columns — not the plain ones — are what these cutoffs and the Fit verdict use.",
+                    "El CFI y el TLI (ambos 0-1) premian explicar más covarianza que un modelo nulo (sin correlación); el RMSEA y el SRMR (ambos 0-1, menor es mejor) penalizan la complejidad del modelo y la correlación residual promedio, respectivamente. Hu &amp; Bentler (1999): CFI/TLI &ge; .95, RMSEA &le; .06, SRMR &le; .08 para Bueno; CFI/TLI &ge; .90, RMSEA &le; .08, SRMR &le; .10 para Aceptable. Cuando el estimador es robusto (MLR o WLSMV), las columnas CFI/TLI/RMSEA robustas — no las simples — son las que usan estos umbrales y el veredicto de Ajuste."),
                 "</p><p>", tr(
                     paste0("The correlated-factors model above is ", tolower(cf_verdict), "."),
                     paste0("El modelo de factores correlacionados de arriba es ", tolower(cf_verdict), ".")),
