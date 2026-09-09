@@ -4,6 +4,7 @@ bibentry(
     author = person("Arquímedes De León", "Chacón Chacón"),
     year = "2026",
     note = "Version 1.0.0 [jamovi module]",
+    doi = "10.5281/zenodo.22682200",
     url = "https://github.com/ArchieJamDev/FiabilityLab",
-    textVersion = "Chacón Chacón, A. D. L. (2026). FiabilityLab (Version 1.0.0) [jamovi module]. https://github.com/ArchieJamDev/FiabilityLab"
+    textVersion = "Chacón Chacón, A. D. L. (2026). FiabilityLab (Version 1.0.0) [jamovi module]. https://doi.org/10.5281/zenodo.22682200"
 )

@@ -13,6 +13,14 @@ repository-code: "https://github.com/ArchieJamDev/FiabilityLab"
 license: "GPL-3.0-only"
 version: "1.0.0"
 date-released: "2026-09-09"
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.22682200
+    description: >-
+      The concept DOI for the collection containing all versions of the
+      software — always resolves to the latest release. Cite this one,
+      not a version-specific DOI, unless pinning to the exact version
+      used in a specific analysis.
 abstract: >
   FiabilityLab is an open-source Jamovi module for evaluating measurement
   reliability and agreement: internal consistency, inter-rater agreement,

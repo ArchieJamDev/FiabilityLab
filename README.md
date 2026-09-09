@@ -7,6 +7,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![GitHub release](https://img.shields.io/github/v/release/ArchieJamDev/FiabilityLab)](https://github.com/ArchieJamDev/FiabilityLab/releases)
 [![CI](https://github.com/ArchieJamDev/FiabilityLab/actions/workflows/jamovi-check.yml/badge.svg)](https://github.com/ArchieJamDev/FiabilityLab/actions/workflows/jamovi-check.yml)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22682200.svg)](https://doi.org/10.5281/zenodo.22682200)
 ![FiabilityLab views](https://komarev.com/ghpvc/?username=ArchieJamDev-FiabilityLab&style=flat-square&color=181717&label=FiabilityLab+Views)
 
 > **A jamovi module for measurement reliability, inter-rater agreement, and measurement invariance, paired with methodological guidance.**
@@ -118,7 +119,9 @@ Contributions are welcome. Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) befo
 
 ## Citation
 
-If you use FiabilityLab in research, please cite the software using the information in [`CITATION.cff`](CITATION.cff), or via GitHub's "Cite this repository" button. FiabilityLab does not yet have a Zenodo-issued DOI — `.zenodo.json` is already in place, and one will be minted (and added here) the first time a GitHub Release is cut once the repository is linked to Zenodo.
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22682200.svg)](https://doi.org/10.5281/zenodo.22682200)
+
+If you use FiabilityLab in research, please cite the software using the information in [`CITATION.cff`](CITATION.cff), or via GitHub's "Cite this repository" button. The DOI above is the concept DOI — it always resolves to the latest release; cite a version-specific DOI instead only if you need to pin the exact version used in a specific analysis.
 
 ---
 
