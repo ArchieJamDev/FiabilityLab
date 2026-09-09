@@ -1,3 +1,27 @@
+# -----------------------------------------------------------------------------------
+# FiabilityLab
+# A Jamovi module for reliability and inter-rater agreement analysis and
+# methodological decision support.
+#
+# Copyright (C) 2026 Arquímedes De León Chacón Chacón
+#
+# This file is part of FiabilityLab.
+#
+# FiabilityLab is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# FiabilityLab is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with FiabilityLab.
+# If not, see https://www.gnu.org/licenses/.
+# -----------------------------------------------------------------------------
+
 # -----------------------------------------------------------------------------
 # FiabilityLab - Advanced Reliability (SEM).
 #
@@ -49,6 +73,29 @@
 # Library + cita en Bibliography antes de este código.
 # -----------------------------------------------------------------------------
 
+# Workflow / Flujo de trabajo:
+# Validate (lavaan/semTools available, at least one factor with >=3 items) ->
+# prepare (collect factor definitions from the dynamic "Add New Factor" list,
+# resolve item-type/estimator/missing-data strategy) -> describe missingness
+# (n analyzed vs. n available) -> diagnose design (exploratory parallel
+# analysis against the specified structure, solution admissibility beyond
+# mere convergence) -> compute supported estimands (CFA fit, CR/omega, AVE,
+# Hancock & Mueller's H, HTMT, second-order omega hierarchical) -> quantify
+# uncertainty (formal model-comparison likelihood-ratio test) -> interpret
+# (per-table/per-plot notes, modification indices as theory-guided
+# diagnostics, never automatic edits) -> assemble report.
+# ES: Validar (lavaan/semTools disponibles, al menos un factor con >=3 ítems)
+# -> preparar (recolectar las definiciones de factor de la lista dinámica
+# "Add New Factor", resolver la estrategia de tipo de ítem/estimador/datos
+# faltantes) -> describir datos faltantes (n analizado vs. n disponible) ->
+# diagnosticar diseño (análisis paralelo exploratorio contra la estructura
+# especificada, admisibilidad de la solución más allá de la mera
+# convergencia) -> calcular los estimandos soportados (ajuste AFC, CR/omega,
+# AVE, H de Hancock & Mueller, HTMT, omega jerárquico de segundo orden) ->
+# cuantificar incertidumbre (prueba formal de razón de verosimilitud de
+# comparación de modelos) -> interpretar (notas por tabla/gráfico, índices de
+# modificación como diagnósticos guiados por teoría, nunca ediciones
+# automáticas) -> ensamblar el informe.
 advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
     "advancedReliabilityClass",
     inherit = advancedReliabilityBase,

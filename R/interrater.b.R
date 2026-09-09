@@ -1,3 +1,27 @@
+# -----------------------------------------------------------------------------------
+# FiabilityLab
+# A Jamovi module for reliability and inter-rater agreement analysis and
+# methodological decision support.
+#
+# Copyright (C) 2026 Arquímedes De León Chacón Chacón
+#
+# This file is part of FiabilityLab.
+#
+# FiabilityLab is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# FiabilityLab is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with FiabilityLab.
+# If not, see https://www.gnu.org/licenses/.
+# -----------------------------------------------------------------------------
+
 # -----------------------------------------------------------------------------
 # FiabilityLab - Inter-Rater Agreement.
 #
@@ -16,6 +40,24 @@
 # archivo según el contrato de admisión Library/Bibliography.
 # -----------------------------------------------------------------------------
 
+# Workflow / Flujo de trabajo:
+# Validate (options, k >= 2 raters) -> prepare (detect nominal/ordinal/
+# continuous level, build the working data frame) -> describe missingness
+# (complete cases vs. removed listwise) -> diagnose design (ICC's own
+# normality/homoscedasticity/linearity assumptions, when applicable) ->
+# compute supported estimands (Kappa, Gwet's AC1/AC2, Krippendorff's alpha,
+# ICC, Kendall's W -- whichever apply to the detected level) -> quantify
+# uncertainty (bootstrap CIs) -> interpret (discordance panel, data-grounded
+# "why" diagnostics) -> assemble report (tables, plots, interpretation panel).
+# ES: Validar (opciones, k >= 2 jueces) -> preparar (detectar nivel nominal/
+# ordinal/continuo, construir el data frame de trabajo) -> describir datos
+# faltantes (casos completos vs. eliminados por lista) -> diagnosticar diseño
+# (supuestos propios del ICC de normalidad/homocedasticidad/linealidad,
+# cuando aplica) -> calcular los estimandos soportados (Kappa, AC1/AC2 de
+# Gwet, alfa de Krippendorff, ICC, W de Kendall -- los que apliquen al nivel
+# detectado) -> cuantificar incertidumbre (IC por bootstrap) -> interpretar
+# (panel de discordancia, diagnósticos de "por qué" anclados en los datos)
+# -> ensamblar el informe (tablas, gráficos, panel de interpretación).
 interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
     "interRaterClass",
     inherit = interRaterBase,

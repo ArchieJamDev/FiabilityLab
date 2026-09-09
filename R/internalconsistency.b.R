@@ -1,3 +1,50 @@
+# -----------------------------------------------------------------------------------
+# FiabilityLab
+# A Jamovi module for reliability and inter-rater agreement analysis and
+# methodological decision support.
+#
+# Copyright (C) 2026 Arquímedes De León Chacón Chacón
+#
+# This file is part of FiabilityLab.
+#
+# FiabilityLab is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# FiabilityLab is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with FiabilityLab.
+# If not, see https://www.gnu.org/licenses/.
+# -----------------------------------------------------------------------------
+
+# Workflow / Flujo de trabajo:
+# Validate (options, k >= 2 items) -> prepare (detect dichotomous/polytomous/
+# ordinal level, build the complete-case data frame) -> describe missingness
+# (n available vs. removed listwise) -> diagnose design (sample-size/subject-
+# to-item screening, level-aware normality, tau-equivalence/unidimensionality/
+# normality assumptions behind alpha) -> compute supported estimands (alpha,
+# ordinal alpha, omega/omega hierarchical, GLB, split-half, Guttman lambda,
+# KR-20/21 -- whichever apply to the detected level) -> quantify uncertainty
+# (bootstrap CIs) -> interpret (alpha-vs-omega discordance, weak item-total
+# correlations as a diagnostic flag, dimensionality) -> assemble report
+# (tables, plots, interpretation panel).
+# ES: Validar (opciones, k >= 2 ítems) -> preparar (detectar nivel
+# dicotómico/politómico/ordinal, construir el data frame de casos completos)
+# -> describir datos faltantes (n disponible vs. eliminado por lista) ->
+# diagnosticar diseño (cribado de tamaño muestral/razón sujeto-ítem,
+# normalidad consciente del nivel de medida, supuestos de tau-equivalencia/
+# unidimensionalidad/normalidad detrás del alfa) -> calcular los estimandos
+# soportados (alfa, alfa ordinal, omega/omega jerárquico, GLB, mitades
+# partidas, lambda de Guttman, KR-20/21 -- los que apliquen al nivel
+# detectado) -> cuantificar incertidumbre (IC por bootstrap) -> interpretar
+# (discordancia alfa-vs-omega, correlaciones ítem-total débiles como alerta
+# diagnóstica, dimensionalidad) -> ensamblar el informe (tablas, gráficos,
+# panel de interpretación).
 internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
     "internalConsistencyClass",
     inherit = internalConsistencyBase,

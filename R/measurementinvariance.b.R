@@ -1,3 +1,27 @@
+# -----------------------------------------------------------------------------------
+# FiabilityLab
+# A Jamovi module for reliability and inter-rater agreement analysis and
+# methodological decision support.
+#
+# Copyright (C) 2026 Arquímedes De León Chacón Chacón
+#
+# This file is part of FiabilityLab.
+#
+# FiabilityLab is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# FiabilityLab is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with FiabilityLab.
+# If not, see https://www.gnu.org/licenses/.
+# -----------------------------------------------------------------------------
+
 # -----------------------------------------------------------------------------
 # FiabilityLab - Measurement Invariance.
 #
@@ -40,6 +64,30 @@
 # cualquier comparación entre grupos de él.
 # -----------------------------------------------------------------------------
 
+# Workflow / Flujo de trabajo:
+# Validate (lavaan available, a grouping variable, at least one factor with
+# >=3 items, >=2 group levels, enough cases per group) -> prepare (collect
+# factor definitions, resolve item-type/estimator strategy) -> describe
+# missingness (n analyzed) -> diagnose design (group sizes, convergence at
+# each level of the sequence) -> compute supported estimands (the nested
+# configural/metric/scalar/strict multi-group CFA sequence) -> quantify
+# uncertainty (likelihood-ratio test and ΔCFI at each level, against the
+# level just before it) -> interpret (a five-way verdict per level --
+# supported by both/one/neither criterion, or undetermined -- plus which
+# comparisons the highest fully-supported level actually licenses) ->
+# assemble report.
+# ES: Validar (lavaan disponible, una variable de agrupación, al menos un
+# factor con >=3 ítems, >=2 niveles de grupo, suficientes casos por grupo)
+# -> preparar (recolectar las definiciones de factor, resolver la estrategia
+# de tipo de ítem/estimador) -> describir datos faltantes (n analizado) ->
+# diagnosticar diseño (tamaños de grupo, convergencia en cada nivel de la
+# secuencia) -> calcular los estimandos soportados (la secuencia anidada de
+# AFC multigrupo configural/métrica/escalar/estricta) -> cuantificar
+# incertidumbre (prueba de razón de verosimilitud y ΔCFI en cada nivel,
+# contra el nivel justo anterior) -> interpretar (un veredicto de cinco
+# categorías por nivel -- respaldado por ambos/uno/ningún criterio, o
+# indeterminado -- más qué comparaciones habilita realmente el nivel máximo
+# plenamente respaldado) -> ensamblar el informe.
 measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
     "measurementInvarianceClass",
     inherit = measurementInvarianceBase,
