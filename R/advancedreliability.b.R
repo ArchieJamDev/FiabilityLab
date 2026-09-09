@@ -482,9 +482,15 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
             }
 
             relg_p <- ""
+            lrt_significant <- !is.null(lrt) && !is.na(lrt$p) && lrt$p < .05
             if (isTRUE(opt$secondOrder) && ho_ok) {
                 relg_names <- paste(vapply(low_relg, function(r) r$factor, character(1)), collapse = ", ")
-                if (length(low_relg) > 0L) {
+                if (lrt_significant) {
+                    relg_txt <- tr(
+                        "The second-order model fits significantly worse than free correlations (see the Model Comparison table above), so these reliability-due-to-G values overstate how much of each factor's reliable variance is really shared with a general trait -- treat them, like Omega Hierarchical, with real skepticism.",
+                        "El modelo de segundo orden ajusta significativamente peor que el de correlaciones libres (vea la tabla de Comparación de Modelos arriba), por lo que estos valores de confiabilidad-debida-a-G sobreestiman cuánto de la varianza confiable de cada factor realmente se comparte con un rasgo general -- trátelos, al igual que el Omega Jerárquico, con escepticismo real.")
+                    relg_p <- paste0("<p>&#9888; ", relg_txt, "</p>")
+                } else if (length(low_relg) > 0L) {
                     relg_txt <- tr(
                         paste0(length(low_relg), " factor(s) (", relg_names, ") have most of their reliable variance specific to the subscale rather than the general factor G (reliability-due-to-G under 40% of their own CR/&omega;) — a total-score interpretation would discard most of what makes these subscales reliable."),
                         paste0(length(low_relg), " factor(es) (", relg_names, ") tienen la mayor parte de su varianza confiable específica a la subescala en vez del factor general G (confiabilidad-debida-a-G bajo 40% de su propio CR/&omega;) — una interpretación de puntaje total descartaría la mayor parte de lo que hace confiables a estas subescalas."))
