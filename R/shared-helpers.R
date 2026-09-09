@@ -11,28 +11,40 @@
 # tipográfica se defina una sola vez en vez de copiarse por módulo y
 # desincronizarse con el tiempo.
 
-# ── Plot style: background theme + colour palette ───────────────────────────
-# EN: interRater and internalConsistency both expose the same 6-option
-# plotStyle setting (3 background themes, 3 colour palettes) and both need
-# the exact same theme object / primary-secondary hex pair for it.
-# ES: interRater e internalConsistency exponen la misma opción plotStyle de
-# 6 opciones (3 temas de fondo, 3 paletas de color) y ambos necesitan el
-# mismo objeto de tema / par de hex primario-secundario para ella.
-.fl_plot_theme <- function(style) {
+# ── Plot style: background theme + colour palette, one coherent pair per
+# named style ─────────────────────────────────────────────────────────────
+# EN: All four analyses with plots (interRater, internalConsistency,
+# advancedReliability, measurementInvariance) expose the same 6-option
+# plotStyle setting. Each of the 6 names sets BOTH a background theme and a
+# colour pair together -- not two independent switches (one for
+# light/gray/linedraw, one for greenred/purpleorange/bluegreen) that only
+# ever changed the ONE aspect their own name suggested and silently left
+# the other at its default. Under that split design, picking "Gray" (a
+# theme name) never changed the plot's colours, and picking "Green-Red" (a
+# palette name) never changed its background -- exactly the "the palette
+# doesn't seem to do anything" symptom this fixes.
+# ES: Los cuatro análisis con gráficos (interRater, internalConsistency,
+# advancedReliability, measurementInvariance) exponen la misma opción
+# plotStyle de 6 opciones. Cada uno de los 6 nombres fija JUNTOS un tema de
+# fondo y un par de colores -- no dos interruptores independientes (uno
+# para light/gray/linedraw, otro para greenred/purpleorange/bluegreen) que
+# solo cambiaban el ÚNICO aspecto que su propio nombre sugería y dejaban el
+# otro silenciosamente en su valor por defecto. Bajo ese diseño dividido,
+# elegir "Gray" (nombre de tema) nunca cambiaba los colores del gráfico, y
+# elegir "Green-Red" (nombre de paleta) nunca cambiaba su fondo -- exactamente
+# el síntoma de "la paleta no parece hacer nada" que esto corrige.
+.fl_plot_style <- function(style) {
     switch(style,
-        light    = ggplot2::theme_light(),
-        gray     = ggplot2::theme_gray(),
-        linedraw = ggplot2::theme_linedraw(),
-        ggplot2::theme_minimal())
+        light        = list(theme = ggplot2::theme_light(),    primary = "#4E79A7", secondary = "#E15759"),
+        linedraw     = list(theme = ggplot2::theme_linedraw(), primary = "#4E79A7", secondary = "#E15759"),
+        greenred     = list(theme = ggplot2::theme_minimal(),  primary = "#2E8B57", secondary = "#D6604D"),
+        purpleorange = list(theme = ggplot2::theme_minimal(),  primary = "#8E5FA8", secondary = "#E08214"),
+        bluegreen    = list(theme = ggplot2::theme_minimal(),  primary = "#5B9BD5", secondary = "#66C2A4"),
+        list(theme = ggplot2::theme_gray(), primary = "#4E79A7", secondary = "#E15759"))  # gray (default)
 }
 
-.fl_plot_colors <- function(style) {
-    switch(style,
-        greenred     = list(primary = "#2E8B57", secondary = "#D6604D"),
-        purpleorange = list(primary = "#8E5FA8", secondary = "#E08214"),
-        bluegreen    = list(primary = "#5B9BD5", secondary = "#66C2A4"),
-        list(primary = "#4E79A7", secondary = "#E15759"))
-}
+.fl_plot_theme  <- function(style) .fl_plot_style(style)$theme
+.fl_plot_colors <- function(style) { s <- .fl_plot_style(style); list(primary = s$primary, secondary = s$secondary) }
 
 # ── Typography: one convention across Bibliography, Fiability Library,
 # and every analysis module's Html results ──────────────────────────────────
