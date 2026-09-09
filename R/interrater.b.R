@@ -534,6 +534,29 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                     discord_html <- paste0("<p>&#10003; ", tr("Kappa and Gwet's coefficient agree closely — no evidence of a prevalence-driven paradox here.",
                                                                "El Kappa y el coeficiente de Gwet coinciden de cerca — no hay evidencia de una paradoja por prevalencia aquí."), "</p>")
                 }
+                # EN: For ordinal data with >2 raters, Kappa is Fleiss'
+                # Kappa (irr::kappam.fleiss()), which has no weighting
+                # argument -- unlike the 2-rater case (weighted Cohen's
+                # Kappa) or Gwet's AC2/Krippendorff's ordinal alpha above,
+                # it does not credit near-misses between adjacent
+                # categories, only exact agreement. The table already
+                # labels it "(unweighted)"; this makes the methodological
+                # consequence explicit rather than leaving the label to
+                # speak for itself.
+                # ES: Para datos ordinales con >2 jueces, el Kappa es el
+                # Kappa de Fleiss (irr::kappam.fleiss()), que no tiene
+                # argumento de ponderación -- a diferencia del caso de 2
+                # jueces (Kappa Ponderado de Cohen) o del AC2 de Gwet/alfa
+                # ordinal de Krippendorff de arriba, no le da crédito a
+                # los casi-aciertos entre categorías adyacentes, solo al
+                # acuerdo exacto. La tabla ya lo etiqueta "(sin ponderar)";
+                # esto hace explícita la consecuencia metodológica en vez
+                # de dejar que la etiqueta hable por sí sola.
+                if (level == "ordinal" && k > 2L && !is.na(kappa_val))
+                    discord_html <- paste0(discord_html, "<p>&#9888; ", tr(
+                        "Kappa above is Fleiss' Kappa (unweighted): with more than 2 raters, no weighted-Kappa formula is used, so it does not credit near-misses between adjacent ordinal categories the way the 2-rater case or Gwet's AC2/Krippendorff's ordinal &alpha; above do. Prefer AC2 or Krippendorff's &alpha; as the primary ordinal estimate for this reason.",
+                        "El Kappa de arriba es el Kappa de Fleiss (sin ponderar): con más de 2 jueces, no se usa una fórmula de Kappa ponderado, así que no le da crédito a los casi-aciertos entre categorías ordinales adyacentes como sí lo hacen el caso de 2 jueces o el AC2 de Gwet/&alpha; ordinal de Krippendorff de arriba. Por esto, prefiera el AC2 o el &alpha; de Krippendorff como la estimación ordinal primaria."),
+                        "</p>")
             } else if (level == "continuous" && !is.na(icc_c_val) && !is.na(icc_a_val)) {
                 gap <- icc_c_val - icc_a_val
                 if (gap > .05) {
