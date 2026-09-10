@@ -410,8 +410,15 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
                 lam <- lam_finite[abs(lam_finite) < 1]
                 h_terms <- (lam^2) / (1 - lam^2)
                 h_val <- if (length(h_terms) > 0L) sum(h_terms) / (1 + sum(h_terms)) else NA_real_
-                cr_val  <- if (!is.null(cr_vals) && f$id %in% names(cr_vals)) unname(cr_vals[f$id]) else NA_real_
-                ave_val <- if (!is.null(ave_vals) && f$id %in% names(ave_vals)) unname(ave_vals[f$id]) else NA_real_
+                # semTools::compRelSEM() returns a plain named numeric vector for
+                # a single-factor model, but a *list* of "lavaan.vector"-classed
+                # scalars (each carrying a pretty-print "header" attribute) for a
+                # multi-factor model (semTools 0.5.9) -- unname(cr_vals[f$id])
+                # single-bracket-indexes that list into a length-1 list, which
+                # is.finite() (called downstream in .interp_rel()) has no method
+                # for. [[ + as.numeric() unwraps either shape to a bare scalar.
+                cr_val  <- if (!is.null(cr_vals) && f$id %in% names(cr_vals)) as.numeric(cr_vals[[f$id]]) else NA_real_
+                ave_val <- if (!is.null(ave_vals) && f$id %in% names(ave_vals)) as.numeric(ave_vals[[f$id]]) else NA_real_
                 interp <- paste0(private$.interp_rel(cr_val),
                     if (!is.na(ave_val) && ave_val < .50) paste0("; ", tr("AVE &lt; .50", "AVE &lt; .50")) else "",
                     if (heywood_n > 0L) paste0("; ", tr("Heywood case", "Caso Heywood")) else "")
