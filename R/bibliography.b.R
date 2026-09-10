@@ -166,7 +166,19 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
         list(topics = "invariance", authors = list(c("Vandenberg", "R. J."), c("Lance", "C. E.")), year = "2000",
              title = "A review and synthesis of the measurement invariance literature: Suggestions, practices, and recommendations for organizational research",
              journal = "Organizational Research Methods", volume = "3", issue = "1", pages = "4-70",
-             doi = "10.1177/109442810031002", ref_type = "review")
+             doi = "10.1177/109442810031002", ref_type = "review"),
+        list(topics = "invariance", authors = list(c("Jak", "S."), c("Jorgensen", "T. D.")), year = "2017",
+             title = "Relating measurement invariance, cross-level invariance, and multilevel reliability",
+             journal = "Frontiers in Psychology", volume = "8", pages = "1640",
+             doi = "10.3389/fpsyg.2017.01640", ref_type = "methodological"),
+        list(topics = "invariance", authors = list(c("Raykov", "T.")), year = "2004",
+             title = "Behavioral scale reliability and measurement invariance evaluation using latent variable modeling",
+             journal = "Behavior Therapy", volume = "35", issue = "2", pages = "299-331",
+             doi = "10.1016/S0005-7894(04)80041-8", ref_type = "methodological"),
+        list(topics = "invariance", authors = list(c("Schmitt", "N."), c("Kuljanin", "G.")), year = "2008",
+             title = "Measurement invariance: Review of practice and implications",
+             journal = "Human Resource Management Review", volume = "18", pages = "210-222",
+             doi = "10.1016/j.hrmr.2008.03.003", ref_type = "review")
       )
 
       # -----------------------------------------------------------------------
@@ -402,8 +414,13 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
                  if (!is.null(r$publisher)) paste0(" ", esc(r$publisher), ".") else "",
                  if (nzchar(link)) paste0(" ", link) else "")
         } else {
+          # Some journals (e.g. Frontiers in Psychology) publish by article
+          # number, not issue -- r$issue is absent/empty for those entries,
+          # and APA style omits the parenthetical issue number entirely
+          # rather than rendering an empty "()".
+          issue_part <- if (!is.null(r$issue) && nzchar(r$issue)) paste0("(", r$issue, ")") else ""
           paste0(join_authors_apa(r$authors), " (", r$year, "). ", esc(r$title), ". ",
-                 "<i>", esc(r$journal), ", ", r$volume, "</i>(", r$issue, "), ", r$pages, ".",
+                 "<i>", esc(r$journal), ", ", r$volume, "</i>", issue_part, ", ", r$pages, ".",
                  if (nzchar(link)) paste0(" ", link) else "")
         }
         hanging(inner)
