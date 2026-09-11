@@ -68,16 +68,23 @@ run_group <- function(dat, label) {
     if (b %% 10 == 0) cat(sprintf("[%s] boot %d/%d done\n", label, b, n_boot))
   }
   ci <- apply(boot_mat, 2, function(x) quantile(x, c(.025, .975), na.rm = TRUE))
+  boot_se <- apply(boot_mat, 2, sd, na.rm = TRUE)
   out <- data.frame(
     factor = c("Agree", "Consc", "Extra", "Neuro", "Open"),
     omega = point,
-    ci_lower = ci[1, ], ci_upper = ci[2, ],
+    ci_lower = ci[1, ], ci_upper = ci[2, ], boot_se = boot_se,
     n_boot_valid = colSums(!is.na(boot_mat)))
   out_path <- sprintf("results_omega_by_sex_%s.csv", label)
   write.csv(out, out_path, row.names = FALSE)
+  # Raw per-replicate bootstrap values, for a Wald test comparing groups
+  # (needs the bootstrap SE, not just the percentile CI reported above).
+  raw <- as.data.frame(boot_mat)
+  names(raw) <- c("Agree", "Consc", "Extra", "Neuro", "Open")
+  raw_path <- sprintf("results_omega_by_sex_%s_raw_boot.csv", label)
+  write.csv(raw, raw_path, row.names = FALSE)
   cat(sprintf("\n=== %s (n=%d) ===\n", label, n))
   print(out, row.names = FALSE)
-  cat(sprintf("Written to: %s\n", out_path))
+  cat(sprintf("Written to: %s and %s\n", out_path, raw_path))
   out
 }
 
