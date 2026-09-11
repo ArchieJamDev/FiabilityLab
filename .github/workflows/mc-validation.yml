@@ -52,3 +52,77 @@ jobs:
           path: |
             validation/results_*.csv
           retention-days: 30
+
+  omega-by-sex-bootstrap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        group: ["1", "2"]
+
+    steps:
+      - name: Descargar el código del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar R en la máquina virtual
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+
+      - name: Configurar dependencias del sistema de Linux
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
+
+      - name: Instalar dependencias de R
+        run: |
+          Rscript -e "install.packages(c('remotes', 'pkgload'), repos = 'https://cloud.r-project.org')"
+          Rscript -e "remotes::install_deps(dependencies = TRUE, upgrade = 'never')"
+
+      - name: Ejecutar bootstrap Omega por sexo (grupo ${{ matrix.group }}, 150 réplicas)
+        working-directory: validation/applied_example_bfi
+        run: Rscript omega_by_sex_bootstrap.R 150 ${{ matrix.group }}
+
+      - name: Subir resultados como artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-omega-by-sex-grupo-${{ matrix.group }}
+          path: |
+            validation/applied_example_bfi/results_omega_by_sex_*.csv
+          retention-days: 30
+
+  omega-equality-lrt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+
+    steps:
+      - name: Descargar el código del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar R en la máquina virtual
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+
+      - name: Configurar dependencias del sistema de Linux
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
+
+      - name: Instalar dependencias de R
+        run: |
+          Rscript -e "install.packages(c('remotes', 'pkgload'), repos = 'https://cloud.r-project.org')"
+          Rscript -e "remotes::install_deps(dependencies = TRUE, upgrade = 'never')"
+
+      - name: Ejecutar prueba formal de igualdad de Omega entre sexos (LRT)
+        working-directory: validation/applied_example_bfi
+        run: Rscript omega_equality_lrt.R
+
+      - name: Subir resultados como artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-omega-equality-lrt
+          path: |
+            validation/applied_example_bfi/results_omega_equality_lrt.csv
+          retention-days: 30
