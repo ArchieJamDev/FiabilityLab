@@ -12,6 +12,10 @@ on:
         description: 'Correr también las 3 simulaciones Monte Carlo (lento, ~30 min); dejar sin marcar para solo el bootstrap Omega por sexo'
         type: boolean
         default: false
+      n_boot:
+        description: 'Número de réplicas bootstrap para el Omega por sexo'
+        type: string
+        default: '150'
 
 jobs:
   monte-carlo:
@@ -86,9 +90,9 @@ jobs:
           Rscript -e "install.packages(c('remotes', 'pkgload'), repos = 'https://cloud.r-project.org')"
           Rscript -e "remotes::install_deps(dependencies = TRUE, upgrade = 'never')"
 
-      - name: Ejecutar bootstrap Omega por sexo (grupo ${{ matrix.group }}, 150 réplicas)
+      - name: Ejecutar bootstrap Omega por sexo (grupo ${{ matrix.group }}, ${{ inputs.n_boot }} réplicas)
         working-directory: validation/applied_example_bfi
-        run: Rscript omega_by_sex_bootstrap.R 150 ${{ matrix.group }}
+        run: Rscript omega_by_sex_bootstrap.R ${{ inputs.n_boot }} ${{ matrix.group }}
 
       - name: Subir resultados como artifact
         uses: actions/upload-artifact@v4
