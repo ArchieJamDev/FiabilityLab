@@ -1,0 +1,54 @@
+name: Validación Monte Carlo (panel de discordancia)
+
+# Disparo manual únicamente: esto no es parte del CI normal de cada push,
+# es una corrida de cómputo pesado (varias horas por script) para producir
+# los resultados de precisión final citados en el artículo de ChJS. Cada
+# script corre en su propio runner dedicado (matrix), sin competir por CPU
+# entre sí ni con nada más.
+on:
+  workflow_dispatch:
+
+jobs:
+  monte-carlo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - script: alpha_omega_mc.R
+            n_reps: 300
+          - script: kappa_gwet_mc.R
+            n_reps: 500
+          - script: icc_consistency_agreement_mc.R
+            n_reps: 900
+
+    steps:
+      - name: Descargar el código del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar R en la máquina virtual
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+
+      - name: Configurar dependencias del sistema de Linux
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
+
+      - name: Instalar dependencias de R
+        run: |
+          Rscript -e "install.packages(c('remotes', 'pkgload'), repos = 'https://cloud.r-project.org')"
+          Rscript -e "remotes::install_deps(dependencies = TRUE, upgrade = 'never')"
+
+      - name: Ejecutar ${{ matrix.script }} (n_reps=${{ matrix.n_reps }})
+        run: Rscript validation/${{ matrix.script }} ${{ matrix.n_reps }}
+
+      - name: Subir resultados como artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-${{ matrix.script }}
+          path: |
+            validation/results_*.csv
+          retention-days: 30
