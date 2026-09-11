@@ -177,6 +177,20 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
             if (!is.null(ordered_items)) {
                 fit_args$ordered <- ordered_items
                 fit_args$estimator <- "WLSMV"
+                # lavaan's default "delta" parameterization for categorical
+                # indicators fixes residual variances for scale
+                # identification, so group.equal="residuals" (the Strict
+                # level) is a silent no-op under it -- the fit comes out
+                # byte-for-byte identical to the Scalar model (confirmed:
+                # df=625 for both under delta vs. the correct df=650 under
+                # theta, on FiabilityLab's own bfi/gender invariance
+                # example). "theta" parameterization frees the residual
+                # variances so the equality constraint actually binds.
+                # Configural/Metric/Scalar are left on delta (the standard
+                # choice, and what they were already tested against) --
+                # only Strict, the one level that constrains residuals,
+                # needs theta.
+                if ("residuals" %in% group_equal) fit_args$parameterization <- "theta"
             } else {
                 fit_args$estimator <- estimator
             }
