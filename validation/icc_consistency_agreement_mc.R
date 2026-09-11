@@ -80,10 +80,23 @@ results <- do.call(rbind, lapply(seq_len(nrow(grid)), function(i) {
 out_path <- file.path("validation", "results_icc_consistency_agreement_mc.csv")
 write.csv(results, out_path, row.names = FALSE)
 
-summary_tbl <- aggregate(panel_fired ~ n + shift, data = results, FUN = function(x) mean(x, na.rm = TRUE))
-cat("\nEmpirical panel-firing rate (fraction of replicates flagged as discordant):\n")
-print(summary_tbl[order(summary_tbl$n, summary_tbl$shift), ], row.names = FALSE)
+cells <- unique(results[, c("n", "shift")])
+summary_tbl <- do.call(rbind, lapply(seq_len(nrow(cells)), function(i) {
+  sub <- results$panel_fired[results$n == cells$n[i] & results$shift == cells$shift[i]]
+  sub <- sub[!is.na(sub)]
+  k <- sum(sub); ntot <- length(sub)
+  ci <- if (ntot > 0) binom.test(k, ntot)$conf.int else c(NA_real_, NA_real_)
+  data.frame(n = cells$n[i], shift = cells$shift[i], n_reps = ntot,
+             panel_fired = if (ntot > 0) k / ntot else NA_real_,
+             ci_lower = ci[1], ci_upper = ci[2])
+}))
+summary_tbl <- summary_tbl[order(summary_tbl$n, summary_tbl$shift), ]
+summary_path <- file.path("validation", "results_icc_consistency_agreement_mc_summary.csv")
+write.csv(summary_tbl, summary_path, row.names = FALSE)
+cat("\nEmpirical panel-firing rate with 95% Clopper-Pearson CI:\n")
+print(summary_tbl, row.names = FALSE)
 cat(sprintf("\nFull per-replicate results written to: %s\n", out_path))
+cat(sprintf("Summary with CIs written to: %s\n", summary_path))
 
 # ── Directionality check ──────────────────────────────────────────────────
 # The rule is signed (icc_c - icc_a > .05), not abs(). Increasing pure noise
@@ -124,7 +137,18 @@ dir_results <- do.call(rbind, lapply(seq_len(nrow(dir_grid)), function(i) {
 dir_out_path <- file.path("validation", "results_icc_directionality_mc.csv")
 write.csv(dir_results, dir_out_path, row.names = FALSE)
 
-dir_summary <- aggregate(panel_fired ~ noise, data = dir_results, FUN = function(x) mean(x, na.rm = TRUE))
-cat("\nDirectionality check -- false-positive rate under pure noise, no shift (should stay near 0):\n")
+dir_summary <- do.call(rbind, lapply(noise_levels, function(nz) {
+  sub <- dir_results$panel_fired[dir_results$noise == nz]
+  sub <- sub[!is.na(sub)]
+  k <- sum(sub); ntot <- length(sub)
+  ci <- if (ntot > 0) binom.test(k, ntot)$conf.int else c(NA_real_, NA_real_)
+  data.frame(noise = nz, n_reps = ntot,
+             panel_fired = if (ntot > 0) k / ntot else NA_real_,
+             ci_lower = ci[1], ci_upper = ci[2])
+}))
+dir_summary_path <- file.path("validation", "results_icc_directionality_mc_summary.csv")
+write.csv(dir_summary, dir_summary_path, row.names = FALSE)
+cat("\nDirectionality check -- false-positive rate under pure noise, no shift (should stay near 0), with 95% CI:\n")
 print(dir_summary[order(dir_summary$noise), ], row.names = FALSE)
 cat(sprintf("\nFull per-replicate results written to: %s\n", dir_out_path))
+cat(sprintf("Summary with CIs written to: %s\n", dir_summary_path))

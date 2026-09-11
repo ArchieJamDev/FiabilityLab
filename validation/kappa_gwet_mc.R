@@ -96,7 +96,24 @@ results <- do.call(rbind, lapply(seq_len(nrow(grid)), function(i) {
 out_path <- file.path("validation", "results_kappa_gwet_mc.csv")
 write.csv(results, out_path, row.names = FALSE)
 
-summary_tbl <- aggregate(panel_fired ~ n + prevalence, data = results, FUN = function(x) mean(x, na.rm = TRUE))
-cat("\nEmpirical panel-firing rate (fraction of replicates flagged as discordant):\n")
-print(summary_tbl[order(summary_tbl$n, summary_tbl$prevalence), ], row.names = FALSE)
+# Clopper-Pearson exact CI per cell, on the non-degenerate replicates only
+# (NA rows are draws where a rater used a single category in all 10 retry
+# attempts and Kappa is undefined -- excluded from both numerator and
+# denominator, not counted as non-firing).
+cells <- unique(results[, c("n", "prevalence")])
+summary_tbl <- do.call(rbind, lapply(seq_len(nrow(cells)), function(i) {
+  sub <- results$panel_fired[results$n == cells$n[i] & results$prevalence == cells$prevalence[i]]
+  sub <- sub[!is.na(sub)]
+  k <- sum(sub); ntot <- length(sub)
+  ci <- if (ntot > 0) binom.test(k, ntot)$conf.int else c(NA_real_, NA_real_)
+  data.frame(n = cells$n[i], prevalence = cells$prevalence[i], n_reps = ntot,
+             panel_fired = if (ntot > 0) k / ntot else NA_real_,
+             ci_lower = ci[1], ci_upper = ci[2])
+}))
+summary_tbl <- summary_tbl[order(summary_tbl$n, summary_tbl$prevalence), ]
+summary_path <- file.path("validation", "results_kappa_gwet_mc_summary.csv")
+write.csv(summary_tbl, summary_path, row.names = FALSE)
+cat("\nEmpirical panel-firing rate with 95% Clopper-Pearson CI:\n")
+print(summary_tbl, row.names = FALSE)
 cat(sprintf("\nFull per-replicate results written to: %s\n", out_path))
+cat(sprintf("Summary with CIs written to: %s\n", summary_path))

@@ -90,7 +90,21 @@ results <- do.call(rbind, lapply(seq_len(nrow(grid)), function(i) {
 out_path <- file.path("validation", "results_alpha_omega_mc.csv")
 write.csv(results, out_path, row.names = FALSE)
 
-summary_tbl <- aggregate(panel_fired ~ n + loading_sd, data = results, FUN = mean)
-cat("\nEmpirical panel-firing rate (fraction of replicates flagged as discordant):\n")
-print(summary_tbl[order(summary_tbl$n, summary_tbl$loading_sd), ], row.names = FALSE)
+# Clopper-Pearson exact CI on each cell's firing rate, to accompany the
+# point estimate: a rate from n_reps=60 carries substantial Monte Carlo
+# error on its own (see README/paper discussion).
+cells <- unique(results[, c("n", "loading_sd")])
+summary_tbl <- do.call(rbind, lapply(seq_len(nrow(cells)), function(i) {
+  sub <- results$panel_fired[results$n == cells$n[i] & results$loading_sd == cells$loading_sd[i]]
+  k <- sum(sub); ntot <- length(sub)
+  ci <- binom.test(k, ntot)$conf.int
+  data.frame(n = cells$n[i], loading_sd = cells$loading_sd[i], n_reps = ntot,
+             panel_fired = k / ntot, ci_lower = ci[1], ci_upper = ci[2])
+}))
+summary_tbl <- summary_tbl[order(summary_tbl$n, summary_tbl$loading_sd), ]
+summary_path <- file.path("validation", "results_alpha_omega_mc_summary.csv")
+write.csv(summary_tbl, summary_path, row.names = FALSE)
+cat("\nEmpirical panel-firing rate with 95% Clopper-Pearson CI:\n")
+print(summary_tbl, row.names = FALSE)
 cat(sprintf("\nFull per-replicate results written to: %s\n", out_path))
+cat(sprintf("Summary with CIs written to: %s\n", summary_path))
