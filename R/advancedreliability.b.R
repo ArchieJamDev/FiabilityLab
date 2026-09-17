@@ -107,8 +107,12 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
         .parallel_data = NULL,   # data.frame: component, series (observed/simulated), value
 
         .tr = function(en, es) .fl_tr(en, es, self$options$reportLang),
-        .plot_theme = function() .fl_plot_theme(self$options$plotStyle),
-        .plot_colors = function() .fl_plot_colors(self$options$plotStyle),
+        # Plot colours derived from jamovi's own theme -- see
+        # .fl_plot_colors()' own definition in shared-helpers.R for why
+        # (jamovi's official module review, 2026-09-16). .plot_theme() and
+        # the plotStyle option it used to read are removed entirely; every
+        # render function below uses the ggtheme jamovi already passes in.
+        .plot_colors = function(theme) .fl_plot_colors(theme),
         .interp_rel = function(val) .fl_interp_rel(val, private$.tr),
         .reset_table = function(table, n_rows) .fl_reset_table(table, n_rows),
 
@@ -1012,18 +1016,26 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
         .plotParallelAnalysis = function(image, ggtheme, theme, ...) {
             d <- image$state
             if (is.null(d) || nrow(d) == 0L) return(FALSE)
-            cols <- private$.plot_colors()
+            cols <- private$.plot_colors(theme)
             d$series <- factor(d$series, levels = unique(d$series))
+            # Fixed Observed/Simulated colour distinction, not a
+            # user-configurable one -- see internalconsistency.b.R's
+            # .plotItemTotal for why this always-on manual scale goes
+            # AFTER `+ ggtheme`.
+            # ES: Distinción de color fija Observado/Simulado, no una
+            # configurable por el usuario -- ver .plotItemTotal de
+            # internalconsistency.b.R sobre por qué esta escala manual
+            # siempre activa va DESPUÉS de `+ ggtheme`.
             p <- ggplot2::ggplot(d, ggplot2::aes(x = component, y = value, colour = series, shape = series)) +
                 ggplot2::geom_line(linewidth = .6) +
                 ggplot2::geom_point(size = 2.2) +
                 ggplot2::geom_hline(yintercept = 0, linetype = "dotted", colour = "grey50", linewidth = .4) +
-                ggplot2::scale_colour_manual(values = stats::setNames(c(cols$primary, cols$secondary), levels(d$series)), name = NULL) +
-                ggplot2::scale_shape_manual(values = c(16, 17), name = NULL) +
                 ggplot2::scale_x_continuous(breaks = unique(d$component)) +
                 ggplot2::labs(x = private$.tr("Factor", "Factor"), y = private$.tr("Eigenvalue", "Eigenvalor"),
                               title = private$.tr("Parallel Analysis Scree Plot", "Gráfico de Sedimentación del Análisis Paralelo")) +
-                private$.plot_theme()
+                ggtheme +
+                ggplot2::scale_colour_manual(values = stats::setNames(c(cols$primary, cols$secondary), levels(d$series)), name = NULL) +
+                ggplot2::scale_shape_manual(values = c(16, 17), name = NULL)
             print(p)
             TRUE
         },
@@ -1034,14 +1046,14 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
         .plotComparison = function(image, ggtheme, theme, ...) {
             d <- image$state
             if (is.null(d) || nrow(d) == 0L || all(is.na(d$value))) return(FALSE)
-            cols <- private$.plot_colors()
+            cols <- private$.plot_colors(theme)
             d$factor <- factor(d$factor, levels = rev(d$factor))
             p <- ggplot2::ggplot(d, ggplot2::aes(x = value, y = factor)) +
                 ggplot2::geom_point(size = 3.2, colour = cols$primary) +
                 ggplot2::coord_cartesian(xlim = c(0, 1)) +
                 ggplot2::labs(x = private$.tr("Composite Reliability / ω", "Confiabilidad Compuesta / ω"), y = NULL,
                               title = private$.tr("Reliability by Factor", "Confiabilidad por Factor")) +
-                private$.plot_theme()
+                ggtheme
             print(p)
             TRUE
         },
@@ -1050,17 +1062,32 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
         .plotLoadings = function(image, ggtheme, theme, ...) {
             d <- image$state
             if (is.null(d) || nrow(d) == 0L) return(FALSE)
-            cols <- private$.plot_colors()
+            cols <- private$.plot_colors(theme)
             d$item <- factor(d$item, levels = rev(unique(d$item)))
+            # jamovi's official module review (2026-09-16) found this plot
+            # clipped its axis at 0, hiding the negative loadings the
+            # Reliability note above specifically warns about (a sign an
+            # item needs reverse-scoring) -- they showed up as empty rows
+            # instead. Extending the lower bound to include any genuinely
+            # negative loading (with a small margin) keeps them visible.
+            # ES: La revisión oficial de módulos de jamovi (2026-09-16)
+            # encontró que este gráfico recortaba su eje en 0, ocultando
+            # las cargas negativas que la nota de Confiabilidad de arriba
+            # advierte específicamente (una señal de que un ítem necesita
+            # recodificación inversa) -- aparecían como filas vacías en su
+            # lugar. Extender el límite inferior para incluir cualquier
+            # carga genuinamente negativa (con un margen pequeño) las
+            # mantiene visibles.
+            ylo <- min(-0.2, min(d$loading, na.rm = TRUE))
             p <- ggplot2::ggplot(d, ggplot2::aes(x = item, y = loading)) +
                 ggplot2::geom_bar(stat = "identity", fill = cols$primary, alpha = .85, width = .6) +
                 ggplot2::geom_hline(yintercept = .50, linetype = "dashed", colour = cols$secondary, linewidth = .5) +
-                ggplot2::coord_flip(ylim = c(0, 1)) +
+                ggplot2::coord_flip(ylim = c(ylo, 1)) +
                 ggplot2::facet_wrap(~factor, scales = "free_y") +
                 ggplot2::labs(x = NULL, y = private$.tr("Standardized loading", "Carga estandarizada"),
                               title = private$.tr("Standardized Loadings by Factor (dashed = .50)",
                                                    "Cargas Estandarizadas por Factor (punteada = .50)")) +
-                private$.plot_theme()
+                ggtheme
             print(p)
             TRUE
         },
@@ -1070,16 +1097,23 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
         .plotFitComparison = function(image, ggtheme, theme, ...) {
             d <- image$state
             if (is.null(d) || nrow(d) == 0L) return(FALSE)
-            cols <- private$.plot_colors()
+            cols <- private$.plot_colors(theme)
             d$model <- factor(d$model, levels = unique(d$model))
+            # Fixed two-model colour distinction, not a user-configurable
+            # one -- see internalconsistency.b.R's .plotItemTotal for why
+            # this always-on manual scale goes AFTER `+ ggtheme`.
+            # ES: Distinción de color fija entre dos modelos, no una
+            # configurable por el usuario -- ver .plotItemTotal de
+            # internalconsistency.b.R sobre por qué esta escala manual
+            # siempre activa va DESPUÉS de `+ ggtheme`.
             p <- ggplot2::ggplot(d, ggplot2::aes(x = index, y = value, fill = model)) +
                 ggplot2::geom_bar(stat = "identity", position = ggplot2::position_dodge(width = .6), width = .55, alpha = .9) +
                 ggplot2::geom_hline(yintercept = .95, linetype = "dashed", colour = "grey40", linewidth = .4) +
-                ggplot2::scale_fill_manual(values = stats::setNames(c(cols$primary, cols$secondary), levels(d$model)), name = NULL) +
                 ggplot2::coord_cartesian(ylim = c(0, 1)) +
                 ggplot2::labs(x = NULL, y = private$.tr("Value (dashed = .95 good-fit reference)", "Valor (punteada = referencia de buen ajuste .95)"),
                               title = private$.tr("Model Fit Comparison", "Comparación de Ajuste entre Modelos")) +
-                private$.plot_theme()
+                ggtheme +
+                ggplot2::scale_fill_manual(values = stats::setNames(c(cols$primary, cols$secondary), levels(d$model)), name = NULL)
             print(p)
             TRUE
         }

@@ -35,40 +35,54 @@
 # tipográfica se defina una sola vez en vez de copiarse por módulo y
 # desincronizarse con el tiempo.
 
-# ── Plot style: background theme + colour palette, one coherent pair per
-# named style ─────────────────────────────────────────────────────────────
-# EN: All four analyses with plots (interRater, internalConsistency,
-# advancedReliability, measurementInvariance) expose the same 6-option
-# plotStyle setting. Each of the 6 names sets BOTH a background theme and a
-# colour pair together -- not two independent switches (one for
-# light/gray/linedraw, one for greenred/purpleorange/bluegreen) that only
-# ever changed the ONE aspect their own name suggested and silently left
-# the other at its default. Under that split design, picking "Gray" (a
-# theme name) never changed the plot's colours, and picking "Green-Red" (a
-# palette name) never changed its background -- exactly the "the palette
-# doesn't seem to do anything" symptom this fixes.
-# ES: Los cuatro análisis con gráficos (interRater, internalConsistency,
-# advancedReliability, measurementInvariance) exponen la misma opción
-# plotStyle de 6 opciones. Cada uno de los 6 nombres fija JUNTOS un tema de
-# fondo y un par de colores -- no dos interruptores independientes (uno
-# para light/gray/linedraw, otro para greenred/purpleorange/bluegreen) que
-# solo cambiaban el ÚNICO aspecto que su propio nombre sugería y dejaban el
-# otro silenciosamente en su valor por defecto. Bajo ese diseño dividido,
-# elegir "Gray" (nombre de tema) nunca cambiaba los colores del gráfico, y
-# elegir "Green-Red" (nombre de paleta) nunca cambiaba su fondo -- exactamente
-# el síntoma de "la paleta no parece hacer nada" que esto corrige.
-.fl_plot_style <- function(style) {
-    switch(style,
-        light        = list(theme = ggplot2::theme_light(),    primary = "#4E79A7", secondary = "#E15759"),
-        linedraw     = list(theme = ggplot2::theme_linedraw(), primary = "#4E79A7", secondary = "#E15759"),
-        greenred     = list(theme = ggplot2::theme_minimal(),  primary = "#2E8B57", secondary = "#D6604D"),
-        purpleorange = list(theme = ggplot2::theme_minimal(),  primary = "#8E5FA8", secondary = "#E08214"),
-        bluegreen    = list(theme = ggplot2::theme_minimal(),  primary = "#5B9BD5", secondary = "#66C2A4"),
-        list(theme = ggplot2::theme_gray(), primary = "#4E79A7", secondary = "#E15759"))  # gray (default)
+# ── Plot colours: derived from jamovi's own theme, not a module-local
+# style option ──────────────────────────────────────────────────────────
+# EN: jamovi's official module review (2026-09-16) found that every plot
+# in this module used its own plotStyle option (theme_light()/
+# theme_linedraw()/theme_minimal()/theme_gray() + a hand-picked colour
+# pair) instead of the ggtheme/theme jamovi already passes into every
+# render function -- so these plots didn't follow the user's jamovi
+# theme/palette choice, looked different from every other analysis's
+# plots in the same output, and changing jamovi's Theme setting did
+# nothing for them. plotStyle and .fl_plot_style()/.fl_plot_theme() are
+# removed entirely; every render function now does `+ ggtheme` instead
+# (see jamovi's plot-theme guide,
+# https://dev.jamovi.org/tutorial/tuts0302-plot-themes), and this
+# function replaces .fl_plot_colors(style) with a version that reads the
+# same primary/secondary pair from theme$color/theme$fill -- the two-
+# colour semantic distinctions every plot here actually needs (a data
+# series vs. a reference/comparison one, or two named models/conditions),
+# not an arbitrary N-category "colour by group" palette (which none of
+# this module's plots have -- unlike, say, AssumptionsLab's multi-class
+# ROC curves, which is why AssumptionsLab's own migration additionally
+# kept a plotPalette option and this one does not).
+# ES: La revisión oficial de módulos de jamovi (2026-09-16) encontró que
+# todo gráfico de este módulo usaba su propia opción plotStyle
+# (theme_light()/theme_linedraw()/theme_minimal()/theme_gray() + un par
+# de colores elegido a mano) en vez del ggtheme/theme que jamovi ya pasa
+# a cada función de render -- así que estos gráficos no seguían el
+# tema/paleta elegido por el usuario en jamovi, se veían distintos a los
+# de cualquier otro análisis en la misma salida, y cambiar el ajuste de
+# Tema de jamovi no hacía nada por ellos. plotStyle y
+# .fl_plot_style()/.fl_plot_theme() se eliminan por completo; cada
+# función de render ahora hace `+ ggtheme` en su lugar (ver la guía de
+# temas de gráficos de jamovi,
+# https://dev.jamovi.org/tutorial/tuts0302-plot-themes), y esta función
+# reemplaza a .fl_plot_colors(style) con una versión que lee el mismo par
+# primario/secundario desde theme$color/theme$fill -- las distinciones
+# semánticas de dos colores que todo gráfico de este módulo realmente
+# necesita (una serie de datos vs. una de referencia/comparación, o dos
+# modelos/condiciones nombrados), no una paleta arbitraria de N
+# categorías "colorear por grupo" (que ningún gráfico de este módulo
+# tiene -- a diferencia de, por ejemplo, las curvas ROC multiclase de
+# AssumptionsLab, razón por la cual la propia migración de AssumptionsLab
+# además conservó una opción plotPalette y esta no lo hace).
+.fl_plot_colors <- function(theme) {
+    primary   <- if (!is.null(theme$color) && length(theme$color) >= 1) theme$color[1] else "#4E79A7"
+    secondary <- if (!is.null(theme$color) && length(theme$color) >= 2) theme$color[2] else "#E15759"
+    fill      <- if (!is.null(theme$fill)  && length(theme$fill)  >= 2) theme$fill[2]  else secondary
+    list(primary = primary, secondary = secondary, fill = fill)
 }
-
-.fl_plot_theme  <- function(style) .fl_plot_style(style)$theme
-.fl_plot_colors <- function(style) { s <- .fl_plot_style(style); list(primary = s$primary, secondary = s$secondary) }
 
 # ── Typography: one convention across Bibliography, Fiability Library,
 # and every analysis module's Html results ──────────────────────────────────

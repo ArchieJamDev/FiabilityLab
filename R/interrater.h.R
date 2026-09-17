@@ -16,7 +16,6 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             kendallW = FALSE,
             bootstrapCi = TRUE,
             bootstrapSamples = 1000,
-            plotStyle = "gray",
             reportLang = NULL, ...) {
 
             super$initialize(
@@ -71,17 +70,6 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 default=1000,
                 min=100,
                 max=10000)
-            private$..plotStyle <- jmvcore::OptionList$new(
-                "plotStyle",
-                plotStyle,
-                options=list(
-                    "light",
-                    "gray",
-                    "linedraw",
-                    "greenred",
-                    "purpleorange",
-                    "bluegreen"),
-                default="gray")
             private$..reportLang <- jmvcore::OptionList$new(
                 "reportLang",
                 reportLang,
@@ -99,7 +87,6 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$.addOption(private$..kendallW)
             self$.addOption(private$..bootstrapCi)
             self$.addOption(private$..bootstrapSamples)
-            self$.addOption(private$..plotStyle)
             self$.addOption(private$..reportLang)
         }),
     active = list(
@@ -113,7 +100,6 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         kendallW = function() private$..kendallW$value,
         bootstrapCi = function() private$..bootstrapCi$value,
         bootstrapSamples = function() private$..bootstrapSamples$value,
-        plotStyle = function() private$..plotStyle$value,
         reportLang = function() private$..reportLang$value),
     private = list(
         ..ratings = NA,
@@ -126,7 +112,6 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         ..kendallW = NA,
         ..bootstrapCi = NA,
         ..bootstrapSamples = NA,
-        ..plotStyle = NA,
         ..reportLang = NA)
 )
 
@@ -288,7 +273,6 @@ interRaterBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #' @param kendallW .
 #' @param bootstrapCi .
 #' @param bootstrapSamples .
-#' @param plotStyle .
 #' @param reportLang .
 #' @return A results object containing:
 #' \tabular{llllll}{
@@ -321,7 +305,6 @@ interRater <- function(
     kendallW = FALSE,
     bootstrapCi = TRUE,
     bootstrapSamples = 1000,
-    plotStyle = "gray",
     reportLang) {
 
     if ( ! requireNamespace("jmvcore", quietly=TRUE))
@@ -345,7 +328,6 @@ interRater <- function(
         kendallW = kendallW,
         bootstrapCi = bootstrapCi,
         bootstrapSamples = bootstrapSamples,
-        plotStyle = plotStyle,
         reportLang = reportLang)
 
     analysis <- interRaterClass$new(

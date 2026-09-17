@@ -82,7 +82,3 @@ children:
       - type: CheckBox
         name: showPlots
         label: Show reliability comparison plot
-      - type: ComboBox
-        name: plotStyle
-        label: Plot style
-        enable: (showPlots)

@@ -46,12 +46,6 @@ children:
         name: bootstrapSamples
         format: number
   - type: CollapseBox
-    label: Plot Style
-    collapsed: true
-    children:
-      - type: ComboBox
-        name: plotStyle
-  - type: CollapseBox
     label: Report Language
     collapsed: false
     children:

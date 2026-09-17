@@ -77,7 +77,3 @@ children:
       - type: CheckBox
         name: showPlots
         label: Show fit-by-level plot
-      - type: ComboBox
-        name: plotStyle
-        label: Plot style
-        enable: (showPlots)

@@ -96,8 +96,12 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
         .fitcmp_data = NULL,   # data.frame: level, index, value (for the fit-across-levels plot)
 
         .tr = function(en, es) .fl_tr(en, es, self$options$reportLang),
-        .plot_theme = function() .fl_plot_theme(self$options$plotStyle),
-        .plot_colors = function() .fl_plot_colors(self$options$plotStyle),
+        # Plot colours derived from jamovi's own theme -- see
+        # .fl_plot_colors()' own definition in shared-helpers.R for why
+        # (jamovi's official module review, 2026-09-16). .plot_theme() and
+        # the plotStyle option it used to read are removed entirely; the
+        # render function below uses the ggtheme jamovi already passes in.
+        .plot_colors = function(theme) .fl_plot_colors(theme),
         .reset_table = function(table, n_rows) .fl_reset_table(table, n_rows),
 
         .esc = function(x) {
@@ -511,7 +515,7 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
         .plotInvariance = function(image, ggtheme, theme, ...) {
             d <- image$state
             if (is.null(d) || nrow(d) == 0L || all(is.na(d$cfi))) return(FALSE)
-            cols <- private$.plot_colors()
+            cols <- private$.plot_colors(theme)
             d$level <- factor(d$level, levels = unique(d$level))
             p <- ggplot2::ggplot(d, ggplot2::aes(x = level, y = cfi)) +
                 ggplot2::geom_bar(stat = "identity", fill = cols$primary, alpha = .85, width = .55) +
@@ -519,7 +523,7 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
                 ggplot2::coord_cartesian(ylim = c(0, 1)) +
                 ggplot2::labs(x = NULL, y = "CFI",
                               title = private$.tr("Fit Across Invariance Levels", "Ajuste a Través de los Niveles de Invariancia")) +
-                private$.plot_theme()
+                ggtheme
             print(p)
             TRUE
         }

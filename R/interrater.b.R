@@ -71,30 +71,12 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
 
         .tr = function(en, es) .fl_tr(en, es, self$options$reportLang),
 
-        # User-selectable plot style (independent of jamovi's own light/
-        # dark theme, which is what the render functions' own `ggtheme`
-        # argument adapts to) -- lets the report's plots match whatever
-        # house style a manuscript/thesis needs.
-        # ES: Estilo de gráfico seleccionable por el usuario (independiente
-        # del tema claro/oscuro propio de jamovi, al que se adapta el
-        # argumento `ggtheme` de las funciones de renderizado) -- permite
-        # que los gráficos del reporte coincidan con el estilo que exija
-        # un manuscrito o tesis.
-        .plot_theme = function() .fl_plot_theme(self$options$plotStyle),
-
-        # EN: The three colour-scheme styles (green-red, purple-orange,
-        # blue-green light) pick a primary/secondary hex pair used across
-        # every geom in the module's plots, replacing the old fixed blue/
-        # red. The three background-theme styles (light/gray/linedraw)
-        # keep the original blue/red pair so their look is otherwise
-        # unchanged.
-        # ES: Los tres estilos de esquema de color (verde-rojo, morado-
-        # naranja, azul-verde claro) eligen un par primario/secundario de
-        # hex usado en cada geom de los gráficos del módulo, reemplazando
-        # el azul/rojo fijo anterior. Los tres estilos de tema de fondo
-        # (light/gray/linedraw) conservan el par azul/rojo original para
-        # que su aspecto no cambie.
-        .plot_colors = function() .fl_plot_colors(self$options$plotStyle),
+        # Plot colours derived from jamovi's own theme -- see
+        # .fl_plot_colors()' own definition in shared-helpers.R for why
+        # (jamovi's official module review, 2026-09-16). .plot_theme() and
+        # the plotStyle option it used to read are removed entirely; every
+        # render function below uses the ggtheme jamovi already passes in.
+        .plot_colors = function(theme) .fl_plot_colors(theme),
 
         # ── ICC assumption diagnostics ─────────────────────────────────────
         # EN: ICC (two-way model) is a variance-partition of the same
@@ -930,7 +912,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
         .plotComparison = function(image, ggtheme, theme, ...) {
             d <- image$state
             if (is.null(d) || nrow(d) == 0L) return(FALSE)
-            cols <- private$.plot_colors()
+            cols <- private$.plot_colors(theme)
             d$coefficient <- factor(d$coefficient, levels = rev(d$coefficient))
             lo <- min(0, d$ci_lower, na.rm = TRUE)
             hi <- max(1, d$ci_upper, na.rm = TRUE)
@@ -941,7 +923,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 ggplot2::coord_cartesian(xlim = c(lo, hi)) +
                 ggplot2::labs(x = private$.tr("Value (95% CI)", "Valor (IC 95%)"), y = NULL,
                               title = private$.tr("Coefficient Comparison", "Comparación de Coeficientes")) +
-                private$.plot_theme()
+                ggtheme
             print(p)
             TRUE
         },
@@ -955,14 +937,14 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             if (is.null(st) || is.null(st$data) || nrow(st$data) == 0L) return(FALSE)
             d <- st$data
             tr <- private$.tr
-            cols <- private$.plot_colors()
+            cols <- private$.plot_colors(theme)
             if (identical(st$type, "prevalence")) {
                 d$category <- factor(d$category, levels = rev(d$category))
                 p <- ggplot2::ggplot(d, ggplot2::aes(x = pct, y = category)) +
                     ggplot2::geom_bar(stat = "identity", fill = cols$primary, alpha = .85, width = .6) +
                     ggplot2::labs(x = tr("% of all ratings", "% de todas las calificaciones"), y = NULL,
                                   title = tr("Category Prevalence", "Prevalencia de Categoría")) +
-                    private$.plot_theme()
+                    ggtheme
             } else if (identical(st$type, "rater_mean")) {
                 grand_mean <- st$extra
                 p <- ggplot2::ggplot(d, ggplot2::aes(x = rater, y = mean)) +
@@ -972,7 +954,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                     ggplot2::labs(x = NULL, y = tr("Mean score", "Puntaje medio"),
                                   title = tr("Rater Mean Score (dashed = grand mean)",
                                              "Puntaje Medio por Juez (línea punteada = media general)")) +
-                    private$.plot_theme()
+                    ggtheme
             } else return(FALSE)
             print(p)
             TRUE

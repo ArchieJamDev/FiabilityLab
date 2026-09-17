@@ -27,8 +27,7 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
             showPlots = FALSE,
             plotItemDist = TRUE,
             plotItemTotal = TRUE,
-            plotScree = FALSE,
-            plotStyle = "gray", ...) {
+            plotScree = FALSE, ...) {
 
             super$initialize(
                 package="fiabilitylab",
@@ -137,17 +136,6 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
                 "plotScree",
                 plotScree,
                 default=FALSE)
-            private$..plotStyle <- jmvcore::OptionList$new(
-                "plotStyle",
-                plotStyle,
-                options=list(
-                    "light",
-                    "gray",
-                    "linedraw",
-                    "greenred",
-                    "purpleorange",
-                    "bluegreen"),
-                default="gray")
 
             self$.addOption(private$..items)
             self$.addOption(private$..reportLang)
@@ -171,7 +159,6 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
             self$.addOption(private$..plotItemDist)
             self$.addOption(private$..plotItemTotal)
             self$.addOption(private$..plotScree)
-            self$.addOption(private$..plotStyle)
         }),
     active = list(
         items = function() private$..items$value,
@@ -195,8 +182,7 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
         showPlots = function() private$..showPlots$value,
         plotItemDist = function() private$..plotItemDist$value,
         plotItemTotal = function() private$..plotItemTotal$value,
-        plotScree = function() private$..plotScree$value,
-        plotStyle = function() private$..plotStyle$value),
+        plotScree = function() private$..plotScree$value),
     private = list(
         ..items = NA,
         ..reportLang = NA,
@@ -219,8 +205,7 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
         ..showPlots = NA,
         ..plotItemDist = NA,
         ..plotItemTotal = NA,
-        ..plotScree = NA,
-        ..plotStyle = NA)
+        ..plotScree = NA)
 )
 
 internalConsistencyResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
@@ -541,7 +526,6 @@ internalConsistencyBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
 #' @param plotItemDist .
 #' @param plotItemTotal .
 #' @param plotScree .
-#' @param plotStyle .
 #' @return A results object containing:
 #' \tabular{llllll}{
 #'   \code{results$autoDetectNote} \tab \tab \tab \tab \tab a html \cr
@@ -591,8 +575,7 @@ internalConsistency <- function(
     showPlots = FALSE,
     plotItemDist = TRUE,
     plotItemTotal = TRUE,
-    plotScree = FALSE,
-    plotStyle = "gray") {
+    plotScree = FALSE) {
 
     if ( ! requireNamespace("jmvcore", quietly=TRUE))
         stop("internalConsistency requires jmvcore to be installed (restart may be required)")
@@ -626,8 +609,7 @@ internalConsistency <- function(
         showPlots = showPlots,
         plotItemDist = plotItemDist,
         plotItemTotal = plotItemTotal,
-        plotScree = plotScree,
-        plotStyle = plotStyle)
+        plotScree = plotScree)
 
     analysis <- internalConsistencyClass$new(
         options = options,

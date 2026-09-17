@@ -12,7 +12,6 @@ measurementInvarianceOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R
             itemType = "auto",
             estimator = "auto",
             showPlots = TRUE,
-            plotStyle = "gray",
             reportLang = "en", ...) {
 
             super$initialize(
@@ -70,17 +69,6 @@ measurementInvarianceOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R
                 "showPlots",
                 showPlots,
                 default=TRUE)
-            private$..plotStyle <- jmvcore::OptionList$new(
-                "plotStyle",
-                plotStyle,
-                options=list(
-                    "light",
-                    "gray",
-                    "linedraw",
-                    "greenred",
-                    "purpleorange",
-                    "bluegreen"),
-                default="gray")
             private$..reportLang <- jmvcore::OptionList$new(
                 "reportLang",
                 reportLang,
@@ -94,7 +82,6 @@ measurementInvarianceOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R
             self$.addOption(private$..itemType)
             self$.addOption(private$..estimator)
             self$.addOption(private$..showPlots)
-            self$.addOption(private$..plotStyle)
             self$.addOption(private$..reportLang)
         }),
     active = list(
@@ -103,7 +90,6 @@ measurementInvarianceOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R
         itemType = function() private$..itemType$value,
         estimator = function() private$..estimator$value,
         showPlots = function() private$..showPlots$value,
-        plotStyle = function() private$..plotStyle$value,
         reportLang = function() private$..reportLang$value),
     private = list(
         ..group = NA,
@@ -111,7 +97,6 @@ measurementInvarianceOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R
         ..itemType = NA,
         ..estimator = NA,
         ..showPlots = NA,
-        ..plotStyle = NA,
         ..reportLang = NA)
 )
 
@@ -250,7 +235,6 @@ measurementInvarianceBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::
 #' @param itemType .
 #' @param estimator .
 #' @param showPlots .
-#' @param plotStyle .
 #' @param reportLang .
 #' @return A results object containing:
 #' \tabular{llllll}{
@@ -277,7 +261,6 @@ measurementInvariance <- function(
     itemType = "auto",
     estimator = "auto",
     showPlots = TRUE,
-    plotStyle = "gray",
     reportLang = "en") {
 
     if ( ! requireNamespace("jmvcore", quietly=TRUE))
@@ -297,7 +280,6 @@ measurementInvariance <- function(
         itemType = itemType,
         estimator = estimator,
         showPlots = showPlots,
-        plotStyle = plotStyle,
         reportLang = reportLang)
 
     analysis <- measurementInvarianceClass$new(

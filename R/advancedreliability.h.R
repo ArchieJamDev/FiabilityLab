@@ -14,7 +14,6 @@ advancedReliabilityOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
                 list(label="Factor 1", vars=list())),
             showParallelAnalysis = TRUE,
             showPlots = TRUE,
-            plotStyle = "gray",
             reportLang = "en", ...) {
 
             super$initialize(
@@ -79,17 +78,6 @@ advancedReliabilityOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
                 "showPlots",
                 showPlots,
                 default=TRUE)
-            private$..plotStyle <- jmvcore::OptionList$new(
-                "plotStyle",
-                plotStyle,
-                options=list(
-                    "light",
-                    "gray",
-                    "linedraw",
-                    "greenred",
-                    "purpleorange",
-                    "bluegreen"),
-                default="gray")
             private$..reportLang <- jmvcore::OptionList$new(
                 "reportLang",
                 reportLang,
@@ -105,7 +93,6 @@ advancedReliabilityOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
             self$.addOption(private$..factors)
             self$.addOption(private$..showParallelAnalysis)
             self$.addOption(private$..showPlots)
-            self$.addOption(private$..plotStyle)
             self$.addOption(private$..reportLang)
         }),
     active = list(
@@ -116,7 +103,6 @@ advancedReliabilityOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
         factors = function() private$..factors$value,
         showParallelAnalysis = function() private$..showParallelAnalysis$value,
         showPlots = function() private$..showPlots$value,
-        plotStyle = function() private$..plotStyle$value,
         reportLang = function() private$..reportLang$value),
     private = list(
         ..secondOrder = NA,
@@ -126,7 +112,6 @@ advancedReliabilityOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
         ..factors = NA,
         ..showParallelAnalysis = NA,
         ..showPlots = NA,
-        ..plotStyle = NA,
         ..reportLang = NA)
 )
 
@@ -543,7 +528,6 @@ advancedReliabilityBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
 #' @param factors .
 #' @param showParallelAnalysis .
 #' @param showPlots .
-#' @param plotStyle .
 #' @param reportLang .
 #' @return A results object containing:
 #' \tabular{llllll}{
@@ -590,7 +574,6 @@ advancedReliability <- function(
                 list(label="Factor 1", vars=list())),
     showParallelAnalysis = TRUE,
     showPlots = TRUE,
-    plotStyle = "gray",
     reportLang = "en") {
 
     if ( ! requireNamespace("jmvcore", quietly=TRUE))
@@ -609,7 +592,6 @@ advancedReliability <- function(
         factors = factors,
         showParallelAnalysis = showParallelAnalysis,
         showPlots = showPlots,
-        plotStyle = plotStyle,
         reportLang = reportLang)
 
     analysis <- advancedReliabilityClass$new(

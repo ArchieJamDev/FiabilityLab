@@ -60,13 +60,12 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
         # ── Translation helper ────────────────────────────────────────────────
         .tr = function(en, es) .fl_tr(en, es, self$options$reportLang),
 
-        # User-selectable plot style (independent of jamovi's own light/
-        # dark theme, which is what the render functions' own `ggtheme`
-        # argument adapts to) -- lets the report's plots match whatever
-        # house style a manuscript/thesis needs. Same option/helper as
-        # interRater's .plot_theme(), for consistency across the module.
-        .plot_theme = function() .fl_plot_theme(self$options$plotStyle),
-        .plot_colors = function() .fl_plot_colors(self$options$plotStyle),
+        # Plot colours derived from jamovi's own theme -- see
+        # .fl_plot_colors()' own definition in shared-helpers.R for why
+        # (jamovi's official module review, 2026-09-16). .plot_theme() and
+        # the plotStyle option it used to read are removed entirely; every
+        # render function below uses the ggtheme jamovi already passes in.
+        .plot_colors = function(theme) .fl_plot_colors(theme),
 
         # ── Interpretation of reliability coefficient ─────────────────────────
         .interp_rel = function(val) .fl_interp_rel(val, private$.tr),
@@ -1145,7 +1144,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
         .plotComparison = function(image, ggtheme, theme, ...) {
             d <- image$state
             if (is.null(d) || nrow(d) == 0L) return(FALSE)
-            cols <- private$.plot_colors()
+            cols <- private$.plot_colors(theme)
             d$coefficient <- factor(d$coefficient, levels = rev(d$coefficient))
             lo <- min(0, d$ci_lower, na.rm = TRUE)
             hi <- max(1, d$ci_upper, na.rm = TRUE)
@@ -1156,7 +1155,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 ggplot2::coord_cartesian(xlim = c(lo, hi)) +
                 ggplot2::labs(x = private$.tr("Value (95% CI)", "Valor (IC 95%)"), y = NULL,
                               title = private$.tr("Coefficient Comparison", "Comparación de Coeficientes")) +
-                private$.plot_theme()
+                ggtheme
             print(p)
             TRUE
         },
@@ -1170,13 +1169,13 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             k   <- length(item_freq)
             nc  <- min(k, 4L)
             nr  <- ceiling(k / nc)
-            cols <- private$.plot_colors()
+            cols <- private$.plot_colors(theme)
 
             plots <- lapply(item_freq, function(it) {
                 ggplot2::ggplot(it$tbl, ggplot2::aes(x = val, y = freq)) +
                     ggplot2::geom_bar(stat = "identity", fill = cols$primary, alpha = .85, width = .6) +
                     ggplot2::labs(title = it$name, x = NULL, y = NULL) +
-                    private$.plot_theme() +
+                    ggtheme +
                     ggplot2::theme(plot.title = ggplot2::element_text(size = 9, face = "bold"),
                                    axis.text  = ggplot2::element_text(size = 8))
             })
@@ -1208,23 +1207,42 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             dat <- image$state
             if (is.null(dat)) return(FALSE)
 
-            cols <- private$.plot_colors()
+            cols <- private$.plot_colors(theme)
             dat$item <- factor(dat$item, levels = rev(dat$item))
+            # A fixed TRUE/FALSE colour distinction (above/below the .30
+            # threshold), not a user-configurable "colour by group" -- the
+            # kind of always-on manual scale jamovi's own plot-theme guide
+            # says to add AFTER `+ ggtheme`, since ggtheme's own discrete
+            # scale would otherwise silently win if it came later in the
+            # `+` chain (a sibling module, AssumptionsLab, had exactly this
+            # bug slip through in its own plot-theme migration -- see
+            # feedback-check-fiabilitylab-same-bugs in project memory).
+            # ES: Una distinción de color VERDADERO/FALSO fija (por encima/
+            # debajo del umbral .30), no un "colorear por grupo"
+            # configurable por el usuario -- el tipo de escala manual
+            # siempre activa que la propia guía de temas de gráficos de
+            # jamovi dice agregar DESPUÉS de `+ ggtheme`, ya que la propia
+            # escala discreta de ggtheme ganaría en silencio si apareciera
+            # después en la cadena de `+` (un módulo hermano,
+            # AssumptionsLab, tuvo exactamente este bug pasar
+            # desapercibido en su propia migración de tema de gráficos --
+            # ver feedback-check-fiabilitylab-same-bugs en la memoria del
+            # proyecto).
             p <- ggplot2::ggplot(dat, ggplot2::aes(x = item, y = citc,
                                                     fill = citc >= .30)) +
                 ggplot2::geom_bar(stat = "identity", width = .6) +
                 ggplot2::geom_hline(yintercept = .30, linetype = "dashed",
                                     colour = cols$secondary, linewidth = .6) +
-                ggplot2::scale_fill_manual(values = c("FALSE" = cols$secondary,
-                                                       "TRUE"  = cols$primary),
-                                           guide = "none") +
                 ggplot2::coord_flip() +
                 ggplot2::labs(x = NULL,
                               y = private$.tr("Corrected item-total r",
                                               "r ítem-total corregida"),
                               title = private$.tr("Item–Total Correlations (threshold = .30)",
                                                   "Correlaciones Ítem-Total (umbral = .30)")) +
-                private$.plot_theme()
+                ggtheme +
+                ggplot2::scale_fill_manual(values = c("FALSE" = cols$secondary,
+                                                       "TRUE"  = cols$primary),
+                                           guide = "none")
             print(p)
             TRUE
         },
@@ -1241,25 +1259,33 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             if (is.null(st)) return(FALSE)
 
             n_fact <- length(st$actual)
-            cols   <- private$.plot_colors()
+            cols   <- private$.plot_colors(theme)
             dat <- data.frame(
                 factor    = seq_len(n_fact),
                 actual    = st$actual,
                 simulated = st$simulated)
 
+            # Fixed Actual/Simulated colour distinction, not a
+            # user-configurable one -- see the note on .plotItemTotal
+            # above for why this always-on manual scale goes AFTER
+            # `+ ggtheme`.
+            # ES: Distinción de color fija Actual/Simulado, no una
+            # configurable por el usuario -- ver la nota en .plotItemTotal
+            # arriba sobre por qué esta escala manual siempre activa va
+            # DESPUÉS de `+ ggtheme`.
             p <- ggplot2::ggplot(dat, ggplot2::aes(x = factor)) +
                 ggplot2::geom_line(ggplot2::aes(y = actual,    colour = "Actual"),    linewidth = 1) +
                 ggplot2::geom_point(ggplot2::aes(y = actual,   colour = "Actual"),    size = 2.5) +
                 ggplot2::geom_line(ggplot2::aes(y = simulated, colour = "Simulated"), linewidth = .7, linetype = "dashed") +
-                ggplot2::scale_colour_manual(
-                    name   = NULL,
-                    values = c("Actual" = cols$primary, "Simulated" = cols$secondary)) +
                 ggplot2::labs(
                     x     = private$.tr("Factor", "Factor"),
                     y     = private$.tr("Eigenvalue", "Autovalor"),
                     title = private$.tr("Scree Plot — Parallel Analysis",
                                         "Gráfico de sedimentación — Análisis paralelo")) +
-                private$.plot_theme()
+                ggtheme +
+                ggplot2::scale_colour_manual(
+                    name   = NULL,
+                    values = c("Actual" = cols$primary, "Simulated" = cols$secondary))
             print(p)
             TRUE
         }
