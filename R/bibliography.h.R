@@ -79,7 +79,7 @@ bibliographyBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             super$initialize(
                 package = "fiabilitylab",
                 name = "bibliography",
-                version = c(1,0,0),
+                version = c(1,5,0),
                 options = options,
                 results = bibliographyResults$new(options=options),
                 data = data,

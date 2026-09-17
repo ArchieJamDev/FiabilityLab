@@ -90,7 +90,7 @@ fiabilityLibraryBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Cla
             super$initialize(
                 package = "fiabilitylab",
                 name = "fiabilityLibrary",
-                version = c(1,0,0),
+                version = c(1,5,0),
                 options = options,
                 results = fiabilityLibraryResults$new(options=options),
                 data = data,

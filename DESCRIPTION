@@ -1,7 +1,7 @@
 Package: fiabilitylab
 Type: Package
 Title: FiabilityLab: Comprehensive Reliability and Agreement Analysis
-Version: 1.0.0
+Version: 1.5.0
 Authors@R: person("Arquímedes De León", "Chacón Chacón", email = "arquimedeschacon@gmail.com", role = c("aut", "cre"), comment = c(affiliation = "Universidad Católica Andrés Bello (UCAB), Caracas, Venezuela"))
 Author: Chacón Chacón, Arquímedes De León [Universidad Católica Andrés Bello (UCAB), Caracas, Venezuela]
 Maintainer: Chacón Chacón, Arquímedes De León <arquimedeschacon@gmail.com>

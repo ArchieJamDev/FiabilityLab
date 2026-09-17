@@ -493,7 +493,7 @@ advancedReliabilityBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
             super$initialize(
                 package = "fiabilitylab",
                 name = "advancedReliability",
-                version = c(1,0,0),
+                version = c(1,5,0),
                 options = options,
                 results = advancedReliabilityResults$new(options=options),
                 data = data,

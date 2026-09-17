@@ -236,7 +236,7 @@ interRaterBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             super$initialize(
                 package = "fiabilitylab",
                 name = "interRater",
-                version = c(1,0,0),
+                version = c(1,5,0),
                 options = options,
                 results = interRaterResults$new(options=options),
                 data = data,

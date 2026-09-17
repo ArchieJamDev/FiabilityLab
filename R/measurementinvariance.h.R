@@ -202,7 +202,7 @@ measurementInvarianceBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::
             super$initialize(
                 package = "fiabilitylab",
                 name = "measurementInvariance",
-                version = c(1,0,0),
+                version = c(1,5,0),
                 options = options,
                 results = measurementInvarianceResults$new(options=options),
                 data = data,
