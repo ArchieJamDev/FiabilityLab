@@ -120,32 +120,6 @@
 # era idéntico letra por letra en interRater e internalConsistency. Esta
 # versión pura toma el valor de la opción ya leído para que el `.tr` de cada
 # clase quede en una sola línea.
-.fl_tr <- function(en, es, report_lang) if (identical(report_lang, "es")) es else en
-
-# ── Reliability/agreement interpretation bands (Kline, 2000; George &
-# Mallery, 2003) ─────────────────────────────────────────────────────────────
-# EN: Used by internalConsistency for every CTT coefficient (α, ω, GLB,
-# split-half, Guttman λ, KR-20/21) and by interRater for ICC and
-# Krippendorff's α on continuous data -- the same "proportion of variance/
-# agreement" question, not the chance-corrected categorical scale Landis &
-# Koch (1977) covers. `tr` is the caller's own translation closure (its
-# `private$.tr`), so this stays independent of any one class's option access.
-# ES: Usado por internalConsistency para cada coeficiente TCT (α, ω, GLB,
-# mitades partidas, λ de Guttman, KR-20/21) y por interRater para el ICC y el
-# α de Krippendorff en datos continuos -- la misma pregunta de "proporción de
-# varianza/acuerdo", no la escala categórica corregida por azar de Landis &
-# Koch (1977). `tr` es la propia función de traducción del llamador (su
-# `private$.tr`), así que esto no depende del acceso a opciones de una clase.
-.fl_interp_rel <- function(val, tr) {
-    if (is.na(val) || !is.finite(val)) return(tr("N/A", "N/D"))
-    if (val >= .95) return(tr("Excellent",    "Excelente"))
-    if (val >= .90) return(tr("Good",         "Bueno"))
-    if (val >= .80) return(tr("Acceptable",   "Aceptable"))
-    if (val >= .70) return(tr("Questionable", "Cuestionable"))
-    if (val >= .60) return(tr("Poor",         "Pobre"))
-    tr("Unacceptable", "Inaceptable")
-}
-
 # ── jamovi Table helpers ─────────────────────────────────────────────────────
 .fl_reset_table <- function(table, n_rows) {
     table$deleteRows()

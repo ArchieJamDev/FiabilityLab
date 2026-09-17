@@ -58,7 +58,6 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
         .plot_rows = NULL,   # data.frame: coefficient, value, ci_lower, ci_upper
 
         # ── Translation helper ────────────────────────────────────────────────
-        .tr = function(en, es) .fl_tr(en, es, self$options$reportLang),
 
         # Plot colours derived from jamovi's own theme -- see
         # .fl_plot_colors()' own definition in shared-helpers.R for why
@@ -68,7 +67,15 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
         .plot_colors = function(theme) .fl_plot_colors(theme),
 
         # ── Interpretation of reliability coefficient ─────────────────────────
-        .interp_rel = function(val) .fl_interp_rel(val, private$.tr),
+        .interp_rel = function(val) {
+            if (is.na(val) || !is.finite(val)) return(.("N/A"))
+            if (val >= .95) return(.("Excellent"))
+            if (val >= .90) return(.("Good"))
+            if (val >= .80) return(.("Acceptable"))
+            if (val >= .70) return(.("Questionable"))
+            if (val >= .60) return(.("Poor"))
+            .("Unacceptable")
+        },
 
         # ── Significance stars ────────────────────────────────────────────────
         .sig = function(p) {
@@ -193,17 +200,13 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
 
         # ── Main run ─────────────────────────────────────────────────────────
         .run = function() {
-            tr  <- private$.tr
             opt <- self$options
 
             # ── 1. Validate ───────────────────────────────────────────────────
             items <- opt$items
             if (length(items) < 2) {
                 self$results$autoDetectNote$setContent(
-                    paste0("<p><b>", tr(
-                        "Select at least 2 items to compute reliability coefficients.",
-                        "Seleccione al menos 2 ítems para calcular coeficientes de confiabilidad."
-                    ), "</b></p>"))
+                    paste0("<p><b>", .("Select at least 2 items to compute reliability coefficients."), "</b></p>"))
                 return()
             }
 
@@ -217,10 +220,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             k       <- ncol(df)
 
             if (n < 5L) {
-                self$results$autoDetectNote$setContent(paste0("<p><b>", tr(
-                    "Not enough complete cases (minimum 5 required).",
-                    "No hay suficientes casos completos (mínimo 5 requeridos)."
-                ), "</b></p>"))
+                self$results$autoDetectNote$setContent(paste0("<p><b>", .("Not enough complete cases (minimum 5 required)."), "</b></p>"))
                 return()
             }
             private$.df_clean <- df
@@ -290,52 +290,39 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             # ── 4. Auto-detect note ───────────────────────────────────────────
             detect_icon <- if (level == "dichotomous") "&#9679;" else "&#9632;"
             level_lbl   <- if (level == "dichotomous")
-                tr("Dichotomous (0/1)", "Dicotómico (0/1)")
+                .("Dichotomous (0/1)")
             else
-                tr(paste0("Polytomous (", n_opts, " response options)"),
-                   paste0("Politómico (", n_opts, " opciones de respuesta)"))
+                jmvcore::format(.("Polytomous ({n} response options)"), n = n_opts)
 
             auto_html <- .fl_prose(
                 "<table style='border-collapse:collapse;'>",
-                "<tr><td style='padding:4px 10px;'><b>", tr("Items", "Ítems"), "</b></td><td>", k, "</td></tr>",
-                "<tr><td style='padding:4px 10px;'><b>", tr("Complete cases", "Casos completos"), "</b></td><td>", n,
-                if (n_miss > 0) paste0(" <span style='color:orange;'>(", n_miss, " ", tr("removed listwise","eliminados listwise"), ")</span>") else "", "</td></tr>",
-                "<tr><td style='padding:4px 10px;'><b>", tr("Max. response options","Máx. opciones"), "</b></td><td>", n_opts, "</td></tr>",
-                "<tr><td style='padding:4px 10px;'><b>", tr("Detected level","Nivel detectado"), "</b></td><td>", detect_icon, " ", level_lbl, "</td></tr>",
+                "<tr><td style='padding:4px 10px;'><b>", .("Items"), "</b></td><td>", k, "</td></tr>",
+                "<tr><td style='padding:4px 10px;'><b>", .("Complete cases"), "</b></td><td>", n,
+                if (n_miss > 0) paste0(" <span style='color:orange;'>(", n_miss, " ", .("removed listwise"), ")</span>") else "", "</td></tr>",
+                "<tr><td style='padding:4px 10px;'><b>", .("Max. response options"), "</b></td><td>", n_opts, "</td></tr>",
+                "<tr><td style='padding:4px 10px;'><b>", .("Detected level"), "</b></td><td>", detect_icon, " ", level_lbl, "</td></tr>",
                 "</table>")
             self$results$autoDetectNote$setContent(auto_html)
 
             # ── 5. Sample adequacy ────────────────────────────────────────────
             ratio <- n / k
-            n_warn <- if (n < 50)  tr("⚠ Very small sample (n < 50). Estimates likely unstable.",
-                                      "⚠ Muestra muy pequeña (n < 50). Estimaciones probablemente inestables.")
-                     else if (n < 100) tr("⚠ Small sample (n < 100). Interpret with caution.",
-                                          "⚠ Muestra pequeña (n < 100). Interprete con precaución.")
-                     else if (n < 200) tr("✓ Adequate sample (n \u2265 100). Suitable for preliminary research.",
-                                          "✓ Muestra adecuada (n \u2265 100). Apta para investigación preliminar.")
-                     else tr("✓ Good sample size (n \u2265 200).",
-                             "✓ Buen tamaño de muestra (n \u2265 200).")
-            ratio_warn <- if (ratio < 5)  tr("⚠ Subject-to-item ratio very low (< 5:1). Reliability estimates unreliable.",
-                                              "⚠ Razón sujetos/ítems muy baja (< 5:1). Estimaciones poco confiables.")
-                          else if (ratio < 10) tr("⚠ Subject-to-item ratio low (5\u201310:1). Acceptable for pilot studies.",
-                                                   "⚠ Razón sujetos/ítems baja (5\u201310:1). Aceptable para estudios piloto.")
-                          else tr("✓ Subject-to-item ratio adequate (\u2265 10:1).",
-                                  "✓ Razón sujetos/ítems adecuada (\u2265 10:1).")
+            n_warn <- if (n < 50)  .("⚠ Very small sample (n < 50). Estimates likely unstable.")
+                     else if (n < 100) .("⚠ Small sample (n < 100). Interpret with caution.")
+                     else if (n < 200) .("✓ Adequate sample (n ≥ 100). Suitable for preliminary research.")
+                     else .("✓ Good sample size (n ≥ 200).")
+            ratio_warn <- if (ratio < 5)  .("⚠ Subject-to-item ratio very low (< 5:1). Reliability estimates unreliable.")
+                          else if (ratio < 10) .("⚠ Subject-to-item ratio low (5–10:1). Acceptable for pilot studies.")
+                          else .("✓ Subject-to-item ratio adequate (≥ 10:1).")
             norm_note <- if (level == "polytomous" && !is_dichot_data)
-                tr("<b>Normality note:</b> If items deviate markedly from normality (|skew| > 2 or |kurt| > 7), prefer Ordinal Alpha or McDonald\u2019s Omega over Cronbach\u2019s Alpha.",
-                   "<b>Nota de normalidad:</b> Si los ítems se desvían notablemente de la normalidad (|asimetría| > 2 o |curtosis| > 7), prefiera el Alfa Ordinal o el Omega de McDonald en lugar del Alfa de Cronbach.")
+                .("<b>Normality note:</b> If items deviate markedly from normality (|skew| > 2 or |kurt| > 7), prefer Ordinal Alpha or McDonald’s Omega over Cronbach’s Alpha.")
             else ""
             options_note <- if (n_opts == 2L)
-                tr("<b>2-category items detected.</b> KR-20 and KR-21 are preferred over Cronbach\u2019s Alpha for dichotomous data.",
-                   "<b>Ítems con 2 categorías detectados.</b> KR-20 y KR-21 son preferibles al Alfa de Cronbach para datos dicotómicos.")
+                .("<b>2-category items detected.</b> KR-20 and KR-21 are preferred over Cronbach’s Alpha for dichotomous data.")
             else if (n_opts <= 4L)
-                tr("<b>Few response options (\u2264 4).</b> Consider Ordinal Alpha; standard Alpha may underestimate reliability.",
-                   "<b>Pocas opciones de respuesta (\u2264 4).</b> Considere Alfa Ordinal; el Alfa estándar puede subestimar la confiabilidad.")
+                .("<b>Few response options (≤ 4).</b> Consider Ordinal Alpha; standard Alpha may underestimate reliability.")
             else ""
             samp_html <- .fl_prose(
-                "<p style='font-size:0.85em;color:#666;'>", tr(
-                    "The n and subject-to-item thresholds below are rule-of-thumb screening guidance, not universal statistical criteria -- treat them as prompts to interpret estimates more cautiously, not as pass/fail cutoffs.",
-                    "Los umbrales de n y de razón sujetos/ítems de abajo son orientación de cribado basada en reglas empíricas, no criterios estadísticos universales -- trátelos como una señal para interpretar las estimaciones con más cautela, no como puntos de corte de aprobado/reprobado."),
+                "<p style='font-size:0.85em;color:#666;'>", .("The n and subject-to-item thresholds below are rule-of-thumb screening guidance, not universal statistical criteria -- treat them as prompts to interpret estimates more cautiously, not as pass/fail cutoffs."),
                 "</p>",
                 "<ul style='line-height:1;'>",
                 "<li>", n_warn, "</li>",
@@ -397,9 +384,9 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                     else NULL
                     W_val <- if (!is.null(sw)) sw$statistic[["W"]] else NA_real_
                     p_val <- if (!is.null(sw)) sw$p.value            else NA_real_
-                    dec <- if (is.na(p_val)) tr("–","–")
-                           else if (p_val < .05) tr("Non-normal", "No normal")
-                           else tr("Normal", "Normal")
+                    dec <- if (is.na(p_val)) .("–")
+                           else if (p_val < .05) .("Non-normal")
+                           else .("Normal")
                     if (!is.na(p_val) && p_val < .05) nonnormal_count <- nonnormal_count + 1L
                     norm_tab$setRow(rowNo = j, values = list(
                         item     = names(df)[j],
@@ -519,16 +506,13 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             if (opt$alpha) {
                 a_val <- if (!is.null(alpha_obj)) alpha_obj$total$raw_alpha else .calc_alpha(df)
                 alpha_applicability <- if (level == "dichotomous")
-                    tr("Binary (0/1) items; mathematically equivalent to KR-20 for this case",
-                       "Ítems binarios (0/1); matemáticamente equivalente al KR-20 en este caso")
+                    .("Binary (0/1) items; mathematically equivalent to KR-20 for this case")
                     else if (is_ordinal_scale)
-                    tr("Ordinal/Likert items; assumes τ-equivalence -- see the Reliability Assumptions Check below",
-                       "Ítems ordinales/Likert; asume equivalencia-τ -- vea la Verificación de Supuestos de Confiabilidad abajo")
+                    .("Ordinal/Likert items; assumes τ-equivalence -- see the Reliability Assumptions Check below")
                     else
-                    tr("Polytomous, continuous items; assumes τ-equivalence & normality",
-                       "Ítems politómicos/continuos; asume equivalencia-τ y normalidad")
+                    .("Polytomous, continuous items; assumes τ-equivalence & normality")
                 add_stat(
-                    tr("Cronbach's \u03B1",          "Alfa de Cronbach (\u03B1)"),
+                    .("Cronbach's α"),
                     a_val, a_val,
                     alpha_applicability,
                     function(d) .calc_alpha(d))
@@ -542,10 +526,9 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                     (kk/(kk-1)) * (1 - kk/sum(pc$rho))
                 }, error = function(e) NA_real_)
                 add_stat(
-                    tr("Ordinal \u03B1 (polychoric)", "Alfa Ordinal (policórica)"),
+                    .("Ordinal α (polychoric)"),
                     oa, oa,
-                    tr("Ordinal/Likert items; does not require normality",
-                       "Ítems ordinales/Likert; no requiere normalidad"))
+                    .("Ordinal/Likert items; does not require normality"))
             }
 
             # ── 8c. Dimensionality pre-check for Omega / Omega-h ──────────────
@@ -577,10 +560,9 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             if (opt$omega && !is.null(omega_obj)) {
                 ot <- omega_obj$omega.tot
                 add_stat(
-                    tr("McDonald's \u03C9 (total)", "Omega de McDonald (\u03C9 total)"),
+                    .("McDonald's ω (total)"),
                     ot, ot,
-                    tr("Polytomous; robust to non-normality; preferred over \u03B1",
-                       "Politómico; robusto a no normalidad; preferible al \u03B1"),
+                    .("Polytomous; robust to non-normality; preferred over α"),
                     function(d) {
                         o <- suppressWarnings(suppressMessages(tryCatch(
                             psych::omega(d, nfactors = n_omega_factors, plot = FALSE),
@@ -607,15 +589,13 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 # no hay ninguna; N/D es el valor honesto.
                 if (n_omega_factors >= 2L) {
                     oh <- omega_obj$omega_h
-                    cond_h <- tr("Multidimensional scales; proportion of variance due to g-factor",
-                                 "Escalas multidimensionales; proporción de varianza del factor g")
+                    cond_h <- .("Multidimensional scales; proportion of variance due to g-factor")
                 } else {
                     oh <- NA_real_
-                    cond_h <- tr("N/A -- parallel analysis suggests 1 factor, so this is not conceptually distinct from ω total",
-                                 "N/D -- el análisis paralelo sugiere 1 factor, así que esto no es conceptualmente distinto del ω total")
+                    cond_h <- .("N/A -- parallel analysis suggests 1 factor, so this is not conceptually distinct from ω total")
                 }
                 add_stat(
-                    tr("McDonald\'s ω hierarchical", "Omega Jerárquico (ωₕ)"),
+                    .("McDonald's ω hierarchical"),
                     oh, oh, cond_h)
             }
 
@@ -626,10 +606,9 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             if (opt$glb) {
                 glb_val <- tryCatch(psych::glb.fa(df)$glb, error = function(e) NA_real_)
                 add_stat(
-                    tr("GLB (Greatest Lower Bound)", "Límite Inferior Máximo (GLB)"),
+                    .("GLB (Greatest Lower Bound)"),
                     glb_val, glb_val,
-                    tr("Best achievable lower-bound estimate; no distributional assumptions",
-                       "Mejor cota inferior alcanzable; sin supuestos distribucionales"))
+                    .("Best achievable lower-bound estimate; no distributional assumptions"))
             }
 
             # ── 8e. Split-half & Guttman Lambdas ─────────────────────────────
@@ -647,10 +626,9 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                     mean(sb_all, na.rm=TRUE)
                 }, error=function(e) NA_real_)
                 add_stat(
-                    tr("Split-half (Spearman-Brown)", "Mitades partidas (Spearman-Brown)"),
+                    .("Split-half (Spearman-Brown)"),
                     sb_mean, sb_mean,
-                    tr("Continuous items; highly sensitive to how items are split",
-                       "Ítems continuos; muy sensible a cómo se dividen los ítems"))
+                    .("Continuous items; highly sensitive to how items are split"))
             }
 
             if (opt$guttman && !is.null(split_obj)) {
@@ -659,10 +637,9 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                     if (!is.null(val) && !is.na(val)) {
                         lbl <- sub("lambda","λ", lam)
                         add_stat(
-                            tr(paste0("Guttman ", lbl), paste0("Guttman ", lbl)),
+                            paste0("Guttman ", lbl),
                             val, val,
-                            tr("Model-free lower bound; robust alternative to \u03B1",
-                               "Cota inferior sin modelo; alternativa robusta al \u03B1"))
+                            .("Model-free lower bound; robust alternative to α"))
                     }
                 }
             }
@@ -695,15 +672,13 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
 
                 if (opt$kr20 && !is_binary_01) {
                     add_stat("KR-20 (Kuder-Richardson)", NA_real_, NA_real_,
-                        tr("⚠ Not computed: items are not coded 0/1 (KR-20 requires genuinely binary items, not merely 2 categories)",
-                           "⚠ No calculado: los ítems no están codificados 0/1 (el KR-20 requiere ítems genuinamente binarios, no solo 2 categorías)"))
+                        .("⚠ Not computed: items are not coded 0/1 (KR-20 requires genuinely binary items, not merely 2 categories)"))
                 } else if (opt$kr20 && is.finite(vt) && vt > 0) {
                     kr20_val <- (k/(k-1)) * (1 - sum(p_i*q_i)/vt)
                     add_stat(
                         "KR-20 (Kuder-Richardson)",
                         kr20_val, kr20_val,
-                        tr("Dichotomous (0/1) items only; equivalent to α for binary data",
-                           "Solo ítems dicotómicos (0/1); equivalente al α para datos binarios"),
+                        .("Dichotomous (0/1) items only; equivalent to α for binary data"),
                         function(d) {
                             p <- colMeans(d); q <- 1-p; vv <- var(rowSums(d))
                             kk <- ncol(d); (kk/(kk-1))*(1 - sum(p*q)/vv)
@@ -711,15 +686,13 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 }
                 if (opt$kr21 && !is_binary_01) {
                     add_stat("KR-21", NA_real_, NA_real_,
-                        tr("⚠ Not computed: items are not coded 0/1 (KR-21 requires genuinely binary items, not merely 2 categories)",
-                           "⚠ No calculado: los ítems no están codificados 0/1 (el KR-21 requiere ítems genuinamente binarios, no solo 2 categorías)"))
+                        .("⚠ Not computed: items are not coded 0/1 (KR-21 requires genuinely binary items, not merely 2 categories)"))
                 } else if (opt$kr21 && is.finite(vt) && vt > 0) {
                     kr21_val <- (k/(k-1)) * (1 - (M_score*(k - M_score))/(k * vt))
                     add_stat(
                         "KR-21",
                         kr21_val, kr21_val,
-                        tr("Dichotomous items; assumes equal item difficulty (conservative estimate)",
-                           "Ítems dicotómicos; asume dificultad igual en todos (estimación conservadora)"),
+                        .("Dichotomous items; assumes equal item difficulty (conservative estimate)"),
                         function(d) {
                             kk <- ncol(d); M <- mean(rowSums(d)); vv <- var(rowSums(d))
                             (kk/(kk-1))*(1 - (M*(kk-M))/(kk*vv))
@@ -747,38 +720,38 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 tau <- private$.tau_equivalence_test(df, item_is_ordinal = is_ordinal_scale || level == "dichotomous")
 
                 verdict <- function(p) {
-                    if (is.null(p) || is.na(p)) tr("N/A", "N/D")
-                    else if (p < .05) tr("Violated", "Violado")
-                    else tr("Met", "Cumplido")
+                    if (is.null(p) || is.na(p)) .("N/A")
+                    else if (p < .05) .("Violated")
+                    else .("Met")
                 }
 
                 n_fact_assump <- if (!is.null(fa_par)) fa_par$nfact else NA_integer_
-                uni_verdict <- if (is.na(n_fact_assump)) tr("N/A", "N/D")
-                               else if (n_fact_assump <= 1L) tr("Met", "Cumplido")
-                               else tr("Violated", "Violado")
+                uni_verdict <- if (is.na(n_fact_assump)) .("N/A")
+                               else if (n_fact_assump <= 1L) .("Met")
+                               else .("Violated")
 
-                norm_verdict <- if (!normality_applicable) tr("N/A", "N/D")
-                                else if (nonnormal_count > 0L) tr("Violated", "Violado")
-                                else tr("Met", "Cumplido")
+                norm_verdict <- if (!normality_applicable) .("N/A")
+                                else if (nonnormal_count > 0L) .("Violated")
+                                else .("Met")
                 norm_test_lbl <- if (!normality_applicable)
-                    tr("Not applicable (dichotomous/ordinal)", "No aplica (dicotómico/ordinal)")
+                    .("Not applicable (dichotomous/ordinal)")
                 else
-                    tr("Shapiro-Wilk (items failing)", "Shapiro-Wilk (ítems que fallan)")
+                    .("Shapiro-Wilk (items failing)")
 
                 assum_rows <- list(
-                    list(assumption = tr("Tau-equivalence", "Tau-equivalencia"),
-                         test = tr("CFA likelihood-ratio test", "Prueba de razón de verosimilitud AFC"),
+                    list(assumption = .("Tau-equivalence"),
+                         test = .("CFA likelihood-ratio test"),
                          statistic = .fl_clean_na(tau$stat),
                          df = if (!is.na(tau$df)) as.character(tau$df) else "",
                          p_value = .fl_clean_na(tau$p),
-                         verdict = if (!tau$available) tr("lavaan not installed", "lavaan no instalado") else verdict(tau$p)),
-                    list(assumption = tr("Unidimensionality", "Unidimensionalidad"),
-                         test = tr("Parallel analysis (factors suggested)", "Análisis paralelo (factores sugeridos)"),
+                         verdict = if (!tau$available) .("lavaan not installed") else verdict(tau$p)),
+                    list(assumption = .("Unidimensionality"),
+                         test = .("Parallel analysis (factors suggested)"),
                          statistic = .fl_clean_na(as.numeric(n_fact_assump)),
                          df = "",
                          p_value = NA,
                          verdict = uni_verdict),
-                    list(assumption = tr("Normality of items", "Normalidad de ítems"),
+                    list(assumption = .("Normality of items"),
                          test = norm_test_lbl,
                          statistic = .fl_clean_na(as.numeric(nonnormal_count)),
                          df = "",
@@ -794,36 +767,25 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 norm_bad <- normality_applicable && nonnormal_count > 0L
 
                 tau_estim_p <- if (is_ordinal_scale || level == "dichotomous")
-                    tr("The congeneric/tau-equivalent models below were fit with WLSMV on polychoric/tetrachoric correlations, matching how these items were detected/set (ordinal or dichotomous). ",
-                       "Los modelos congenérico/tau-equivalente de abajo se ajustaron con WLSMV sobre correlaciones policóricas/tetracóricas, en línea con cómo se detectaron/fijaron estos ítems (ordinales o dicotómicos). ")
+                    .("The congeneric/tau-equivalent models below were fit with WLSMV on polychoric/tetrachoric correlations, matching how these items were detected/set (ordinal or dichotomous). ")
                     else ""
                 note_html <- paste0(.fl_prose_open(),
-                    "<p>", tau_estim_p, tr(
-                        "Cronbach's α is the most commonly reported reliability coefficient and also the most assumption-laden: it equals the true reliability only when items are tau-equivalent (equal true-score loadings on a single common factor) (Cronbach, 1951; Zumbo, Gadermann &amp; Zeisser, 2007). Unlike McDonald's ω, GLB, or the Guttman λ family above (none of which require tau-equivalence), α is biased -- usually downward -- whenever this assumption fails.",
-                        "El Alfa de Cronbach es el coeficiente de confiabilidad más reportado y también el más cargado de supuestos: equivale a la confiabilidad verdadera solo cuando los ítems son tau-equivalentes (iguales cargas de puntaje verdadero sobre un único factor común) (Cronbach, 1951; Zumbo, Gadermann &amp; Zeisser, 2007). A diferencia del Omega de McDonald, el GLB o la familia λ de Guttman de arriba (ninguno de los cuales requiere tau-equivalencia), el α está sesgado -- usualmente a la baja -- cuando este supuesto falla."
-                    ), "</p>",
-                    if (!tau$available) paste0("<p>⚠ ", tr(
-                            "The tau-equivalence test requires the lavaan package, which is not installed here -- install it for a direct statistical test; in the meantime, the discordance panel above (α vs. ω) is an indirect signal of the same thing.",
-                            "La prueba de tau-equivalencia requiere el paquete lavaan, que no está instalado aquí -- instálelo para obtener una prueba estadística directa; mientras tanto, el panel de discordancia de arriba (α vs. ω) es una señal indirecta de lo mismo."), "</p>")
-                    else if (is.na(tau$p)) paste0("<p>⚠ ", tr(
-                            "The tau-equivalence models did not converge on this data -- no formal verdict available; rely on the discordance panel above instead.",
-                            "Los modelos de tau-equivalencia no convergieron con estos datos -- no hay veredicto formal disponible; use el panel de discordancia de arriba en su lugar."), "</p>")
-                    else if (tau_bad) paste0("<p>⚠ <b>", tr("Tau-equivalence violated", "Tau-equivalencia violada"), ":</b> ",
-                        tr("a congeneric model (free item loadings) fits significantly better than a tau-equivalent model (equal loadings) (p &lt; .05). Items load unequally on the underlying factor, so α is likely biased here -- report McDonald's ω instead, which does not require this assumption.",
-                           "un modelo congenérico (cargas de ítem libres) ajusta significativamente mejor que un modelo tau-equivalente (cargas iguales) (p &lt; .05). Los ítems cargan de forma desigual sobre el factor subyacente, así que el α probablemente esté sesgado aquí -- reporte el Omega de McDonald en su lugar, que no requiere este supuesto."), "</p>")
-                    else paste0("<p>✓ ", tr("No evidence against tau-equivalence -- the congeneric and tau-equivalent models fit comparably well, so α's assumption looks reasonable here.",
-                                                    "No hay evidencia contra la tau-equivalencia -- los modelos congenérico y tau-equivalente ajustan de forma comparable, así que el supuesto del α parece razonable aquí."), "</p>"),
-                    "<p>", if (uni_bad) paste0("⚠ <b>", tr("Unidimensionality violated", "Unidimensionalidad violada"), ":</b> ",
-                        tr(paste0("parallel analysis suggests ", n_fact_assump, " factors. A single overall α mixes distinct dimensions into one number; see the Dimensionality Check panel below for what to do about it."),
-                           paste0("el análisis paralelo sugiere ", n_fact_assump, " factores. Un α global único mezcla dimensiones distintas en un solo número; vea el panel de Verificación de Dimensionalidad abajo para saber qué hacer al respecto.")))
-                        else paste0("✓ ", tr("Parallel analysis supports a single underlying factor -- consistent with what a single overall α is meant to measure.",
-                                                     "El análisis paralelo respalda un solo factor subyacente -- consistente con lo que un α global único pretende medir.")), "</p>",
-                    "<p>", if (norm_bad) paste0("⚠ <b>", tr("Item normality violated", "Normalidad de ítems violada"), ":</b> ",
-                        tr(paste0(nonnormal_count, " item(s) fail Shapiro-Wilk (see the Item Normality table below); α's standard-error formula assumes multivariate normality, so treat its confidence interval as approximate and prefer Ordinal α or the bootstrap CI above."),
-                           paste0(nonnormal_count, " ítem(s) fallan Shapiro-Wilk (vea la tabla de Normalidad de Ítems abajo); la fórmula del error estándar del α asume normalidad multivariada, así que trate su intervalo de confianza como aproximado y prefiera el Alfa Ordinal o el IC por bootstrap de arriba.")))
-                        else if (normality_applicable) paste0("✓ ", tr("All items pass the normality check -- α is not at a distributional disadvantage here.", "Todos los ítems pasan la prueba de normalidad -- el α no está en desventaja distribucional aquí."))
-                        else if (opt$normality) tr("Not applicable to dichotomous or ordinal items -- normality is a continuous-distribution concept.", "No aplica a ítems dicotómicos u ordinales -- la normalidad es un concepto de distribución continua.")
-                        else tr("Normality testing is off (enable it in Item Analysis to check this).", "La prueba de normalidad está desactivada (actívela en Análisis de Ítems para revisar esto)."),
+                    "<p>", tau_estim_p, .("Cronbach's α is the most commonly reported reliability coefficient and also the most assumption-laden: it equals the true reliability only when items are tau-equivalent (equal true-score loadings on a single common factor) (Cronbach, 1951; Zumbo, Gadermann &amp; Zeisser, 2007). Unlike McDonald's ω, GLB, or the Guttman λ family above (none of which require tau-equivalence), α is biased -- usually downward -- whenever this assumption fails."), "</p>",
+                    if (!tau$available) paste0("<p>⚠ ", .("The tau-equivalence test requires the lavaan package, which is not installed here -- install it for a direct statistical test; in the meantime, the discordance panel above (α vs. ω) is an indirect signal of the same thing."), "</p>")
+                    else if (is.na(tau$p)) paste0("<p>⚠ ", .("The tau-equivalence models did not converge on this data -- no formal verdict available; rely on the discordance panel above instead."), "</p>")
+                    else if (tau_bad) paste0("<p>⚠ <b>", .("Tau-equivalence violated"), ":</b> ",
+                        .("a congeneric model (free item loadings) fits significantly better than a tau-equivalent model (equal loadings) (p &lt; .05). Items load unequally on the underlying factor, so α is likely biased here -- report McDonald's ω instead, which does not require this assumption."), "</p>")
+                    else paste0("<p>✓ ", .("No evidence against tau-equivalence -- the congeneric and tau-equivalent models fit comparably well, so α's assumption looks reasonable here."), "</p>"),
+                    "<p>", if (uni_bad) paste0("⚠ <b>", .("Unidimensionality violated"), ":</b> ",
+                        jmvcore::format(.("parallel analysis suggests {n} factors. A single overall α mixes distinct dimensions into one number; see the Dimensionality Check panel below for what to do about it."),
+                           n = n_fact_assump))
+                        else paste0("✓ ", .("Parallel analysis supports a single underlying factor -- consistent with what a single overall α is meant to measure.")), "</p>",
+                    "<p>", if (norm_bad) paste0("⚠ <b>", .("Item normality violated"), ":</b> ",
+                        jmvcore::format(.("{n} item(s) fail Shapiro-Wilk (see the Item Normality table below); α's standard-error formula assumes multivariate normality, so treat its confidence interval as approximate and prefer Ordinal α or the bootstrap CI above."),
+                           n = nonnormal_count))
+                        else if (normality_applicable) paste0("✓ ", .("All items pass the normality check -- α is not at a distributional disadvantage here."))
+                        else if (opt$normality) .("Not applicable to dichotomous or ordinal items -- normality is a continuous-distribution concept.")
+                        else .("Normality testing is off (enable it in Item Analysis to check this)."),
                     "</p>",
                     .fl_prose_close())
                 self$results$reliabilityAssumptionsNote$setContent(note_html)
@@ -918,23 +880,16 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                     n_c <- fa_par$ncomp
                     if (n_f <= 1L && n_c <= 1L) {
                         dim_html <- paste0(
-                            "<p>✓ <b>", tr("Unidimensional structure suggested.","Estructura unidimensional sugerida."), "</b> ",
-                            tr(paste0("Parallel analysis recommends ", n_f, " factor(s) and ", n_c, " component(s). ",
-                                      "Cronbach\u2019s \u03B1 and McDonald\u2019s \u03C9 are appropriate."),
-                               paste0("El análisis paralelo recomienda ", n_f, " factor(es) y ", n_c, " componente(s). ",
-                                      "El Alfa de Cronbach y el Omega de McDonald son apropiados.")), "</p>")
+                            "<p>✓ <b>", .("Unidimensional structure suggested."), "</b> ",
+                            jmvcore::format(.("Parallel analysis recommends {nf} factor(s) and {nc} component(s). Cronbach\u2019s \u03B1 and McDonald\u2019s \u03C9 are appropriate."),
+                               nf = n_f, nc = n_c), "</p>")
                     } else {
                         dim_html <- paste0(
                             "<p>⚠ <b>",
-                            tr(paste0("Multidimensional structure detected: ", n_f, " factor(s), ", n_c, " component(s)."),
-                               paste0("Estructura multidimensional detectada: ", n_f, " factor(es), ", n_c, " componente(s).")),
+                            jmvcore::format(.("Multidimensional structure detected: {nf} factor(s), {nc} component(s)."),
+                               nf = n_f, nc = n_c),
                             "</b></p><p>",
-                            tr(paste0("Recommendation: (1) Compute Cronbach\u2019s \u03B1 per subscale separately. ",
-                                      "(2) Report Omega Hierarchical (\u03C9\u2095) for the total scale. ",
-                                      "(3) Overall \u03B1 across all items may be misleading."),
-                               paste0("Recomendación: (1) Calcule el Alfa de Cronbach por subescala por separado. ",
-                                      "(2) Reporte el Omega Jerárquico (\u03C9\u2095) para la escala total. ",
-                                      "(3) El \u03B1 global puede ser engañoso.")),
+                            .("Recommendation: (1) Compute Cronbach’s α per subscale separately. (2) Report Omega Hierarchical (ωₕ) for the total scale. (3) Overall α across all items may be misleading."),
                             "</p>")
                     }
                     self$results$dimensionalityNote$setContent(dim_html)
@@ -993,36 +948,29 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 items_txt <- vapply(weak_idx, function(j) {
                     paste0("<code>", names(df)[j], "</code> (r = ", round(citc_v[j], 3),
                            if (!is.null(drop_v) && j <= length(drop_v))
-                               paste0(", α ", tr("if removed","si se elimina"), " = ", round(drop_v[j], 3))
+                               paste0(", α ", .("if removed"), " = ", round(drop_v[j], 3))
                            else "",
                            ")")
                 }, character(1))
-                paste0("<p>⚠ <b>", tr("Weak item-total correlation(s)", "Correlación(es) ítem-total débil(es)"), ":</b> ",
-                       tr("the following item(s) fall below the r(item-total) ≥ .30 screening threshold: ",
-                          "el/los siguiente(s) ítem(s) está(n) por debajo del umbral de cribado r(ítem-total) ≥ .30: "),
+                paste0("<p>⚠ <b>", .("Weak item-total correlation(s)"), ":</b> ",
+                       .("the following item(s) fall below the r(item-total) ≥ .30 screening threshold: "),
                        paste(items_txt, collapse = "; "), ". ",
-                       tr("This is a diagnostic flag, not a retention rule: a low item-total correlation can come from reverse-scoring that was never recoded, multidimensionality, deliberately heterogeneous content, or an item that genuinely doesn't function as intended. Inspect the item's content and scoring direction, and consider its theoretical role in the construct, before deciding to revise, recode, or remove it — the item-analysis table above shows α if each item were dropped only as one input to that judgment, not as the criterion itself.",
-                          "Esta es una alerta diagnóstica, no una regla de retención: una correlación ítem-total baja puede deberse a una recodificación inversa que nunca se aplicó, multidimensionalidad, contenido deliberadamente heterogéneo, o un ítem que genuinamente no funciona como se pretendía. Inspeccione el contenido y la dirección de puntuación del ítem, y considere su rol teórico en el constructo, antes de decidir revisarlo, recodificarlo o eliminarlo — el α si se elimina cada ítem en la tabla de análisis de ítems de arriba es solo un insumo para ese juicio, no el criterio en sí mismo."),
+                       .("This is a diagnostic flag, not a retention rule: a low item-total correlation can come from reverse-scoring that was never recoded, multidimensionality, deliberately heterogeneous content, or an item that genuinely doesn't function as intended. Inspect the item's content and scoring direction, and consider its theoretical role in the construct, before deciding to revise, recode, or remove it — the item-analysis table above shows α if each item were dropped only as one input to that judgment, not as the criterion itself."),
                        "</p>")
             } else {
-                paste0("<p>✓ ", tr("No items fall below the r(item-total) ≥ .30 threshold.",
-                                          "Ningún ítem está por debajo del umbral r(ítem-total) ≥ .30."), "</p>")
+                paste0("<p>✓ ", .("No items fall below the r(item-total) ≥ .30 threshold."), "</p>")
             }
 
             # ── Discordance panel (standalone result, matching interRater's
             # own discordanceNote) ────────────────────────────────────────────
             discord_html <- if (!is.na(best_val) && !is.na(ot) && abs(best_val - ot) > .04) {
-                paste0("<p>⚠ <b>", tr("Coefficients disagree", "Los coeficientes no coinciden"), ":</b> ",
-                       tr(paste0("Cronbach's α (", round(best_val,3), ") and McDonald's ω (", round(ot,3),
-                                 ") differ by more than .04. α assumes equal item loadings (τ-equivalence); "),
-                          paste0("El Alfa de Cronbach (", round(best_val,3), ") y el Omega de McDonald (", round(ot,3),
-                                 ") difieren en más de .04. El α asume cargas de ítem iguales (τ-equivalencia); ")),
-                       tr("this scale's items likely load unequally on the underlying factor, so α is probably biased here — trust ω instead.",
-                          "los ítems de esta escala probablemente cargan de forma desigual sobre el factor subyacente, así que el α probablemente esté sesgado aquí — confíe en ω en su lugar."),
+                paste0("<p>⚠ <b>", .("Coefficients disagree"), ":</b> ",
+                       jmvcore::format(.("Cronbach's α ({alpha}) and McDonald's ω ({omega}) differ by more than .04. α assumes equal item loadings (τ-equivalence); "),
+                          alpha = round(best_val,3), omega = round(ot,3)),
+                       .("this scale's items likely load unequally on the underlying factor, so α is probably biased here — trust ω instead."),
                        "</p>")
             } else if (!is.na(best_val) && !is.na(ot)) {
-                paste0("<p>✓ ", tr("Cronbach's α and McDonald's ω agree closely — the τ-equivalence assumption behind α looks reasonable here.",
-                                          "El Alfa de Cronbach y el Omega de McDonald coinciden de cerca — el supuesto de τ-equivalencia detrás del α parece razonable aquí."), "</p>")
+                paste0("<p>✓ ", .("Cronbach's α and McDonald's ω agree closely — the τ-equivalence assumption behind α looks reasonable here."), "</p>")
             } else ""
             self$results$discordanceNote$setContent(if (nzchar(discord_html)) .fl_prose(discord_html) else discord_html)
             if (!nzchar(discord_html)) self$results$discordanceNote$setVisible(FALSE)
@@ -1030,56 +978,47 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             normality_html <- if (normality_applicable && k > 0L) {
                 if (nonnormal_count > 0L) {
                     paste0("<p>⚠ ",
-                           tr(paste0(nonnormal_count, " of ", k, " item(s) fail the Shapiro-Wilk normality test (p < .05). "),
-                              paste0(nonnormal_count, " de ", k, " ítem(s) fallan la prueba de normalidad de Shapiro-Wilk (p < .05). ")),
-                           tr(paste0("Prefer ", if (!is.na(oa)) "Ordinal α" else "McDonald's ω",
-                                     " over raw Cronbach's α for the primary estimate."),
-                              paste0("Prefiera el ", if (!is.na(oa)) "Alfa Ordinal" else "Omega de McDonald",
-                                     " sobre el Alfa de Cronbach bruto como estimación primaria.")),
+                           jmvcore::format(.("{n1} of {n2} item(s) fail the Shapiro-Wilk normality test (p < .05). "),
+                              n1 = nonnormal_count, n2 = k),
+                           jmvcore::format(.("Prefer {alt} over raw Cronbach's α for the primary estimate."),
+                              alt = if (!is.na(oa)) .("Ordinal α") else .("McDonald's ω")),
                            "</p>")
                 } else {
-                    paste0("<p>✓ ", tr("All items pass the normality check — Cronbach's α is not at a distributional disadvantage here.",
-                                              "Todos los ítems pasan la prueba de normalidad — el Alfa de Cronbach no está en desventaja distribucional aquí."), "</p>")
+                    paste0("<p>✓ ", .("All items pass the normality check — Cronbach's α is not at a distributional disadvantage here."), "</p>")
                 }
             } else ""
 
             dim_summary_html <- if (!is.null(fa_par)) {
                 if (n_omega_factors >= 2L) {
                     paste0("<p>⚠ ",
-                           tr(paste0("Parallel analysis suggests ", fa_par$nfact, " factor(s) — this scale is likely multidimensional. ",
-                                     "A single overall α/ω may blend distinct dimensions; consider reporting reliability per subscale."),
-                              paste0("El análisis paralelo sugiere ", fa_par$nfact, " factor(es) — esta escala probablemente es multidimensional. ",
-                                     "Un α/ω global único puede mezclar dimensiones distintas; considere reportar la confiabilidad por subescala.")),
+                           jmvcore::format(.("Parallel analysis suggests {n} factor(s) — this scale is likely multidimensional. A single overall α/ω may blend distinct dimensions; consider reporting reliability per subscale."),
+                              n = fa_par$nfact),
                            "</p>")
                 } else {
-                    paste0("<p>✓ ", tr("Parallel analysis suggests a single (unidimensional) factor — a single overall reliability estimate is appropriate.",
-                                              "El análisis paralelo sugiere un solo factor (unidimensional) — una estimación de confiabilidad global única es apropiada."), "</p>")
+                    paste0("<p>✓ ", .("Parallel analysis suggests a single (unidimensional) factor — a single overall reliability estimate is appropriate."), "</p>")
                 }
             } else ""
 
             action_items <- character(0)
             if (length(weak_idx) > 0L)
-                action_items <- c(action_items, tr(
-                    paste0("Inspect the content, scoring direction, and theoretical role of: ", paste(names(df)[weak_idx], collapse = ", "), " -- only revise or remove after that substantive review."),
-                    paste0("Inspeccione el contenido, la dirección de puntuación y el rol teórico de: ", paste(names(df)[weak_idx], collapse = ", "), " -- revise o elimine solo después de esa revisión sustantiva.")))
+                action_items <- c(action_items, jmvcore::format(
+                    .("Inspect the content, scoring direction, and theoretical role of: {items} -- only revise or remove after that substantive review."),
+                    items = paste(names(df)[weak_idx], collapse = ", ")))
             if (!is.na(best_val) && !is.na(ot) && abs(best_val - ot) > .04)
-                action_items <- c(action_items, tr("Report McDonald's ω as the primary coefficient, not α.",
-                                                    "Reporte el Omega de McDonald como coeficiente primario, no el α."))
+                action_items <- c(action_items, .("Report McDonald's ω as the primary coefficient, not α."))
             if (opt$normality && nonnormal_count > 0L && !is.na(oa))
-                action_items <- c(action_items, tr("Report Ordinal α alongside α given the non-normal items.",
-                                                    "Reporte el Alfa Ordinal junto al α dado los ítems no normales."))
+                action_items <- c(action_items, .("Report Ordinal α alongside α given the non-normal items."))
             if (!is.null(fa_par) && n_omega_factors >= 2L)
-                action_items <- c(action_items, tr("Compute reliability per subscale in addition to the overall estimate.",
-                                                    "Calcule la confiabilidad por subescala además de la estimación global."))
+                action_items <- c(action_items, .("Compute reliability per subscale in addition to the overall estimate."))
             if (n < 200L)
-                action_items <- c(action_items, tr(paste0("n = ", n, " is below the n ≥ 200 rule of thumb for a stable estimate; treat the CI above as wide."),
-                                                    paste0("n = ", n, " está por debajo de la regla empírica n ≥ 200 para una estimación estable; trate el IC de arriba como amplio.")))
+                action_items <- c(action_items, jmvcore::format(
+                    .("n = {n} is below the n ≥ 200 rule of thumb for a stable estimate; treat the CI above as wide."),
+                    n = n))
             action_html <- if (length(action_items) > 0L)
                 paste0("<ul style='line-height:1;'>",
                        paste0("<li>", action_items, "</li>", collapse = ""), "</ul>")
             else
-                paste0("<p>", tr("No specific corrective action indicated — the primary estimate can be reported as-is.",
-                                  "No se indica ninguna acción correctiva específica — la estimación primaria puede reportarse tal cual."), "</p>")
+                paste0("<p>", .("No specific corrective action indicated — the primary estimate can be reported as-is."), "</p>")
 
             # .fl_prose_open()/.fl_prose_close() (shared-helpers.R) wrap this
             # whole panel in Bibliography's own typographic convention (no
@@ -1096,39 +1035,33 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             # texto corrido de forma idéntica.
             rec_html <- paste0(
                 .fl_prose_open(),
-                "<h4>", tr("What happened", "Qué pasó"), "</h4>",
-                "<p>", tr(
-                    paste0("The primary reliability estimate for this scale is <b>",
-                           round(best_val, 3), "</b> (", interp_lbl, ")."),
-                    paste0("La estimación primaria de confiabilidad para esta escala es <b>",
-                           round(best_val, 3), "</b> (", interp_lbl, ").")), "</p>",
+                "<h4>", .("What happened"), "</h4>",
+                "<p>", jmvcore::format(
+                    .("The primary reliability estimate for this scale is <b>{val}</b> ({lbl})."),
+                    val = round(best_val, 3), lbl = interp_lbl), "</p>",
 
-                "<h4>", tr("Why", "Por qué"), "</h4>",
+                "<h4>", .("Why"), "</h4>",
                 weak_html, normality_html, dim_summary_html,
 
-                "<h4>", tr("What it means", "Qué implica"), "</h4>",
-                "<p>", tr(
-                    "See the Reliability Coefficients and Item Analysis tables above for the exact numbers behind each point below; the Fiability Library (Coefficients section) documents each coefficient's assumptions and formula in full.",
-                    "Vea las tablas de Coeficientes de Confiabilidad y Análisis de Ítems arriba para las cifras exactas detrás de cada punto; la Biblioteca de Confiabilidad (sección Coeficientes) documenta el supuesto y la fórmula de cada coeficiente en detalle."),
+                "<h4>", .("What it means"), "</h4>",
+                "<p>", .("See the Reliability Coefficients and Item Analysis tables above for the exact numbers behind each point below; the Fiability Library (Coefficients section) documents each coefficient's assumptions and formula in full."),
                 "</p>",
-                "<p style='margin-top:0.8em;font-weight:700;'>", tr("Interpretation Benchmarks", "Criterios de interpretación"), "</p>",
+                "<p style='margin-top:0.8em;font-weight:700;'>", .("Interpretation Benchmarks"), "</p>",
                 "<table style='border-collapse:collapse;'>",
-                "<tr><th style='padding:3px 8px;border:1px solid #ccc;'>", tr("Value","Valor"), "</th>",
-                "<th style='padding:3px 8px;border:1px solid #ccc;'>", tr("Interpretation","Interpretación"), "</th></tr>",
-                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>≥ .95</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Excellent","Excelente"), "</td></tr>",
-                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>.90 – .94</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Good","Bueno"), "</td></tr>",
-                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>.80 – .89</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Acceptable","Aceptable"), "</td></tr>",
-                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>.70 – .79</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Questionable","Cuestionable"), "</td></tr>",
-                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>.60 – .69</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Poor","Pobre"), "</td></tr>",
-                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>< .60</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Unacceptable","Inaceptable"), "</td></tr>",
+                "<tr><th style='padding:3px 8px;border:1px solid #ccc;'>", .("Value"), "</th>",
+                "<th style='padding:3px 8px;border:1px solid #ccc;'>", .("Interpretation"), "</th></tr>",
+                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>≥ .95</td><td style='padding:3px 8px;border:1px solid #ccc;'>", .("Excellent"), "</td></tr>",
+                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>.90 – .94</td><td style='padding:3px 8px;border:1px solid #ccc;'>", .("Good"), "</td></tr>",
+                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>.80 – .89</td><td style='padding:3px 8px;border:1px solid #ccc;'>", .("Acceptable"), "</td></tr>",
+                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>.70 – .79</td><td style='padding:3px 8px;border:1px solid #ccc;'>", .("Questionable"), "</td></tr>",
+                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>.60 – .69</td><td style='padding:3px 8px;border:1px solid #ccc;'>", .("Poor"), "</td></tr>",
+                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>< .60</td><td style='padding:3px 8px;border:1px solid #ccc;'>", .("Unacceptable"), "</td></tr>",
                 "</table>",
 
-                "<h4>", tr("What to do now", "Qué hacer ahora"), "</h4>",
+                "<h4>", .("What to do now"), "</h4>",
                 action_html,
 
-                "<p style='font-size:0.85em;color:#666;'>", tr(
-                    "See Fiability Library → Coefficients for full definitions, assumptions and references (Bibliography → Classical Test Theory).",
-                    "Vea Biblioteca de Confiabilidad → Coeficientes para definiciones y supuestos completos, y referencias (Bibliografía → Teoría Clásica de los Tests)."),
+                "<p style='font-size:0.85em;color:#666;'>", .("See Fiability Library → Coefficients for full definitions, assumptions and references (Bibliography → Classical Test Theory)."),
                 "</p>",
                 "</div>")
             self$results$interpretation$setContent(rec_html)
@@ -1153,8 +1086,8 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                                        width = .15, orientation = "y", colour = cols$primary, linewidth = .6) +
                 ggplot2::geom_point(size = 3.2, colour = cols$primary) +
                 ggplot2::coord_cartesian(xlim = c(lo, hi)) +
-                ggplot2::labs(x = private$.tr("Value (95% CI)", "Valor (IC 95%)"), y = NULL,
-                              title = private$.tr("Coefficient Comparison", "Comparación de Coeficientes")) +
+                ggplot2::labs(x = .("Value (95% CI)"), y = NULL,
+                              title = .("Coefficient Comparison")) +
                 ggtheme
             print(p)
             TRUE
@@ -1235,10 +1168,8 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                                     colour = cols$secondary, linewidth = .6) +
                 ggplot2::coord_flip() +
                 ggplot2::labs(x = NULL,
-                              y = private$.tr("Corrected item-total r",
-                                              "r ítem-total corregida"),
-                              title = private$.tr("Item–Total Correlations (threshold = .30)",
-                                                  "Correlaciones Ítem-Total (umbral = .30)")) +
+                              y = .("Corrected item-total r"),
+                              title = .("Item–Total Correlations (threshold = .30)")) +
                 ggtheme +
                 ggplot2::scale_fill_manual(values = c("FALSE" = cols$secondary,
                                                        "TRUE"  = cols$primary),
@@ -1278,10 +1209,9 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 ggplot2::geom_point(ggplot2::aes(y = actual,   colour = "Actual"),    size = 2.5) +
                 ggplot2::geom_line(ggplot2::aes(y = simulated, colour = "Simulated"), linewidth = .7, linetype = "dashed") +
                 ggplot2::labs(
-                    x     = private$.tr("Factor", "Factor"),
-                    y     = private$.tr("Eigenvalue", "Autovalor"),
-                    title = private$.tr("Scree Plot — Parallel Analysis",
-                                        "Gráfico de sedimentación — Análisis paralelo")) +
+                    x     = .("Factor"),
+                    y     = .("Eigenvalue"),
+                    title = .("Scree Plot — Parallel Analysis")) +
                 ggtheme +
                 ggplot2::scale_colour_manual(
                     name   = NULL,
