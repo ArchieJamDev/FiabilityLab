@@ -156,3 +156,56 @@ test_that("internalConsistency tolerates fewer than 2 items", {
         internalConsistency(data = d, items = names(d), reportLang = "en")
     )
 })
+
+# -----------------------------------------------------------------------------
+# internalConsistency plot-export regression tests.
+# ES: Pruebas de regresión de exportación de gráficos de internalConsistency.
+#
+# jamovi's official module review (2026-09-16) found that every plot in this
+# file rendered blank on export: the render function read data.frames built
+# in .run() and stashed in private$ fields, but jamovi's image-export path
+# builds a separate analysis instance and calls the render function directly
+# without ever calling .run() on it, so those private$ fields are always NULL
+# there -- only self$results$<image>$setState() survives into that path.
+# These tests confirm image$state is actually populated with usable data
+# after .run(), and that each render function executes end-to-end from that
+# state via the real Image$saveAs() codepath (jmvcore::Analysis$.render() ->
+# .createPlotObject(), the same mechanism jamovi Desktop's export uses) --
+# not just that .run() itself completes.
+#
+# ES: La revisión oficial de módulos de jamovi (2026-09-16) encontró que todo
+# gráfico de este archivo se exportaba en blanco: la función de render leía
+# data.frames construidos en .run() y guardados en campos private$, pero el
+# camino de exportación de imágenes de jamovi construye una instancia de
+# análisis separada y llama a la función de render directamente sin nunca
+# llamar a .run() sobre ella, así que esos campos private$ siempre son NULL
+# ahí -- solo self$results$<image>$setState() sobrevive a ese camino. Estas
+# pruebas confirman que image$state realmente queda poblado con datos
+# utilizables después de .run(), y que cada función de render se ejecuta de
+# extremo a extremo a partir de ese estado a través del propio camino de
+# Image$saveAs() (jmvcore::Analysis$.render() -> .createPlotObject(), el
+# mismo mecanismo que usa la exportación de jamovi Desktop) -- no solo que
+# .run() en sí se complete.
+# -----------------------------------------------------------------------------
+
+test_that("internalConsistency's plots have usable state and export without error", {
+
+    d <- edgeItemsBaseData(n_items = 8)
+
+    res <- internalConsistency(
+        data = d, items = names(d), checkDimensionality = TRUE,
+        itemAnalysis = TRUE, reportLang = "en"
+    )
+
+    expect_false(is.null(res$plotComparison$state))
+    expect_false(is.null(res$plotItemDist$state))
+    expect_false(is.null(res$plotItemTotal$state))
+    expect_false(is.null(res$plotScree$state))
+
+    for (nm in c("plotComparison", "plotItemDist", "plotItemTotal", "plotScree")) {
+        f <- tempfile(fileext = ".png")
+        on.exit(unlink(f), add = TRUE)
+        expect_no_error(res[[nm]]$saveAs(f))
+        expect_true(file.exists(f) && file.size(f) > 0)
+    }
+})

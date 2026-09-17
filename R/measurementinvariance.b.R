@@ -417,6 +417,22 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
                 level = vapply(inv_rows, function(r) r$model, character(1)),
                 cfi = vapply(inv_rows, function(r) if (is.na(r$cfi)) NA_real_ else r$cfi, numeric(1)),
                 stringsAsFactors = FALSE)
+            # jamovi's official module review (2026-09-16) found this plot
+            # rendered blank on export: the render function only ever runs
+            # live, straight after .run(), OR later on its own, in a
+            # separate re-created analysis instance that restores saved
+            # results but never calls .run() again -- so a private$ field
+            # read there is always NULL on that second path. setState() is
+            # the only channel that survives into that second instance.
+            # ES: La revisión oficial de módulos de jamovi (2026-09-16)
+            # encontró que este gráfico se exportaba en blanco: la función
+            # de render solo corre en vivo justo después de .run(), O más
+            # tarde por su cuenta, en una instancia de análisis separada que
+            # restaura los resultados guardados pero nunca vuelve a llamar a
+            # .run() -- así que un campo private$ leído ahí siempre es NULL
+            # en ese segundo camino. setState() es el único canal que
+            # sobrevive a esa segunda instancia.
+            res$plotInvariance$setState(private$.fitcmp_data)
             res$plotInvarianceNote$setContent(.fl_prose("<p>", tr(
                 "CFI (0-1, higher is better) at each level of the invariance sequence; a level's bar noticeably shorter than the one before it is the same signal as a significant likelihood-ratio test or a large &Delta;CFI in the table above, shown graphically.",
                 "CFI (0-1, mayor es mejor) en cada nivel de la secuencia de invariancia; una barra de un nivel notablemente más corta que la anterior es la misma señal que una prueba de razón de verosimilitud significativa o un &Delta;CFI grande en la tabla de arriba, mostrada gráficamente."), "</p>"))
@@ -449,7 +465,7 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
         },
 
         .plotInvariance = function(image, ggtheme, theme, ...) {
-            d <- private$.fitcmp_data
+            d <- image$state
             if (is.null(d) || nrow(d) == 0L || all(is.na(d$cfi))) return(FALSE)
             cols <- private$.plot_colors()
             d$level <- factor(d$level, levels = unique(d$level))

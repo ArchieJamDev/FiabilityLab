@@ -201,6 +201,37 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             }
             private$.df_clean <- df
 
+            # jamovi's official module review (2026-09-16) found every plot in
+            # this file rendered blank on export: a plot's render function only
+            # ever runs live, straight after .run(), OR later on its own, in a
+            # separate re-created analysis instance that restores saved results
+            # but never calls .run() again -- so a private$ field read there is
+            # always NULL on that second path. self$results$<image>$setState()
+            # is the only channel that survives into that second instance.
+            # .plotItemDist draws one small bar chart per item from a frequency
+            # table, not from the full cleaned data frame, so that's what goes
+            # into state -- smaller, and exactly what the render function needs.
+            # ES: La revisión oficial de módulos de jamovi (2026-09-16) encontró
+            # que todo gráfico de este archivo se exportaba en blanco: la
+            # función de render de un gráfico solo corre en vivo justo después
+            # de .run(), O más tarde por su cuenta, en una instancia de análisis
+            # separada que restaura los resultados guardados pero nunca vuelve a
+            # llamar a .run() -- así que un campo private$ leído ahí siempre es
+            # NULL en ese segundo camino. self$results$<image>$setState() es el
+            # único canal que sobrevive a esa segunda instancia. .plotItemDist
+            # dibuja un pequeño gráfico de barras por ítem a partir de una tabla
+            # de frecuencias, no del data frame completo, así que eso es lo que
+            # va al estado -- más pequeño, y exactamente lo que necesita la
+            # función de render.
+            item_freq <- lapply(seq_len(ncol(df)), function(j) {
+                x   <- df[[j]]
+                tbl <- as.data.frame(table(x), stringsAsFactors = FALSE)
+                colnames(tbl) <- c("val", "freq")
+                tbl$val <- as.numeric(tbl$val)
+                list(name = names(df)[j], tbl = tbl)
+            })
+            self$results$plotItemDist$setState(item_freq)
+
             # ── 3. Detect measurement level ───────────────────────────────────
             n_unique <- sapply(df, function(x) length(unique(x)))
             n_opts   <- max(n_unique)          # max response options across items
@@ -375,6 +406,31 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
 
                 private$.citc_vals <- citc_vals
                 private$.alpha_drop<- alpha_drop
+
+                # State for .plotItemTotal -- see the note at private$.df_clean's
+                # assignment (step 2) for why this can't be a private$ field
+                # read alone. citc_vals is in the same order as df's columns
+                # (psych::alpha()'s item.stats preserves it), but can come back
+                # SHORTER than ncol(df) -- psych::alpha() silently drops a
+                # zero-variance item internally -- so this pads with NA the
+                # same bounds-safe way itemTable's own row-filling does just
+                # below, instead of assuming the lengths always match.
+                # ES: Estado para .plotItemTotal -- ver la nota en la
+                # asignación de private$.df_clean (paso 2) sobre por qué esto
+                # no puede depender solo de leer un campo private$. citc_vals
+                # está en el mismo orden que las columnas de df (item.stats de
+                # psych::alpha() lo preserva), pero puede volver MÁS CORTO que
+                # ncol(df) -- psych::alpha() descarta en silencio un ítem de
+                # varianza cero internamente -- así que esto rellena con NA de
+                # la misma forma segura por límites que usa el llenado de
+                # filas de itemTable justo abajo, en vez de asumir que las
+                # longitudes siempre coinciden.
+                self$results$plotItemTotal$setState(data.frame(
+                    item = names(df),
+                    citc = vapply(seq_along(df), function(j)
+                        if (j <= length(citc_vals)) as.numeric(citc_vals[j]) else NA_real_,
+                        numeric(1)),
+                    stringsAsFactors = FALSE))
 
                 if (opt$itemAnalysis) {
                     it_tab <- self$results$itemTable
@@ -810,6 +866,13 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                         if (is.null(ci) || is.na(ci$hi)) r$value else ci$hi
                     }, numeric(1)),
                     stringsAsFactors = FALSE)
+                # State for .plotComparison -- see the note at private$.df_clean's
+                # assignment (step 2) for why. This data frame is already exactly
+                # what the render function draws.
+                # ES: Estado para .plotComparison -- ver la nota en la asignación
+                # de private$.df_clean (paso 2). Este data frame ya es
+                # exactamente lo que dibuja la función de render.
+                self$results$plotComparison$setState(private$.plot_rows)
             } else {
                 self$results$plotComparison$setVisible(FALSE)
             }
@@ -852,6 +915,35 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                     }
                     self$results$dimensionalityNote$setContent(dim_html)
                 }
+            }
+
+            # State for .plotScree -- see the note at private$.df_clean's
+            # assignment (step 2) for why. fa_par may have been computed in
+            # step 8c above (whenever omega/omegaHierarchical/checkDimensionality/
+            # plotScree requested it) or just above in this step; whichever it
+            # is, only the first 10 observed and simulated eigenvalues actually
+            # get drawn, so that's what goes into state -- not the fa.parallel()
+            # result object itself, which is much larger than the numbers it
+            # contains.
+            # ES: Estado para .plotScree -- ver la nota en la asignación de
+            # private$.df_clean (paso 2). fa_par puede haberse calculado en el
+            # paso 8c arriba (cuando omega/omegaHierarchical/checkDimensionality/
+            # plotScree lo pidieron) o justo arriba en este paso; sea cual sea,
+            # solo los primeros 10 autovalores observados y simulados realmente
+            # se dibujan, así que eso es lo que va al estado -- no el objeto
+            # resultado de fa.parallel() en sí, que es mucho más grande que los
+            # números que contiene.
+            if (!is.null(fa_par)) {
+                ev_fa  <- fa_par$fa.values
+                ev_sim <- fa_par$fa.sim
+                n_fact <- min(length(ev_fa), 10L)
+                self$results$plotScree$setState(list(
+                    actual = ev_fa[seq_len(n_fact)],
+                    simulated = if (is.matrix(ev_sim) && nrow(ev_sim) >= 1L && ncol(ev_sim) >= n_fact)
+                        colMeans(ev_sim)[seq_len(n_fact)]
+                    else if (!is.matrix(ev_sim) && length(ev_sim) >= n_fact)
+                        ev_sim[seq_len(n_fact)]
+                    else rep(1, n_fact)))
             }
 
             # ── 12. Interpretation & recommendations ──────────────────────────
@@ -1019,10 +1111,14 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
         },
 
         # ── Plot: coefficient comparison (forest-plot style) ────────────────
-        # Same construction as interRater's .plotComparison -- see the note
-        # at private$.plot_rows' construction (step 10b) for why.
+        # Reads image$state, not a private$ field -- jamovi's image-export
+        # path re-creates the analysis instance and calls this render
+        # function directly, without calling .run() again first, so a
+        # private$ field would always be NULL there. See the note at
+        # private$.df_clean's assignment in .run() (step 2) for the full
+        # explanation. Same construction as interRater's .plotComparison.
         .plotComparison = function(image, ggtheme, theme, ...) {
-            d <- private$.plot_rows
+            d <- image$state
             if (is.null(d) || nrow(d) == 0L) return(FALSE)
             cols <- private$.plot_colors()
             d$coefficient <- factor(d$coefficient, levels = rev(d$coefficient))
@@ -1041,22 +1137,20 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
         },
 
         # ── Plot: item score distributions ────────────────────────────────────
+        # Reads image$state (a list of per-item frequency tables), not
+        # private$.df_clean -- see the note on .plotComparison above.
         .plotItemDist = function(image, ggtheme, theme, ...) {
-            df <- private$.df_clean
-            if (is.null(df)) return(FALSE)
-            k   <- ncol(df)
+            item_freq <- image$state
+            if (is.null(item_freq)) return(FALSE)
+            k   <- length(item_freq)
             nc  <- min(k, 4L)
             nr  <- ceiling(k / nc)
             cols <- private$.plot_colors()
 
-            plots <- lapply(seq_len(k), function(j) {
-                x   <- df[[j]]
-                tbl <- as.data.frame(table(x), stringsAsFactors = FALSE)
-                colnames(tbl) <- c("val","freq")
-                tbl$val <- as.numeric(tbl$val)
-                ggplot2::ggplot(tbl, ggplot2::aes(x = val, y = freq)) +
+            plots <- lapply(item_freq, function(it) {
+                ggplot2::ggplot(it$tbl, ggplot2::aes(x = val, y = freq)) +
                     ggplot2::geom_bar(stat = "identity", fill = cols$primary, alpha = .85, width = .6) +
-                    ggplot2::labs(title = names(df)[j], x = NULL, y = NULL) +
+                    ggplot2::labs(title = it$name, x = NULL, y = NULL) +
                     private$.plot_theme() +
                     ggplot2::theme(plot.title = ggplot2::element_text(size = 9, face = "bold"),
                                    axis.text  = ggplot2::element_text(size = 8))
@@ -1083,15 +1177,14 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
         },
 
         # ── Plot: item–total correlations ─────────────────────────────────────
+        # Reads image$state, not private$.citc_vals/.df_clean -- see the note
+        # on .plotComparison above.
         .plotItemTotal = function(image, ggtheme, theme, ...) {
-            citc <- private$.citc_vals
-            df   <- private$.df_clean
-            if (is.null(citc) || is.null(df)) return(FALSE)
+            dat <- image$state
+            if (is.null(dat)) return(FALSE)
 
             cols <- private$.plot_colors()
-            dat <- data.frame(
-                item = factor(names(df), levels = rev(names(df))),
-                citc = as.numeric(citc))
+            dat$item <- factor(dat$item, levels = rev(dat$item))
             p <- ggplot2::ggplot(dat, ggplot2::aes(x = item, y = citc,
                                                     fill = citc >= .30)) +
                 ggplot2::geom_bar(stat = "identity", width = .6) +
@@ -1112,46 +1205,22 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
         },
 
         # ── Plot: scree (parallel analysis) ──────────────────────────────────
+        # Reads image$state (the first 10 observed/simulated eigenvalues,
+        # already resolved for the matrix-vs-vector fa.sim shape below), not
+        # private$.fa_result/.df_clean -- see the note on .plotComparison
+        # above. No live re-run fallback is needed or possible here: on the
+        # export path .run() never executes again, so there is no fresh data
+        # to re-run fa.parallel() on even if this function tried to.
         .plotScree = function(image, ggtheme, theme, ...) {
-            fa_par <- private$.fa_result
-            df     <- private$.df_clean
-            if (is.null(df)) return(FALSE)
+            st <- image$state
+            if (is.null(st)) return(FALSE)
 
-            # Re-run if needed
-            if (is.null(fa_par)) {
-                fa_par <- tryCatch(
-                    suppressWarnings(psych::fa.parallel(df, plot = FALSE, fa = "both")),
-                    error = function(e) NULL)
-            }
-            if (is.null(fa_par)) return(FALSE)
-
-            ev_fa   <- fa_par$fa.values
-            # fa_par$fa.sim is a matrix (n.iter simulated eigenvalue sets x
-            # n.factor) in the general case, but psych::fa.parallel()
-            # sometimes returns it as a plain vector for a strongly
-            # unidimensional structure -- rowMeans() on a bare vector
-            # throws "'x' must be an array of at least two dimensions",
-            # caught by this session's own render-function verification
-            # pass (a bug the earlier asDF()-only testing never exercised).
-            # ES: fa_par$fa.sim es una matriz (n.iter conjuntos de
-            # autovalores simulados x n.factor) en el caso general, pero
-            # psych::fa.parallel() a veces la retorna como vector simple
-            # para una estructura fuertemente unidimensional -- rowMeans()
-            # sobre un vector simple lanza "'x' must be an array of at
-            # least two dimensions", detectado por la propia verificación
-            # de funciones de render de esta sesión (un bug que las
-            # pruebas anteriores basadas solo en asDF() nunca ejercitaron).
-            ev_sim  <- fa_par$fa.sim
-            n_fact  <- min(length(ev_fa), 10L)
-            cols    <- private$.plot_colors()
+            n_fact <- length(st$actual)
+            cols   <- private$.plot_colors()
             dat <- data.frame(
-                factor  = seq_len(n_fact),
-                actual  = ev_fa[seq_len(n_fact)],
-                simulated = if (is.matrix(ev_sim) && nrow(ev_sim) >= 1L && ncol(ev_sim) >= n_fact)
-                    colMeans(ev_sim)[seq_len(n_fact)]
-                else if (!is.matrix(ev_sim) && length(ev_sim) >= n_fact)
-                    ev_sim[seq_len(n_fact)]
-                else rep(1, n_fact))
+                factor    = seq_len(n_fact),
+                actual    = st$actual,
+                simulated = st$simulated)
 
             p <- ggplot2::ggplot(dat, ggplot2::aes(x = factor)) +
                 ggplot2::geom_line(ggplot2::aes(y = actual,    colour = "Actual"),    linewidth = 1) +

@@ -338,6 +338,24 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
                         series = c(rep(tr("Observed data", "Datos observados"), n_show), rep(tr("Simulated random data", "Datos aleatorios simulados"), n_show)),
                         value = c(pa$fa.values[seq_len(n_show)], pa$fa.sim[seq_len(n_show)]),
                         stringsAsFactors = FALSE)
+                    # jamovi's official module review (2026-09-16) found every
+                    # plot in this module rendered blank on export: the
+                    # render function only ever runs live, straight after
+                    # .run(), OR later on its own, in a separate re-created
+                    # analysis instance that restores saved results but never
+                    # calls .run() again -- so a private$ field read there is
+                    # always NULL on that second path. setState() is the only
+                    # channel that survives into that second instance.
+                    # ES: La revisión oficial de módulos de jamovi
+                    # (2026-09-16) encontró que todo gráfico de este módulo
+                    # se exportaba en blanco: la función de render solo corre
+                    # en vivo justo después de .run(), O más tarde por su
+                    # cuenta, en una instancia de análisis separada que
+                    # restaura los resultados guardados pero nunca vuelve a
+                    # llamar a .run() -- así que un campo private$ leído ahí
+                    # siempre es NULL en ese segundo camino. setState() es el
+                    # único canal que sobrevive a esa segunda instancia.
+                    res$plotParallelAnalysis$setState(private$.parallel_data)
                     res$plotParallelAnalysisNote$setContent(.fl_prose("<p>", tr(
                         "Eigenvalues from the actual items (observed) against the average eigenvalues from simulated random data of the same size and number of variables; the suggested number of factors is where the observed line still sits above the simulated one.",
                         "Eigenvalores de los ítems reales (observados) contra los eigenvalores promedio de datos aleatorios simulados del mismo tamaño y número de variables; el número sugerido de factores es donde la línea observada aún se ubica por encima de la simulada."), "</p>"))
@@ -435,6 +453,12 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
             if (is.null(private$.loadings_data)) {
                 res$plotLoadings$setVisible(FALSE)
                 res$plotLoadingsNote$setVisible(FALSE)
+            } else {
+                # State for .plotLoadings -- see the note at
+                # .plotParallelAnalysis' own state assignment above for why.
+                # ES: Estado para .plotLoadings -- ver la nota en la propia
+                # asignación de estado de .plotParallelAnalysis arriba.
+                res$plotLoadings$setState(private$.loadings_data)
             }
             # EN: A negative loading is a different problem from a merely
             # weak (low-positive) one -- it usually means the item needs
@@ -466,6 +490,12 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
             if (all(is.na(private$.plot_rows$value))) {
                 res$plotComparison$setVisible(FALSE)
                 res$plotComparisonNote$setVisible(FALSE)
+            } else {
+                # State for .plotComparison -- see the note at
+                # .plotParallelAnalysis' own state assignment above for why.
+                # ES: Estado para .plotComparison -- ver la nota en la propia
+                # asignación de estado de .plotParallelAnalysis arriba.
+                res$plotComparison$setState(private$.plot_rows)
             }
 
             # ── HTMT (discriminant validity between factor pairs) ─────────
@@ -575,7 +605,16 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
                     }, error = function(e) NULL)
                     for (i in seq_along(rel_rows))
                         if (!is.null(rel_g_vals) && factors[[i]]$id %in% names(rel_g_vals))
-                            rel_rows[[i]]$rel_g <- .fl_clean_na(unname(rel_g_vals[factors[[i]]$id]))
+                            # Same list-vs-scalar unwrap as cr_val above (line ~420):
+                            # compRelSEM() returns a list for a multi-factor model, and
+                            # this branch always has >=3 factors (main model's own
+                            # factors plus G), so single-bracket indexing here left
+                            # rel_g as a length-1 list -- is.na(list(x)) is FALSE, so
+                            # .fl_clean_na() passed it through unchanged, and the
+                            # rel_g / cr division below then failed with "non-numeric
+                            # argument to binary operator". [[ + as.numeric() unwraps
+                            # either shape to a bare scalar, same as cr_val/ave_val.
+                            rel_rows[[i]]$rel_g <- .fl_clean_na(as.numeric(rel_g_vals[[factors[[i]]$id]]))
                 }
             }
 
@@ -673,6 +712,11 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
                     index = vapply(fitcmp_rows, function(r) r$index, character(1)),
                     value = vapply(fitcmp_rows, function(r) r$value, numeric(1)),
                     stringsAsFactors = FALSE)
+                # State for .plotFitComparison -- see the note at
+                # .plotParallelAnalysis' own state assignment above for why.
+                # ES: Estado para .plotFitComparison -- ver la nota en la
+                # propia asignación de estado de .plotParallelAnalysis arriba.
+                res$plotFitComparison$setState(private$.fitcmp_data)
                 res$plotFitComparisonNote$setContent(.fl_prose("<p>", tr(
                     "Bars compare CFI and TLI (both 0-1, higher is better) between the correlated-factors and second-order models; the dashed line marks the .95 conventional good-fit threshold (Hu &amp; Bentler, 1999). Visibly shorter bars for the second-order model are the same information as a significant likelihood-ratio test above, shown graphically.",
                     "Las barras comparan CFI y TLI (ambos 0-1, mayor es mejor) entre los modelos de factores correlacionados y de segundo orden; la línea punteada marca el umbral convencional de buen ajuste de .95 (Hu &amp; Bentler, 1999). Barras visiblemente más cortas para el modelo de segundo orden son la misma información que una prueba de razón de verosimilitud significativa de arriba, mostrada gráficamente."), "</p>"))
@@ -914,8 +958,11 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
 
         # ── Plot: parallel-analysis scree plot (observed vs. simulated
         # eigenvalues) ─────────────────────────────────────────────────────
+        # All four render functions below read image$state, not a private$
+        # field -- see the note at each state assignment in .run() above for
+        # why (jamovi's official module review, 2026-09-16).
         .plotParallelAnalysis = function(image, ggtheme, theme, ...) {
-            d <- private$.parallel_data
+            d <- image$state
             if (is.null(d) || nrow(d) == 0L) return(FALSE)
             cols <- private$.plot_colors()
             d$series <- factor(d$series, levels = unique(d$series))
@@ -937,7 +984,7 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
         # factor) -- same construction as interRater's/Internal
         # Consistency's own .plotComparison. ──────────────────────────────
         .plotComparison = function(image, ggtheme, theme, ...) {
-            d <- private$.plot_rows
+            d <- image$state
             if (is.null(d) || nrow(d) == 0L || all(is.na(d$value))) return(FALSE)
             cols <- private$.plot_colors()
             d$factor <- factor(d$factor, levels = rev(d$factor))
@@ -953,7 +1000,7 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
 
         # ── Plot: standardized loadings, faceted by factor ────────────────
         .plotLoadings = function(image, ggtheme, theme, ...) {
-            d <- private$.loadings_data
+            d <- image$state
             if (is.null(d) || nrow(d) == 0L) return(FALSE)
             cols <- private$.plot_colors()
             d$item <- factor(d$item, levels = rev(unique(d$item)))
@@ -973,7 +1020,7 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
         # ── Plot: fit comparison between correlated-factors and
         # second-order models (CFI/TLI, grouped bars) ─────────────────────
         .plotFitComparison = function(image, ggtheme, theme, ...) {
-            d <- private$.fitcmp_data
+            d <- image$state
             if (is.null(d) || nrow(d) == 0L) return(FALSE)
             cols <- private$.plot_colors()
             d$model <- factor(d$model, levels = unique(d$model))

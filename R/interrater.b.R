@@ -594,6 +594,24 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                     ci_lower    = vapply(plot_rows, function(r) if (is.na(r$ci_lower)) r$value else r$ci_lower, numeric(1)),
                     ci_upper    = vapply(plot_rows, function(r) if (is.na(r$ci_upper)) r$value else r$ci_upper, numeric(1)),
                     stringsAsFactors = FALSE)
+                # jamovi's official module review (2026-09-16) found every
+                # plot in this module rendered blank on export: a plot's
+                # render function only ever runs live, straight after
+                # .run(), OR later on its own, in a separate re-created
+                # analysis instance that restores saved results but never
+                # calls .run() again -- so a private$ field read there is
+                # always NULL on that second path. setState() is the only
+                # channel that survives into that second instance.
+                # ES: La revisión oficial de módulos de jamovi (2026-09-16)
+                # encontró que todo gráfico de este módulo se exportaba en
+                # blanco: la función de render de un gráfico solo corre en
+                # vivo justo después de .run(), O más tarde por su cuenta,
+                # en una instancia de análisis separada que restaura los
+                # resultados guardados pero nunca vuelve a llamar a .run()
+                # -- así que un campo private$ leído ahí siempre es NULL en
+                # ese segundo camino. setState() es el único canal que
+                # sobrevive a esa segunda instancia.
+                self$results$plotComparison$setState(private$.plot_rows)
             } else {
                 self$results$plotComparison$setVisible(FALSE)
             }
@@ -697,6 +715,8 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 private$.diag_data <- data.frame(
                     category = names(prev_tab), pct = as.numeric(unname(prev_tab)) * 100,
                     stringsAsFactors = FALSE)
+                self$results$plotDiagnostic$setState(list(
+                    type = "prevalence", data = private$.diag_data, extra = NULL))
             } else if (level == "continuous" && k >= 2L) {
                 rater_means <- colMeans(df_num, na.rm = TRUE)
                 grand_mean  <- mean(rater_means)
@@ -710,6 +730,19 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                     rater = names(rater_means), mean = unname(rater_means),
                     stringsAsFactors = FALSE)
                 private$.diag_extra <- grand_mean
+                # State for .plotDiagnostic -- see the note at .plotComparison's
+                # own state assignment above for why a private$ field alone
+                # isn't enough. Stores type, data and the grand mean together
+                # since the render function needs all three, as suggested in
+                # jamovi's official module review (2026-09-16).
+                # ES: Estado para .plotDiagnostic -- ver la nota en la propia
+                # asignación de estado de .plotComparison arriba sobre por qué
+                # un campo private$ por sí solo no basta. Guarda type, data y
+                # la media general juntos ya que la función de render necesita
+                # los tres, como sugirió la revisión oficial de módulos de
+                # jamovi (2026-09-16).
+                self$results$plotDiagnostic$setState(list(
+                    type = "rater_mean", data = private$.diag_data, extra = grand_mean))
             } else {
                 self$results$plotDiagnostic$setVisible(FALSE)
             }
@@ -894,7 +927,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
         # es inmediatamente visible aquí como dos puntos separados en la
         # misma escala 0-1.
         .plotComparison = function(image, ggtheme, theme, ...) {
-            d <- private$.plot_rows
+            d <- image$state
             if (is.null(d) || nrow(d) == 0L) return(FALSE)
             cols <- private$.plot_colors()
             d$coefficient <- factor(d$coefficient, levels = rev(d$coefficient))
@@ -917,19 +950,20 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
         # ES: Prevalencia de categoría (nominal/ordinal) o media por juez
         # (continuo) -- la contraparte visual del diagnóstico de "Por qué".
         .plotDiagnostic = function(image, ggtheme, theme, ...) {
-            d <- private$.diag_data
-            if (is.null(d) || nrow(d) == 0L) return(FALSE)
+            st <- image$state
+            if (is.null(st) || is.null(st$data) || nrow(st$data) == 0L) return(FALSE)
+            d <- st$data
             tr <- private$.tr
             cols <- private$.plot_colors()
-            if (identical(private$.diag_type, "prevalence")) {
+            if (identical(st$type, "prevalence")) {
                 d$category <- factor(d$category, levels = rev(d$category))
                 p <- ggplot2::ggplot(d, ggplot2::aes(x = pct, y = category)) +
                     ggplot2::geom_bar(stat = "identity", fill = cols$primary, alpha = .85, width = .6) +
                     ggplot2::labs(x = tr("% of all ratings", "% de todas las calificaciones"), y = NULL,
                                   title = tr("Category Prevalence", "Prevalencia de Categoría")) +
                     private$.plot_theme()
-            } else if (identical(private$.diag_type, "rater_mean")) {
-                grand_mean <- private$.diag_extra
+            } else if (identical(st$type, "rater_mean")) {
+                grand_mean <- st$extra
                 p <- ggplot2::ggplot(d, ggplot2::aes(x = rater, y = mean)) +
                     ggplot2::geom_bar(stat = "identity", fill = cols$primary, alpha = .85, width = .6) +
                     ggplot2::geom_hline(yintercept = grand_mean, linetype = "dashed",

@@ -175,3 +175,57 @@ test_that("interRater tolerates fewer than 2 raters", {
         interRater(data = d, ratings = names(d), dataType = "continuous", reportLang = "en")
     )
 })
+
+# -----------------------------------------------------------------------------
+# interRater plot-export regression tests.
+# ES: Pruebas de regresión de exportación de gráficos de interRater.
+#
+# Same jamovi official module review finding (2026-09-16) as
+# test-internalconsistency.R's own plot-export section -- see the comment
+# there for the full explanation. .plotDiagnostic has two independent
+# branches (category prevalence for nominal/ordinal data, per-rater mean for
+# continuous data), each with its own setState() call in .run(), so both are
+# exercised here rather than just one.
+#
+# ES: Mismo hallazgo de la revisión oficial de módulos de jamovi
+# (2026-09-16) que la propia sección de exportación de gráficos de
+# test-internalconsistency.R -- ver el comentario ahí para la explicación
+# completa. .plotDiagnostic tiene dos ramas independientes (prevalencia de
+# categoría para datos nominales/ordinales, media por juez para datos
+# continuos), cada una con su propia llamada a setState() en .run(), así que
+# ambas se ejercitan aquí en vez de solo una.
+# -----------------------------------------------------------------------------
+
+test_that("interRater's plots have usable state and export without error (nominal)", {
+
+    d <- fixturePerfectAgreementData()
+
+    res <- interRater(data = d, ratings = names(d), dataType = "nominal", reportLang = "en")
+
+    expect_false(is.null(res$plotComparison$state))
+    expect_false(is.null(res$plotDiagnostic$state))
+
+    for (nm in c("plotComparison", "plotDiagnostic")) {
+        f <- tempfile(fileext = ".png")
+        on.exit(unlink(f), add = TRUE)
+        expect_no_error(res[[nm]]$saveAs(f))
+        expect_true(file.exists(f) && file.size(f) > 0)
+    }
+})
+
+test_that("interRater's plots have usable state and export without error (continuous)", {
+
+    d <- fixtureHomoscedasticRaterData()
+
+    res <- interRater(data = d, ratings = names(d), dataType = "continuous", reportLang = "en")
+
+    expect_false(is.null(res$plotComparison$state))
+    expect_false(is.null(res$plotDiagnostic$state))
+
+    for (nm in c("plotComparison", "plotDiagnostic")) {
+        f <- tempfile(fileext = ".png")
+        on.exit(unlink(f), add = TRUE)
+        expect_no_error(res[[nm]]$saveAs(f))
+        expect_true(file.exists(f) && file.size(f) > 0)
+    }
+})

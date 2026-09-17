@@ -161,3 +161,47 @@ fixtureScalarViolationTwoGroupData <- function(n_per_group = 250, shift = 1.2, s
     d$item1[d$group == "B"] <- d$item1[d$group == "B"] + shift
     d
 }
+
+# EN: Three first-order factors (4 items each), all genuinely loaded onto a
+# single second-order general factor G -- a bona fide hierarchical/bifactor
+# design, needed to exercise advancedReliability(secondOrder = TRUE)'s
+# "reliability due to G" computation (which requires >=3 first-order
+# factors; a 2-factor second-order model is not identified). Returns both
+# the data and the factors list already in the {label, vars} shape
+# advancedReliability()'s own `factors` option expects, so a test can pass
+# it straight through without re-deriving the item groupings.
+# ES: Tres factores de primer orden (4 ítems cada uno), todos cargados
+# genuinamente sobre un único factor general G de segundo orden -- un
+# diseño jerárquico/bifactor genuino, necesario para ejercitar el cálculo
+# de "confiabilidad debida a G" de advancedReliability(secondOrder = TRUE)
+# (que requiere >=3 factores de primer orden; un modelo de segundo orden
+# con 2 factores no está identificado). Devuelve tanto los datos como la
+# lista de factores ya en la forma {label, vars} que espera la propia
+# opción `factors` de advancedReliability(), para que una prueba pueda
+# pasarla directamente sin tener que rederivar la agrupación de ítems.
+fixtureSecondOrderData <- function(n = 300, g_loadings = c(.7, .7, .7),
+                                    item_loading = .75, seed = 5) {
+
+    set.seed(seed)
+
+    g <- stats::rnorm(n)
+    gen_factor <- function(g_load, n_items = 4) {
+        f <- g_load * g + stats::rnorm(n, sd = sqrt(1 - g_load^2))
+        items <- sapply(seq_len(n_items), function(j)
+            item_loading * f + stats::rnorm(n, sd = sqrt(1 - item_loading^2)))
+        items
+    }
+
+    f1 <- gen_factor(g_loadings[1]); colnames(f1) <- paste0("f1_item", 1:4)
+    f2 <- gen_factor(g_loadings[2]); colnames(f2) <- paste0("f2_item", 1:4)
+    f3 <- gen_factor(g_loadings[3]); colnames(f3) <- paste0("f3_item", 1:4)
+
+    list(
+        data = as.data.frame(cbind(f1, f2, f3)),
+        factors = list(
+            list(label = "F1", vars = paste0("f1_item", 1:4)),
+            list(label = "F2", vars = paste0("f2_item", 1:4)),
+            list(label = "F3", vars = paste0("f3_item", 1:4))
+        )
+    )
+}

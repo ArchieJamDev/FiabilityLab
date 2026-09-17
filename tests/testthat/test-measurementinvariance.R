@@ -179,3 +179,35 @@ test_that("measurementInvariance tolerates a grouping variable with a single lev
         )
     )
 })
+
+# -----------------------------------------------------------------------------
+# measurementInvariance plot-export regression test.
+# ES: Prueba de regresión de exportación de gráficos de measurementInvariance.
+#
+# Same jamovi official module review finding (2026-09-16) as
+# test-internalconsistency.R's own plot-export section -- see the comment
+# there for the full explanation.
+#
+# ES: Mismo hallazgo de la revisión oficial de módulos de jamovi
+# (2026-09-16) que la propia sección de exportación de gráficos de
+# test-internalconsistency.R -- ver el comentario ahí para la explicación
+# completa.
+# -----------------------------------------------------------------------------
+
+test_that("measurementInvariance's plot has usable state and exports without error", {
+
+    d <- fixtureInvariantTwoGroupData(n_per_group = 100)
+
+    res <- measurementInvariance(
+        data = d, group = "group",
+        factors = list(list(label = "F1", vars = paste0("item", 1:4))),
+        itemType = "continuous", estimator = "ml", reportLang = "en"
+    )
+
+    expect_false(is.null(res$plotInvariance$state))
+
+    f <- tempfile(fileext = ".png")
+    on.exit(unlink(f), add = TRUE)
+    expect_no_error(res$plotInvariance$saveAs(f))
+    expect_true(file.exists(f) && file.size(f) > 0)
+})
