@@ -12,9 +12,9 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             gwet = TRUE,
             krippendorff = TRUE,
             icc = TRUE,
-            checkIccAssumptions = TRUE,
+            checkIccAssumptions = FALSE,
             kendallW = FALSE,
-            bootstrapCi = TRUE,
+            bootstrapCi = FALSE,
             bootstrapSamples = 1000, ...) {
 
             super$initialize(
@@ -54,7 +54,7 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             private$..checkIccAssumptions <- jmvcore::OptionBool$new(
                 "checkIccAssumptions",
                 checkIccAssumptions,
-                default=TRUE)
+                default=FALSE)
             private$..kendallW <- jmvcore::OptionBool$new(
                 "kendallW",
                 kendallW,
@@ -62,7 +62,7 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             private$..bootstrapCi <- jmvcore::OptionBool$new(
                 "bootstrapCi",
                 bootstrapCi,
-                default=TRUE)
+                default=FALSE)
             private$..bootstrapSamples <- jmvcore::OptionInteger$new(
                 "bootstrapSamples",
                 bootstrapSamples,
@@ -290,9 +290,9 @@ interRater <- function(
     gwet = TRUE,
     krippendorff = TRUE,
     icc = TRUE,
-    checkIccAssumptions = TRUE,
+    checkIccAssumptions = FALSE,
     kendallW = FALSE,
-    bootstrapCi = TRUE,
+    bootstrapCi = FALSE,
     bootstrapSamples = 1000) {
 
     if ( ! requireNamespace("jmvcore", quietly=TRUE))

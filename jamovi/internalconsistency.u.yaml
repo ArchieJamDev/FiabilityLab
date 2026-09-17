@@ -15,22 +15,11 @@ children:
             name: items
             isTarget: true
   - type: CollapseBox
-    label: Measurement Level
-    collapsed: false
-    children:
-      - type: ComboBox
-        name: measureLevel
-      - type: Label
-        label: >-
-          Auto-detect inspects each item's unique values. Override when needed
-          (e.g., 0/1 coded Likert vs. true dichotomous).
-  - type: CollapseBox
     label: Reliability Statistics
     collapsed: false
     children:
-      - type: CollapseBox
+      - type: Label
         label: Polytomous (Likert / rating scales)
-        collapsed: false
         children:
           - type: CheckBox
             name: alpha
@@ -53,9 +42,8 @@ children:
           - type: CheckBox
             name: guttman
             label: Guttman's Lambda (λ2–λ6)
-      - type: CollapseBox
+      - type: Label
         label: Dichotomous (0/1 items)
-        collapsed: false
         children:
           - type: CheckBox
             name: kr20
@@ -64,8 +52,14 @@ children:
             name: kr21
             label: KR-21
   - type: CollapseBox
+    label: Measurement Level
+    collapsed: true
+    children:
+      - type: ComboBox
+        name: measureLevel
+  - type: CollapseBox
     label: Item Analysis
-    collapsed: false
+    collapsed: true
     children:
       - type: CheckBox
         name: itemAnalysis
@@ -75,34 +69,29 @@ children:
         label: Item normality tests (Shapiro-Wilk, skewness, kurtosis)
   - type: CollapseBox
     label: Dimensionality
-    collapsed: false
+    collapsed: true
     children:
       - type: CheckBox
         name: checkDimensionality
         label: Check dimensionality via parallel analysis
-      - type: Label
-        label: >-
-          If multiple dimensions are detected, consider computing Alpha/Omega
-          per subscale and reporting Omega Hierarchical overall.
   - type: CollapseBox
     label: Reliability Assumptions
-    collapsed: false
+    collapsed: true
     children:
       - type: CheckBox
         name: checkReliabilityAssumptions
         label: Check Alpha's assumptions (tau-equivalence, unidimensionality, normality)
         enable: (alpha)
-      - type: Label
-        label: >-
-          Tau-equivalence is tested via a CFA likelihood-ratio test (requires
-          the lavaan package); unidimensionality and normality reuse the
-          Dimensionality and Item Analysis checks above.
   - type: CollapseBox
     label: Bootstrap Confidence Intervals
-    collapsed: false
+    collapsed: true
     children:
       - type: CheckBox
         name: bootstrapCi
+      - type: TextBox
+        name: bootstrapSamples
+        format: number
+        enable: (bootstrapCi)
   - type: CollapseBox
     label: Diagnostic Plots
     collapsed: true
@@ -122,9 +111,3 @@ children:
         name: plotScree
         label: Scree plot (parallel analysis)
         enable: (showPlots)
-  - type: LayoutBox
-    margin: large
-    children:
-      - type: TextBox
-        name: bootstrapSamples
-        format: number

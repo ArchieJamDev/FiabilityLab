@@ -15,14 +15,14 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
             glb = FALSE,
             splitHalf = FALSE,
             guttman = FALSE,
-            kr20 = TRUE,
-            kr21 = TRUE,
+            kr20 = FALSE,
+            kr21 = FALSE,
             itemAnalysis = TRUE,
             normality = TRUE,
-            bootstrapCi = TRUE,
+            bootstrapCi = FALSE,
             bootstrapSamples = 1000,
-            checkDimensionality = TRUE,
-            checkReliabilityAssumptions = TRUE,
+            checkDimensionality = FALSE,
+            checkReliabilityAssumptions = FALSE,
             showPlots = FALSE,
             plotItemDist = TRUE,
             plotItemTotal = TRUE,
@@ -81,11 +81,11 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
             private$..kr20 <- jmvcore::OptionBool$new(
                 "kr20",
                 kr20,
-                default=TRUE)
+                default=FALSE)
             private$..kr21 <- jmvcore::OptionBool$new(
                 "kr21",
                 kr21,
-                default=TRUE)
+                default=FALSE)
             private$..itemAnalysis <- jmvcore::OptionBool$new(
                 "itemAnalysis",
                 itemAnalysis,
@@ -97,7 +97,7 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
             private$..bootstrapCi <- jmvcore::OptionBool$new(
                 "bootstrapCi",
                 bootstrapCi,
-                default=TRUE)
+                default=FALSE)
             private$..bootstrapSamples <- jmvcore::OptionInteger$new(
                 "bootstrapSamples",
                 bootstrapSamples,
@@ -107,11 +107,11 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
             private$..checkDimensionality <- jmvcore::OptionBool$new(
                 "checkDimensionality",
                 checkDimensionality,
-                default=TRUE)
+                default=FALSE)
             private$..checkReliabilityAssumptions <- jmvcore::OptionBool$new(
                 "checkReliabilityAssumptions",
                 checkReliabilityAssumptions,
-                default=TRUE)
+                default=FALSE)
             private$..showPlots <- jmvcore::OptionBool$new(
                 "showPlots",
                 showPlots,
@@ -494,7 +494,8 @@ internalConsistencyBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
 #' 
 #' @param data .
 #' @param items .
-#' @param measureLevel .
+#' @param measureLevel Auto-detect inspects each item's unique values.
+#'   Override when needed (e.g., 0/1 coded Likert vs. true dichotomous).
 #' @param alpha .
 #' @param ordinalAlpha .
 #' @param omega .
@@ -502,14 +503,18 @@ internalConsistencyBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
 #' @param glb .
 #' @param splitHalf .
 #' @param guttman .
-#' @param kr20 .
-#' @param kr21 .
+#' @param kr20 Only applicable to genuinely dichotomous (0/1) items.
+#' @param kr21 Only applicable to genuinely dichotomous (0/1) items.
 #' @param itemAnalysis .
 #' @param normality .
 #' @param bootstrapCi .
 #' @param bootstrapSamples .
-#' @param checkDimensionality .
-#' @param checkReliabilityAssumptions .
+#' @param checkDimensionality If multiple dimensions are detected, consider
+#'   computing Alpha/Omega per subscale and reporting Omega Hierarchical
+#'   overall.
+#' @param checkReliabilityAssumptions Tau-equivalence is tested via a CFA
+#'   likelihood-ratio test (requires the lavaan package); unidimensionality and
+#'   normality reuse the Dimensionality and Item Analysis checks above.
 #' @param showPlots .
 #' @param plotItemDist .
 #' @param plotItemTotal .
@@ -551,14 +556,14 @@ internalConsistency <- function(
     glb = FALSE,
     splitHalf = FALSE,
     guttman = FALSE,
-    kr20 = TRUE,
-    kr21 = TRUE,
+    kr20 = FALSE,
+    kr21 = FALSE,
     itemAnalysis = TRUE,
     normality = TRUE,
-    bootstrapCi = TRUE,
+    bootstrapCi = FALSE,
     bootstrapSamples = 1000,
-    checkDimensionality = TRUE,
-    checkReliabilityAssumptions = TRUE,
+    checkDimensionality = FALSE,
+    checkReliabilityAssumptions = FALSE,
     showPlots = FALSE,
     plotItemDist = TRUE,
     plotItemTotal = TRUE,

@@ -698,6 +698,13 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                             (kk/(kk-1))*(1 - (M*(kk-M))/(kk*vv))
                         })
                 }
+            } else {
+                if (opt$kr20)
+                    add_stat("KR-20 (Kuder-Richardson)", NA_real_, NA_real_,
+                        .("Not applicable to polytomous/ordinal items -- KR-20 requires genuinely dichotomous (0/1) items; set Measurement level to Dichotomous if this scale is binary."))
+                if (opt$kr21)
+                    add_stat("KR-21", NA_real_, NA_real_,
+                        .("Not applicable to polytomous/ordinal items -- KR-21 requires genuinely dichotomous (0/1) items; set Measurement level to Dichotomous if this scale is binary."))
             }
 
             # ── 8g. Reliability assumptions check (tau-equivalence,

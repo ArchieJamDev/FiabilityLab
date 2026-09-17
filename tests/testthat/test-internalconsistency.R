@@ -88,6 +88,27 @@ test_that("KR-20/21 compute a real coefficient on genuinely binary 0/1 data", {
     expect_lte(kr20$value, 1)
 })
 
+test_that("KR-20/21 explain non-applicability on polytomous data instead of silently omitting", {
+
+    d <- edgeItemsBaseData()
+
+    res <- internalConsistency(
+        data = d, items = names(d), measureLevel = "polytomous",
+        kr20 = TRUE, kr21 = TRUE, alpha = FALSE, omega = FALSE,
+        normality = FALSE, checkReliabilityAssumptions = FALSE,
+        bootstrapCi = FALSE, checkDimensionality = FALSE, itemAnalysis = FALSE
+    )
+
+    row <- res$mainTable$asDF
+    kr20 <- row[row$coefficient == "KR-20 (Kuder-Richardson)", ]
+    kr21 <- row[row$coefficient == "KR-21", ]
+
+    expect_true(is.na(kr20$value))
+    expect_true(is.na(kr21$value))
+    expect_match(kr20$applicability, "Not applicable to polytomous", fixed = TRUE)
+    expect_match(kr21$applicability, "Not applicable to polytomous", fixed = TRUE)
+})
+
 # -----------------------------------------------------------------------------
 # internalConsistency edge-case tests.
 # ES: Pruebas de casos límite de internalConsistency.

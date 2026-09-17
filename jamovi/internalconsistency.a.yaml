@@ -30,6 +30,13 @@ options:
       - name: polytomous
         title: Polytomous (Likert / rating)
     default: auto
+    description:
+        ui: >
+            Auto-detect inspects each item's unique values. Override when
+            needed (e.g., 0/1 coded Likert vs. true dichotomous).
+        R: >
+            Auto-detect inspects each item's unique values. Override when
+            needed (e.g., 0/1 coded Likert vs. true dichotomous).
 
   # ── Statistics — Polytomous ───────────────────────────────────────────────
   - name: alpha
@@ -63,11 +70,17 @@ options:
   # ── Statistics — Dichotomous ──────────────────────────────────────────────
   - name: kr20
     type: Bool
-    default: true
+    default: false
+    description:
+        ui: Only applicable to genuinely dichotomous (0/1) items.
+        R: Only applicable to genuinely dichotomous (0/1) items.
 
   - name: kr21
     type: Bool
-    default: true
+    default: false
+    description:
+        ui: Only applicable to genuinely dichotomous (0/1) items.
+        R: Only applicable to genuinely dichotomous (0/1) items.
 
   # ── Item analysis ─────────────────────────────────────────────────────────
   - name: itemAnalysis
@@ -83,7 +96,7 @@ options:
   - name: bootstrapCi
     title: Bootstrap confidence intervals (95%)
     type: Bool
-    default: true
+    default: false
 
   - name: bootstrapSamples
     title: Bootstrap samples
@@ -95,13 +108,31 @@ options:
   # ── Dimensionality ────────────────────────────────────────────────────────
   - name: checkDimensionality
     type: Bool
-    default: true
+    default: false
+    description:
+        ui: >
+            If multiple dimensions are detected, consider computing
+            Alpha/Omega per subscale and reporting Omega Hierarchical
+            overall.
+        R: >
+            If multiple dimensions are detected, consider computing
+            Alpha/Omega per subscale and reporting Omega Hierarchical
+            overall.
 
   # ── Reliability assumptions (tau-equivalence, unidimensionality,
   # normality -- Cronbach's alpha's own core assumptions) ──────────────────
   - name: checkReliabilityAssumptions
     type: Bool
-    default: true
+    default: false
+    description:
+        ui: >
+            Tau-equivalence is tested via a CFA likelihood-ratio test
+            (requires the lavaan package); unidimensionality and normality
+            reuse the Dimensionality and Item Analysis checks above.
+        R: >
+            Tau-equivalence is tested via a CFA likelihood-ratio test
+            (requires the lavaan package); unidimensionality and normality
+            reuse the Dimensionality and Item Analysis checks above.
 
   # ── Plots ─────────────────────────────────────────────────────────────────
   - name: showPlots

@@ -42,7 +42,7 @@ options:
 
   - name: checkIccAssumptions
     type: Bool
-    default: true
+    default: false
 
   - name: kendallW
     type: Bool
@@ -51,7 +51,7 @@ options:
   - name: bootstrapCi
     title: Bootstrap confidence intervals (95%)
     type: Bool
-    default: true
+    default: false
 
   - name: bootstrapSamples
     title: Bootstrap samples
