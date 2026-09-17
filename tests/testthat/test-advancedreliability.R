@@ -63,7 +63,7 @@ test_that("advancedReliability rejects cleanly (not a crash) with accented and s
     factors <- list(list(label = "F1", vars = names(d)))
 
     expect_error(
-        advancedReliability(data = d, factors = factors, reportLang = "en"),
+        advancedReliability(data = d, factors = factors),
         "did not converge"
     )
 })
@@ -105,7 +105,7 @@ test_that("advancedReliability's CFA actually fits with accented/symbol item nam
 
     res <- advancedReliability(
         data = d, factors = factors, itemType = "continuous",
-        estimator = "ml", reportLang = "en"
+        estimator = "ml"
     )
 
     fit <- res$fitTable$asDF
@@ -149,7 +149,7 @@ test_that("advancedReliability rejects a single-row data set with an informative
     factors <- list(list(label = "F1", vars = names(d)))
 
     expect_error(
-        advancedReliability(data = d, factors = factors, reportLang = "en"),
+        advancedReliability(data = d, factors = factors),
         "minimum 20"
     )
 })
@@ -160,7 +160,7 @@ test_that("advancedReliability rejects an item column that is entirely NA (leave
     factors <- list(list(label = "F1", vars = names(d)))
 
     expect_error(
-        advancedReliability(data = d, factors = factors, reportLang = "en"),
+        advancedReliability(data = d, factors = factors),
         "minimum 20"
     )
 })
@@ -171,7 +171,7 @@ test_that("advancedReliability rejects a zero-variance item column (CFA cannot c
     factors <- list(list(label = "F1", vars = names(d)))
 
     expect_error(
-        advancedReliability(data = d, factors = factors, reportLang = "en"),
+        advancedReliability(data = d, factors = factors),
         "did not converge"
     )
 })
@@ -182,7 +182,7 @@ test_that("advancedReliability rejects fewer than 3 items across all factors wit
     factors <- list(list(label = "F1", vars = names(d)))
 
     expect_error(
-        advancedReliability(data = d, factors = factors, reportLang = "en"),
+        advancedReliability(data = d, factors = factors),
         "at least 3 items"
     )
 })
@@ -227,7 +227,7 @@ test_that("advancedReliability computes reliability due to G for a second-order 
 
     res <- advancedReliability(
         data = fx$data, factors = fx$factors, secondOrder = TRUE,
-        itemType = "continuous", estimator = "ml", reportLang = "en"
+        itemType = "continuous", estimator = "ml"
     )
 
     row <- res$reliabilityTable$asDF
@@ -265,7 +265,7 @@ test_that("advancedReliability's plots have usable state and export without erro
     res <- advancedReliability(
         data = fx$data, factors = fx$factors, secondOrder = TRUE,
         showParallelAnalysis = TRUE, itemType = "continuous",
-        estimator = "ml", reportLang = "en"
+        estimator = "ml"
     )
 
     expect_false(is.null(res$plotParallelAnalysis$state))

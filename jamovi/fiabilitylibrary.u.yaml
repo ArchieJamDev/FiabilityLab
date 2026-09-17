@@ -16,19 +16,10 @@ children:
         name: interRater
       - title: Advanced Reliability (SEM)
         name: advanced
+      - title: Measurement Invariance
+        name: invariance
       - title: Theoretical Foundations
         name: foundations
       - title: Common Errors
         name: errors
-  - type: CollapseBox
-    label: Report Language
-    collapsed: false
-    children:
-      - type: ComboBox
-        name: reportLang
-        options:
-          - title: English
-            name: en
-          - title: Español
-            name: es
 ...

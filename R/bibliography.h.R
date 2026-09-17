@@ -6,8 +6,7 @@ bibliographyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
     inherit = jmvcore::Options,
     public = list(
         initialize = function(
-            topic = NULL,
-            reportLang = NULL, ...) {
+            topic = NULL, ...) {
 
             super$initialize(
                 package="fiabilitylab",
@@ -26,22 +25,13 @@ bibliographyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
                     "irt",
                     "sem",
                     "invariance"))
-            private$..reportLang <- jmvcore::OptionList$new(
-                "reportLang",
-                reportLang,
-                options=list(
-                    "en",
-                    "es"))
 
             self$.addOption(private$..topic)
-            self$.addOption(private$..reportLang)
         }),
     active = list(
-        topic = function() private$..topic$value,
-        reportLang = function() private$..reportLang$value),
+        topic = function() private$..topic$value),
     private = list(
-        ..topic = NA,
-        ..reportLang = NA)
+        ..topic = NA)
 )
 
 bibliographyResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
@@ -106,7 +96,6 @@ bibliographyBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'
 #' 
 #' @param topic .
-#' @param reportLang .
 #' @return A results object containing:
 #' \tabular{llllll}{
 #'   \code{results$intro} \tab \tab \tab \tab \tab a html \cr
@@ -118,16 +107,14 @@ bibliographyBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'
 #' @export
 bibliography <- function(
-    topic,
-    reportLang) {
+    topic) {
 
     if ( ! requireNamespace("jmvcore", quietly=TRUE))
         stop("bibliography requires jmvcore to be installed (restart may be required)")
 
 
     options <- bibliographyOptions$new(
-        topic = topic,
-        reportLang = reportLang)
+        topic = topic)
 
     analysis <- bibliographyClass$new(
         options = options,

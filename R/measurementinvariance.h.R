@@ -11,8 +11,7 @@ measurementInvarianceOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R
                 list(label="Factor 1", vars=list())),
             itemType = "auto",
             estimator = "auto",
-            showPlots = TRUE,
-            reportLang = "en", ...) {
+            showPlots = TRUE, ...) {
 
             super$initialize(
                 package="fiabilitylab",
@@ -69,35 +68,25 @@ measurementInvarianceOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R
                 "showPlots",
                 showPlots,
                 default=TRUE)
-            private$..reportLang <- jmvcore::OptionList$new(
-                "reportLang",
-                reportLang,
-                options=list(
-                    "en",
-                    "es"),
-                default="en")
 
             self$.addOption(private$..group)
             self$.addOption(private$..factors)
             self$.addOption(private$..itemType)
             self$.addOption(private$..estimator)
             self$.addOption(private$..showPlots)
-            self$.addOption(private$..reportLang)
         }),
     active = list(
         group = function() private$..group$value,
         factors = function() private$..factors$value,
         itemType = function() private$..itemType$value,
         estimator = function() private$..estimator$value,
-        showPlots = function() private$..showPlots$value,
-        reportLang = function() private$..reportLang$value),
+        showPlots = function() private$..showPlots$value),
     private = list(
         ..group = NA,
         ..factors = NA,
         ..itemType = NA,
         ..estimator = NA,
-        ..showPlots = NA,
-        ..reportLang = NA)
+        ..showPlots = NA)
 )
 
 measurementInvarianceResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
@@ -235,7 +224,6 @@ measurementInvarianceBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::
 #' @param itemType .
 #' @param estimator .
 #' @param showPlots .
-#' @param reportLang .
 #' @return A results object containing:
 #' \tabular{llllll}{
 #'   \code{results$groupSummaryTable} \tab \tab \tab \tab \tab a table \cr
@@ -260,8 +248,7 @@ measurementInvariance <- function(
                 list(label="Factor 1", vars=list())),
     itemType = "auto",
     estimator = "auto",
-    showPlots = TRUE,
-    reportLang = "en") {
+    showPlots = TRUE) {
 
     if ( ! requireNamespace("jmvcore", quietly=TRUE))
         stop("measurementInvariance requires jmvcore to be installed (restart may be required)")
@@ -279,8 +266,7 @@ measurementInvariance <- function(
         factors = factors,
         itemType = itemType,
         estimator = estimator,
-        showPlots = showPlots,
-        reportLang = reportLang)
+        showPlots = showPlots)
 
     analysis <- measurementInvarianceClass$new(
         options = options,

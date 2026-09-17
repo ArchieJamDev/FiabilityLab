@@ -54,8 +54,7 @@ test_that("KR-20/21 are not computed on 2-category data that isn't coded 0/1", {
         data = d, items = names(d), measureLevel = "dichotomous",
         kr20 = TRUE, kr21 = TRUE, alpha = FALSE, omega = FALSE,
         normality = FALSE, checkReliabilityAssumptions = FALSE,
-        bootstrapCi = FALSE, checkDimensionality = FALSE, itemAnalysis = FALSE,
-        reportLang = "en"
+        bootstrapCi = FALSE, checkDimensionality = FALSE, itemAnalysis = FALSE
     )
 
     row <- res$mainTable$asDF
@@ -76,8 +75,7 @@ test_that("KR-20/21 compute a real coefficient on genuinely binary 0/1 data", {
         data = d, items = names(d), measureLevel = "dichotomous",
         kr20 = TRUE, kr21 = TRUE, alpha = FALSE, omega = FALSE,
         normality = FALSE, checkReliabilityAssumptions = FALSE,
-        bootstrapCi = FALSE, checkDimensionality = FALSE, itemAnalysis = FALSE,
-        reportLang = "en"
+        bootstrapCi = FALSE, checkDimensionality = FALSE, itemAnalysis = FALSE
     )
 
     row <- res$mainTable$asDF
@@ -117,7 +115,7 @@ test_that("internalConsistency tolerates accented and symbol item names", {
     d <- edgeItemsSpecialNameData()
 
     expect_no_error(
-        internalConsistency(data = d, items = names(d), reportLang = "en")
+        internalConsistency(data = d, items = names(d))
     )
 })
 
@@ -153,8 +151,7 @@ test_that("internalConsistency's tau-equivalence test computes a real statistic 
     d <- edgeItemsSpecialNameFactorData()
 
     res <- internalConsistency(
-        data = d, items = names(d), alpha = TRUE, checkReliabilityAssumptions = TRUE,
-        reportLang = "en"
+        data = d, items = names(d), alpha = TRUE, checkReliabilityAssumptions = TRUE
     )
 
     row <- res$reliabilityAssumptionsTable$asDF
@@ -168,7 +165,7 @@ test_that("internalConsistency tolerates a single-row data set", {
     d <- edgeSingleRowItemsData()
 
     expect_no_error(
-        internalConsistency(data = d, items = names(d), reportLang = "en")
+        internalConsistency(data = d, items = names(d))
     )
 })
 
@@ -177,7 +174,7 @@ test_that("internalConsistency tolerates an item column that is entirely NA", {
     d <- edgeAllNaData(edgeItemsBaseData(), "item1")
 
     expect_no_error(
-        internalConsistency(data = d, items = names(d), reportLang = "en")
+        internalConsistency(data = d, items = names(d))
     )
 })
 
@@ -186,7 +183,7 @@ test_that("internalConsistency tolerates a zero-variance item column", {
     d <- edgeConstantData(edgeItemsBaseData(), "item1")
 
     expect_no_error(
-        internalConsistency(data = d, items = names(d), reportLang = "en")
+        internalConsistency(data = d, items = names(d))
     )
 })
 
@@ -195,7 +192,7 @@ test_that("internalConsistency tolerates fewer than 2 items", {
     d <- edgeItemsBaseData(n_items = 1)
 
     expect_no_error(
-        internalConsistency(data = d, items = names(d), reportLang = "en")
+        internalConsistency(data = d, items = names(d))
     )
 })
 
@@ -236,7 +233,7 @@ test_that("internalConsistency's plots have usable state and export without erro
 
     res <- internalConsistency(
         data = d, items = names(d), checkDimensionality = TRUE,
-        itemAnalysis = TRUE, reportLang = "en"
+        itemAnalysis = TRUE
     )
 
     expect_false(is.null(res$plotComparison$state))

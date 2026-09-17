@@ -59,7 +59,7 @@ test_that("a design with no true group difference is fully supported at every le
 
     res <- measurementInvariance(
         data = d, group = "group", factors = factors,
-        itemType = "continuous", estimator = "ml", reportLang = "en"
+        itemType = "continuous", estimator = "ml"
     )
 
     row <- res$invarianceTable$asDF
@@ -74,7 +74,7 @@ test_that("a known scalar-invariance violation is caught specifically at the Sca
 
     res <- measurementInvariance(
         data = d, group = "group", factors = factors,
-        itemType = "continuous", estimator = "ml", reportLang = "en"
+        itemType = "continuous", estimator = "ml"
     )
 
     row <- res$invarianceTable$asDF
@@ -130,7 +130,7 @@ test_that("measurementInvariance rejects cleanly (not a crash) with accented and
     expect_error(
         measurementInvariance(
             data = d, group = "group", factors = factors,
-            itemType = "continuous", estimator = "ml", reportLang = "en"
+            itemType = "continuous", estimator = "ml"
         ),
         "per group"
     )
@@ -173,7 +173,7 @@ test_that("measurementInvariance's configural model actually fits with accented/
 
     res <- measurementInvariance(
         data = d, group = "group", factors = factors,
-        itemType = "continuous", estimator = "ml", reportLang = "en"
+        itemType = "continuous", estimator = "ml"
     )
 
     row <- res$invarianceTable$asDF
@@ -218,7 +218,7 @@ test_that("measurementInvariance rejects a single-row data set with an informati
     expect_error(
         measurementInvariance(
             data = d, group = "group", factors = factors,
-            itemType = "continuous", estimator = "ml", reportLang = "en"
+            itemType = "continuous", estimator = "ml"
         ),
         "at least 2 levels"
     )
@@ -232,7 +232,7 @@ test_that("measurementInvariance rejects an item column that is entirely NA (lea
         measurementInvariance(
             data = d, group = "group",
             factors = list(list(label = "F1", vars = paste0("item", 1:4))),
-            itemType = "continuous", estimator = "ml", reportLang = "en"
+            itemType = "continuous", estimator = "ml"
         ),
         "at least 2 levels"
     )
@@ -246,7 +246,7 @@ test_that("measurementInvariance rejects a zero-variance item column (configural
         measurementInvariance(
             data = d, group = "group",
             factors = list(list(label = "F1", vars = paste0("item", 1:4))),
-            itemType = "continuous", estimator = "ml", reportLang = "en"
+            itemType = "continuous", estimator = "ml"
         ),
         "did not converge"
     )
@@ -261,7 +261,7 @@ test_that("measurementInvariance rejects a grouping variable with a single level
     expect_error(
         measurementInvariance(
             data = d, group = "group", factors = factors,
-            itemType = "continuous", estimator = "ml", reportLang = "en"
+            itemType = "continuous", estimator = "ml"
         ),
         "at least 2 levels"
     )
@@ -288,7 +288,7 @@ test_that("measurementInvariance's plot has usable state and exports without err
     res <- measurementInvariance(
         data = d, group = "group",
         factors = list(list(label = "F1", vars = paste0("item", 1:4))),
-        itemType = "continuous", estimator = "ml", reportLang = "en"
+        itemType = "continuous", estimator = "ml"
     )
 
     expect_false(is.null(res$plotInvariance$state))

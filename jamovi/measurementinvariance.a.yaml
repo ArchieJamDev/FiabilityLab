@@ -71,12 +71,4 @@ options:
     type: Bool
     default: true
 
-  - name: reportLang
-    type: List
-    options:
-      - name: en
-        title: English
-      - name: es
-        title: Español
-    default: en
 ...

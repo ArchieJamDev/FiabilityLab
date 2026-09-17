@@ -15,12 +15,6 @@ children:
             name: items
             isTarget: true
   - type: CollapseBox
-    label: Report Language
-    collapsed: false
-    children:
-      - type: ComboBox
-        name: reportLang
-  - type: CollapseBox
     label: Measurement Level
     collapsed: false
     children:

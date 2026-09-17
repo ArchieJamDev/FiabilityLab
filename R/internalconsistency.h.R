@@ -7,7 +7,6 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
     public = list(
         initialize = function(
             items = NULL,
-            reportLang = "en",
             measureLevel = "auto",
             alpha = TRUE,
             ordinalAlpha = FALSE,
@@ -43,13 +42,6 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
                     "ordinal"),
                 permitted=list(
                     "numeric"))
-            private$..reportLang <- jmvcore::OptionList$new(
-                "reportLang",
-                reportLang,
-                options=list(
-                    "en",
-                    "es"),
-                default="en")
             private$..measureLevel <- jmvcore::OptionList$new(
                 "measureLevel",
                 measureLevel,
@@ -138,7 +130,6 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
                 default=FALSE)
 
             self$.addOption(private$..items)
-            self$.addOption(private$..reportLang)
             self$.addOption(private$..measureLevel)
             self$.addOption(private$..alpha)
             self$.addOption(private$..ordinalAlpha)
@@ -162,7 +153,6 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
         }),
     active = list(
         items = function() private$..items$value,
-        reportLang = function() private$..reportLang$value,
         measureLevel = function() private$..measureLevel$value,
         alpha = function() private$..alpha$value,
         ordinalAlpha = function() private$..ordinalAlpha$value,
@@ -185,7 +175,6 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
         plotScree = function() private$..plotScree$value),
     private = list(
         ..items = NA,
-        ..reportLang = NA,
         ..measureLevel = NA,
         ..alpha = NA,
         ..ordinalAlpha = NA,
@@ -505,7 +494,6 @@ internalConsistencyBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
 #' 
 #' @param data .
 #' @param items .
-#' @param reportLang .
 #' @param measureLevel .
 #' @param alpha .
 #' @param ordinalAlpha .
@@ -555,7 +543,6 @@ internalConsistencyBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
 internalConsistency <- function(
     data,
     items,
-    reportLang = "en",
     measureLevel = "auto",
     alpha = TRUE,
     ordinalAlpha = FALSE,
@@ -589,7 +576,6 @@ internalConsistency <- function(
 
     options <- internalConsistencyOptions$new(
         items = items,
-        reportLang = reportLang,
         measureLevel = measureLevel,
         alpha = alpha,
         ordinalAlpha = ordinalAlpha,

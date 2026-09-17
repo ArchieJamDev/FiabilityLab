@@ -69,8 +69,7 @@ test_that("Krippendorff's alpha is 1 for perfect rater agreement", {
 
     res <- interRater(
         data = d, ratings = names(d), dataType = "nominal",
-        kappa = FALSE, gwet = FALSE, icc = FALSE, bootstrapCi = FALSE,
-        reportLang = "en"
+        kappa = FALSE, gwet = FALSE, icc = FALSE, bootstrapCi = FALSE
     )
 
     row <- res$mainTable$asDF
@@ -84,7 +83,7 @@ test_that("ICC's Levene check does not flag homoscedastic rater error", {
     res <- interRater(
         data = d, ratings = names(d), dataType = "continuous",
         kappa = FALSE, gwet = FALSE, krippendorff = FALSE, icc = TRUE,
-        checkIccAssumptions = TRUE, bootstrapCi = FALSE, reportLang = "en"
+        checkIccAssumptions = TRUE, bootstrapCi = FALSE
     )
 
     row <- res$iccAssumptionsTable$asDF
@@ -100,7 +99,7 @@ test_that("ICC's Levene check flags a rater with genuinely larger residual error
     res <- interRater(
         data = d, ratings = names(d), dataType = "continuous",
         kappa = FALSE, gwet = FALSE, krippendorff = FALSE, icc = TRUE,
-        checkIccAssumptions = TRUE, bootstrapCi = FALSE, reportLang = "en"
+        checkIccAssumptions = TRUE, bootstrapCi = FALSE
     )
 
     row <- res$iccAssumptionsTable$asDF
@@ -136,7 +135,7 @@ test_that("interRater tolerates accented and symbol rater names", {
     d <- edgeRatersSpecialNameData()
 
     expect_no_error(
-        interRater(data = d, ratings = names(d), dataType = "continuous", reportLang = "en")
+        interRater(data = d, ratings = names(d), dataType = "continuous")
     )
 })
 
@@ -173,7 +172,7 @@ test_that("interRater rejects a single-row data set with an informative message"
     d <- edgeSingleRowRatersData()
 
     expect_error(
-        interRater(data = d, ratings = names(d), dataType = "continuous", reportLang = "en"),
+        interRater(data = d, ratings = names(d), dataType = "continuous"),
         "minimum 5"
     )
 })
@@ -183,7 +182,7 @@ test_that("interRater rejects a rater column that is entirely NA (leaves too few
     d <- edgeAllNaData(edgeRatersBaseData(), "rater1")
 
     expect_error(
-        interRater(data = d, ratings = names(d), dataType = "continuous", reportLang = "en"),
+        interRater(data = d, ratings = names(d), dataType = "continuous"),
         "minimum 5"
     )
 })
@@ -193,7 +192,7 @@ test_that("interRater tolerates a zero-variance rater column", {
     d <- edgeConstantData(edgeRatersBaseData(), "rater1", constantValue = 50)
 
     expect_no_error(
-        interRater(data = d, ratings = names(d), dataType = "continuous", reportLang = "en")
+        interRater(data = d, ratings = names(d), dataType = "continuous")
     )
 })
 
@@ -202,7 +201,7 @@ test_that("interRater rejects fewer than 2 raters with an informative message", 
     d <- edgeRatersBaseData(k = 1)
 
     expect_error(
-        interRater(data = d, ratings = names(d), dataType = "continuous", reportLang = "en"),
+        interRater(data = d, ratings = names(d), dataType = "continuous"),
         "at least 2"
     )
 })
@@ -231,7 +230,7 @@ test_that("interRater's plots have usable state and export without error (nomina
 
     d <- fixturePerfectAgreementData()
 
-    res <- interRater(data = d, ratings = names(d), dataType = "nominal", reportLang = "en")
+    res <- interRater(data = d, ratings = names(d), dataType = "nominal")
 
     expect_false(is.null(res$plotComparison$state))
     expect_false(is.null(res$plotDiagnostic$state))
@@ -248,7 +247,7 @@ test_that("interRater's plots have usable state and export without error (contin
 
     d <- fixtureHomoscedasticRaterData()
 
-    res <- interRater(data = d, ratings = names(d), dataType = "continuous", reportLang = "en")
+    res <- interRater(data = d, ratings = names(d), dataType = "continuous")
 
     expect_false(is.null(res$plotComparison$state))
     expect_false(is.null(res$plotDiagnostic$state))
