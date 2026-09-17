@@ -1,0 +1,3931 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2021-07-26 12:08:06+01000\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+"Language: c\n"
+
+#: R/advancedreliability.b.R
+msgid ""
+" ({excl} of {avail} available cases excluded listwise for missing values on "
+"at least one item)"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+" subscales fits significantly worse than letting them correlate freely (see "
+"the table above). Treat the general-factor structure — and the Omega "
+"Hierarchical value below — with real skepticism; report per-factor "
+"reliability instead of a single general-factor score unless there is a "
+"strong theoretical reason to insist on one."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid " were defined. Add another factor to enable this."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "–"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"; a second-order general factor was additionally fit and formally compared "
+"against it."
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "(periodicals only)"
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"{model} invariance is not supported by either criterion -- do not compare "
+"whatever that level of invariance is required for (see above) across {group} "
+"groups without first identifying which specific parameters differ (partial "
+"invariance) via semTools::partialInvariance()/partialInvarianceCat()."
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"{model} invariance is supported by only one of the two criteria -- treat "
+"this level with real caution rather than as settled. Investigate partial "
+"invariance to see whether the discordance traces to specific items before "
+"relying on comparisons that require this level."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "{n_adv} of {n_avail} available cases were used."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"{n} factor(s) ({names}) have most of their reliable variance specific to the "
+"subscale rather than the general factor G (reliability-due-to-G under 40% of "
+"their own CR/ω) — a total-score interpretation would discard most of what "
+"makes these subscales reliable."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"{n} item(s) fail Shapiro-Wilk (see the Item Normality table below); α's "
+"standard-error formula assumes multivariate normality, so treat its "
+"confidence interval as approximate and prefer Ordinal α or the bootstrap CI "
+"above."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"{n} item(s) load below .50 (see the Standardized Loadings plot below): "
+"{items}."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"{n} item(s) load negatively on their own factor: {items}. This usually means "
+"the item needs reverse-scoring (recoding it so higher raw values mean more "
+"of the construct) before re-running this analysis, not that it should be "
+"dropped."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"{n} pair(s) exceed .85: {pairs} — consider whether these are genuinely "
+"distinct constructs."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "{n1} of {n2} item(s) fail the Shapiro-Wilk normality test (p < .05). "
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"{worst} of {total} factor(s) have AVE &lt; .50 ({names}) — their items "
+"explain less than half the variance in their own factor."
+msgstr ""
+
+#: R/interrater.b.R
+msgid "% of all ratings"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"<b>2-category items detected.</b> KR-20 and KR-21 are preferred over "
+"Cronbach’s Alpha for dichotomous data."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"<b>Few response options (≤ 4).</b> Consider Ordinal Alpha; standard Alpha "
+"may underestimate reliability."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"<b>How the module's discordance panel is interpreted:</b> McDonald's ω is "
+"treated as the general-purpose reference coefficient, since it uses the "
+"model's actual factor loadings instead of assuming they are equal; "
+"Cronbach's α is reported alongside it, and when the two diverge by more than "
+"a small margin, ω is trusted over α — a large gap signals broken "
+"&tau;-equivalence. Ordinal α is preferred over raw α when items are ordinal "
+"or markedly non-normal (Zumbo et al., 2007). GLB and the Guttman λs serve as "
+"model-free sensitivity checks. KR-20/KR-21 apply only to strictly "
+"dichotomous items (Kuder &amp; Richardson, 1937)."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"<b>How the module's discordance panel will be interpreted:</b> "
+"Cohen's/Fleiss' Kappa is compared against Gwet's AC1 — a large gap between "
+"them flags the “kappa paradox” produced by skewed category prevalence, not "
+"genuinely poor agreement (Gwet, 2014)."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"<b>Normality note:</b> If items deviate markedly from normality (|skew| > 2 "
+"or |kurt| > 7), prefer Ordinal Alpha or McDonald’s Omega over Cronbach’s "
+"Alpha."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"<b>What it assesses:</b> Inter-rater agreement evaluates whether two or more "
+"independent raters/judges, scoring the same cases, reach consistent "
+"conclusions — at nominal, ordinal, or continuous measurement levels."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"<b>What it assesses:</b> Internal consistency evaluates whether the items of "
+"a single instrument, administered once, measure the same underlying "
+"construct. Under Classical Test Theory, an observed score X = T + E (true "
+"score plus error), and reliability is the proportion of observed variance "
+"attributable to T (Cronbach, 1951; McDonald, 1999; Nunnally &amp; Bernstein, "
+"1994)."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"<b>Where it's used in FiabilityLab:</b> the Inter-Rater Agreement module "
+"(Kappa, Gwet's AC1/AC2, ICC, Krippendorff's α, Kendall's W)."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"<b>Where it's used in FiabilityLab:</b> the Internal Consistency module "
+"computes every coefficient in the table below."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"⚠ Not computed: items are not coded 0/1 (KR-20 requires genuinely binary "
+"items, not merely 2 categories)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"⚠ Not computed: items are not coded 0/1 (KR-21 requires genuinely binary "
+"items, not merely 2 categories)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "⚠ Small sample (n < 100). Interpret with caution."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "⚠ Subject-to-item ratio low (5–10:1). Acceptable for pilot studies."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "⚠ Subject-to-item ratio very low (< 5:1). Reliability estimates unreliable."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "⚠ Very small sample (n < 50). Estimates likely unstable."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "✓ Adequate sample (n ≥ 100). Suitable for preliminary research."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "✓ Good sample size (n ≥ 200)."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "✓ Subject-to-item ratio adequate (≥ 10:1)."
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"A {nf}-factor measurement model was tested for invariance across {ng} levels "
+"of {group} ({levels}) on n = {n} complete cases."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"A confirmatory factor model with {nf} factor(s) ({fnames}) was fit on n = "
+"{n} complete cases{excluded}. Model fit: {verdict}{secondorder}"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"a congeneric model (free item loadings) fits significantly better than a "
+"tau-equivalent model (equal loadings) (p &lt; .05). Items load unequally on "
+"the underlying factor, so α is likely biased here -- report McDonald's ω "
+"instead, which does not require this assumption."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"A discriminant-validity check between pairs of factors: whether two "
+"subscales are empirically distinct rather than measuring the same thing "
+"twice. HTMT &gt; .85 signals a discriminant-validity concern — the classical "
+"Fornell-Larcker criterion and cross-loading inspection were shown to miss "
+"this in common research situations that HTMT reliably detects (Henseler, "
+"Ringle &amp; Sarstedt, 2015). Only computed when 2 or more factors are "
+"defined."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"A failed level does not mean the comparison must be abandoned, nor that full "
+"invariance should be forced regardless. The standard next step is to test "
+"partial invariance — freeing the constraint for specific items one at a time "
+"(via semTools::partialInvariance()/partialInvarianceCat()) to find which "
+"items break it, while keeping it for the rest — following a stepwise "
+"procedure that avoids testing stronger restrictions once a weaker one has "
+"already failed (Vandenberg &amp; Lance, 2000). A construct can still be "
+"meaningfully compared across groups under partial invariance, provided "
+"enough items remain invariant and the non-invariant ones are excluded from "
+"or flagged in that comparison."
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"A larger n is also the best protection against non-normality: with more "
+"subjects, F-based inference in the underlying ANOVA becomes more robust to "
+"mild departures, though bootstrap CIs remain the safer choice whenever a "
+"violation above is flagged (Koo &amp; Li, 2016; Bujang &amp; Baharum, 2017)."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"A measure can be highly reliable (consistent) yet not valid (not measuring "
+"the intended construct)"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"A second-order general factor needs at least 3 first-order factors to be "
+"statistically identified; only "
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"A single, unified agreement coefficient that works across nominal, ordinal, "
+"interval, and ratio data, with any number of raters, and handles missing "
+"data natively (Krippendorff, 2018) — useful when a design mixes measurement "
+"levels or has incomplete rater coverage."
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"A value of {val} ({lbl}) on the Landis &amp; Koch (1977) scale means that, "
+"corrected for chance, rater agreement is {verdict}"
+msgstr ""
+
+#: R/advancedreliability.b.R
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+msgid "Acceptable"
+msgstr ""
+
+#: advancedReliability/ui[0][0]/factors.addButton
+#: measurementInvariance/ui[0][1]/factors.addButton
+msgid "Add New Factor"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "adequate for a reasonably precise ICC estimate under common guidelines"
+msgstr ""
+
+#: advancedReliability/results/solutionDiagnosticsTable.columns.title
+msgid "Admissible"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+#: package/analyses/advancedReliability.title
+#: package/analyses/advancedReliability.menuTitle
+#: advancedReliability/options.title
+#: advancedReliability/ui.title
+#: advancedReliability/results.title
+#: bibliography/options/topic/sem.title
+#: bibliography/ui/topic/sem.title
+#: fiabilityLibrary/options/category/advanced.title
+#: fiabilityLibrary/ui/category/advanced.title
+#: fiabilityLibrary/results/advanced.title
+msgid "Advanced Reliability (SEM)"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Advanced Reliability (SEM) assumes a single population: its confirmatory "
+"model, and every coefficient derived from it, describes how the items "
+"function on average across everyone in the data. Before comparing group "
+"means, subscale scores, or regression coefficients involving a factor across "
+"levels of a grouping variable (sex, country, time point, condition, ...), "
+"the separate Measurement Invariance analysis checks whether that same "
+"measurement model actually holds across those groups — an observed group "
+"difference is only interpretable as a real difference on the construct if "
+"the items measure it the same way in each group. This is not just a software "
+"design choice: Raykov (2004) develops reliability and invariance evaluation "
+"jointly within the same latent-variable framework, and Jak &amp; Jorgensen "
+"(2017) formally show that under strong invariance the between-group residual "
+"variance vanishes and composite reliability reaches its ceiling (ω = 1) — "
+"the flip side being that, when invariance fails, a genuine between-group "
+"difference the model cannot attribute to the common factor is forced into "
+"that residual/error term instead, so a single pooled Omega/CR computed "
+"across non-invariant groups is not interpretable as either group's true "
+"reliability."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Agreement among rankers on the ordering of objects"
+msgstr ""
+
+#: interRater/results/mainTable.title
+msgid "Agreement Coefficients"
+msgstr ""
+
+#: advancedReliability/results/fitTable.columns.title
+msgid "AIC"
+msgstr ""
+
+#: fiabilityLibrary/options/category/all.title
+#: fiabilityLibrary/ui/category/all.title
+msgid "All Categories"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "All factor pairs are below .85 — no discriminant-validity concern detected."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "All factors reach AVE ≥ .50."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"All items pass the normality check -- α is not at a distributional "
+"disadvantage here."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"All items pass the normality check — Cronbach's α is not at a distributional "
+"disadvantage here."
+msgstr ""
+
+#: R/bibliography.b.R
+#: bibliography/options/topic/all.title
+#: bibliography/ui/topic/all.title
+msgid "All References"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Almost perfect"
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"An absolute-agreement ICC of {icc_a} means raters' raw scores can be used "
+"interchangeably (e.g. averaged into a single composite score) with "
+"reasonable confidence; the higher consistency-type ICC ({icc_c}) means their "
+"RANKING of cases is more trustworthy than their absolute scale."
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"An absolute-agreement ICC of {icc_a} means raters' raw scores cannot yet be "
+"used interchangeably (e.g. averaged into a single composite score) with "
+"reasonable confidence; the higher consistency-type ICC ({icc_c}) means their "
+"RANKING of cases is more trustworthy than their absolute scale."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"An alternative construct-reliability coefficient, H = "
+"&Sigma;(λ²/(1&minus;λ²)) / [1 + &Sigma;(λ²/(1&minus;λ²))], computed from the "
+"same standardized loadings as CR/ω (Hancock &amp; Mueller, 2001). H is "
+"monotonically related to each item's own loading in a way CR/ω is not, "
+"making it somewhat less sensitive to adding or removing a single weak "
+"indicator — reported alongside CR/ω, not as a replacement for it."
+msgstr ""
+
+#: package/analyses/internalConsistency.menuSubgroup
+#: package/analyses/interRater.menuSubgroup
+msgid "analysis"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "and Krippendorff's α ({v})"
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Application"
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Article-Level Citation Metrics"
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid "Assign a grouping variable to test invariance across."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"Assign at least 3 items to at least one factor to run the confirmatory "
+"analysis."
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"Assign at least 3 items to at least one factor to run the invariance "
+"sequence."
+msgstr ""
+
+#: measurementInvariance/ui[1].label
+msgid ""
+"Assign items to at least one factor above (3+ items per factor), and a "
+"grouping variable to test invariance across. Tests whether the same "
+"measurement model holds across groups (e.g. sex, country, time point) before "
+"comparing group means or scores on it."
+msgstr ""
+
+#: advancedReliability/ui[1].label
+msgid ""
+"Assign items to at least one factor above (3+ items per factor). A "
+"second-order general factor needs at least 3 first-order factors to be "
+"identified. Factor names are used as-is in tables and text."
+msgstr ""
+
+#: internalConsistency/results/reliabilityAssumptionsTable.columns.title
+#: interRater/results/iccAssumptionsTable.columns.title
+msgid "Assumption"
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"At least one level is supported by only one criterion (LRT or ΔCFI, not "
+"both) -- treat comparisons requiring that level with caution and consider "
+"investigating partial invariance before relying on them."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"At least one model above shows a symptom of an inadmissible or borderline "
+"solution. Do not interpret CR, AVE, H, HTMT or omega hierarchical from that "
+"model until this is resolved -- common causes are too few cases for the "
+"number of parameters, near-perfectly correlated items, or a factor defined "
+"by too few (or too similar) indicators."
+msgstr ""
+
+#: advancedReliability/options/estimator/auto.title
+#: measurementInvariance/options/estimator/auto.title
+msgid "Auto (ML, or WLSMV if items are ordinal)"
+msgstr ""
+
+#: advancedReliability/options/itemType/auto.title
+#: internalConsistency/options/measureLevel/auto.title
+#: interRater/options/dataType/auto.title
+#: measurementInvariance/options/itemType/auto.title
+msgid "Auto-detect"
+msgstr ""
+
+#: internalConsistency/ui[1][1].label
+msgid ""
+"Auto-detect inspects each item's unique values. Override when needed (e.g., "
+"0/1 coded Likert vs. true dichotomous)."
+msgstr ""
+
+#: advancedReliability/results/reliabilityTable.columns.title
+msgid "AVE"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "AVE < .50"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"Bars compare CFI and TLI (both 0-1, higher is better) between the "
+"correlated-factors and second-order models; the dashed line marks the .95 "
+"conventional good-fit threshold (Hu &amp; Bentler, 1999). Visibly shorter "
+"bars for the second-order model are the same information as a significant "
+"likelihood-ratio test above, shown graphically."
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid "Baseline"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Because the ICC is a variance-partition of a subject × rater ANOVA (Shrout "
+"&amp; Fleiss, 1979), it — unlike Kappa, Gwet's AC1/AC2, Krippendorff's α, or "
+"Kendall's W, all of which are rank- or category-based and distribution-free "
+"— inherits that model's usual assumptions: normally-distributed residuals, "
+"homogeneous error variance across raters (homoscedasticity), and an "
+"additive/linear subject × rater structure. FiabilityLab's Inter-Rater "
+"Agreement module tests all three automatically whenever ICC is computed: "
+"Shapiro-Wilk for normality, Levene's test (Levene, 1960) for "
+"homoscedasticity, and Tukey's one-degree-of-freedom test for non-additivity "
+"(Tukey, 1949) for linearity — the last of these is the most consequential "
+"violation, since a curvilinear rater relationship makes the ICC "
+"systematically understate true agreement."
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"Before comparing group means or scores, investigate partial invariance to "
+"find which specific items break the restriction, rather than abandoning the "
+"comparison or forcing full invariance."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Before trusting a fixed confirmatory structure, parallel analysis (Horn, "
+"1965) asks how many factors the items suggest on their own: it compares the "
+"items' actual eigenvalues against the eigenvalues expected from random data "
+"of the same size, and suggests a factor count wherever the real eigenvalue "
+"still exceeds its random counterpart. This is exploratory and does not know "
+"about the structure assigned in the analysis — a mismatch with the specified "
+"number of factors is worth investigating, not automatic proof the specified "
+"structure is wrong: theory-driven confirmatory structures legitimately group "
+"items in ways a purely data-driven exploratory method may not recover."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Best achievable lower-bound estimate; no distributional assumptions"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Biased (usually deflated) when loadings are unequal or the scale is "
+"multidimensional (Cronbach, 1951)"
+msgstr ""
+
+#: package/analyses/bibliography.title
+#: package/analyses/bibliography.menuTitle
+#: bibliography/options.title
+#: bibliography/ui.title
+#: bibliography/results.title
+#: bibliography/results/intro.title
+msgid "Bibliography"
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Bibliometric Profile and Impact of the Literature Used"
+msgstr ""
+
+#: R/bibliography.b.R
+#: bibliography/results/biblioSummary.title
+msgid "Bibliometric Summary"
+msgstr ""
+
+#: advancedReliability/results/fitTable.columns.title
+msgid "BIC"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Binary (0/1) items; mathematically equivalent to KR-20 for this case"
+msgstr ""
+
+#: interRater/results/mainTable.columns.title
+msgid "Boot Replicates Used"
+msgstr ""
+
+#: internalConsistency/results/bootstrapTable.columns.title
+msgid "Boot SE"
+msgstr ""
+
+#: internalConsistency/ui[6].label
+#: interRater/ui[8].label
+msgid "Bootstrap Confidence Intervals"
+msgstr ""
+
+#: internalConsistency/options/bootstrapCi.title
+#: interRater/options/bootstrapCi.title
+msgid "Bootstrap confidence intervals (95%)"
+msgstr ""
+
+#: internalConsistency/results/bootstrapTable.title
+msgid "Bootstrap Confidence Intervals (95%)"
+msgstr ""
+
+#: internalConsistency/options/bootstrapSamples.title
+#: interRater/options/bootstrapSamples.title
+msgid "Bootstrap samples"
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"borderline — adequate for a preliminary estimate, but more subjects would "
+"tighten the CI for publication"
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"Both ICC forms agree closely here, so there is no evidence that rater "
+"interchangeability is a concern."
+msgstr ""
+
+#: fiabilityLibrary/ui/category.label
+msgid "Category"
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"Category “{cat}” accounts for {pct}% of every rating issued across all {k} "
+"raters — a markedly uneven distribution. This is exactly the condition under "
+"which Kappa becomes conservative: when nearly every case falls in one "
+"category, the “chance agreement” Kappa subtracts is already high, leaving "
+"little room for Kappa to register genuine agreement even when raters are "
+"truly consistent (Gwet, 2014). AC1/AC2 and Krippendorff's α are not "
+"penalized this way."
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Category Prevalence"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"CFA fit cutoffs follow Hu &amp; Bentler (1999); HTMT threshold follows "
+"Henseler, Ringle &amp; Sarstedt (2015); modification-index caution follows "
+"MacCallum, Roznowski &amp; Necowitz (1992); omega hierarchical follows "
+"McDonald (1999)."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "CFA likelihood-ratio test"
+msgstr ""
+
+#: advancedReliability/results/fitTable.columns.title
+#: measurementInvariance/results/invarianceTable.columns.title
+msgid "CFI"
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"CFI (0-1, higher is better) at each level of the invariance sequence; a "
+"level's bar noticeably shorter than the one before it is the same signal as "
+"a significant likelihood-ratio test or a large ΔCFI in the table above, "
+"shown graphically."
+msgstr ""
+
+#: advancedReliability/results/fitTable.columns.title
+msgid "CFI (robust)"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"CFI and TLI (both 0-1) reward explaining more covariance than a null "
+"(no-correlation) model; RMSEA and SRMR (both 0-1, lower is better) penalize "
+"model complexity and average residual correlation, respectively. Hu &amp; "
+"Bentler (1999): CFI/TLI ≥ .95, RMSEA ≤ .06, SRMR ≤ .08 for Good; CFI/TLI ≥ "
+".90, RMSEA ≤ .08, SRMR ≤ .10 for Acceptable. These are conventional "
+"descriptive benchmarks from simulation studies under specific conditions, "
+"not universal pass/fail laws -- treat the Good/Acceptable/Poor verdict as a "
+"starting point for judgment, not a substitute for it, and weigh it alongside "
+"the loadings, residuals, and theoretical plausibility of the model. When the "
+"estimator is robust (MLR or WLSMV), the robust CFI/TLI/RMSEA columns — not "
+"the plain ones — are what these cutoffs and the Fit verdict use."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Chance-corrected agreement for categorical (nominal) ratings: Cohen's Kappa "
+"for exactly 2 raters (Cohen, 1960), Fleiss' Kappa for more than 2 (Fleiss, "
+"1971). Both can be paradoxically low even when raw agreement is high, "
+"whenever one category is much more common than the others — the “kappa "
+"paradox” (Gwet, 2014). FiabilityLab reports Kappa values against the Landis "
+"&amp; Koch (1977) interpretation bands "
+"(Poor/Slight/Fair/Moderate/Substantial/Almost perfect), the field-standard "
+"scale for this coefficient."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Chance-corrected agreement, 2 raters, categorical"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Chance-corrected agreement, more than 2 raters"
+msgstr ""
+
+#: internalConsistency/ui[5]/checkReliabilityAssumptions.label
+msgid "Check Alpha's assumptions (tau-equivalence, unidimensionality, normality)"
+msgstr ""
+
+#: internalConsistency/ui[4]/checkDimensionality.label
+msgid "Check dimensionality via parallel analysis"
+msgstr ""
+
+#: interRater/ui/checkIccAssumptions.label
+msgid "Check ICC assumptions (normality, homoscedasticity, linearity)"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Choosing the wrong of the 6 ICC forms changes the conclusion (Shrout &amp; "
+"Fleiss, 1979)"
+msgstr ""
+
+#: internalConsistency/results/bootstrapTable.columns.title
+#: interRater/results/mainTable.columns.title
+msgid "CI Lower"
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"CI omitted: bootstrapping Krippendorff's α on near-continuous data is too "
+"costly to run by default."
+msgstr ""
+
+#: internalConsistency/results/bootstrapTable.columns.title
+#: interRater/results/mainTable.columns.title
+msgid "CI Upper"
+msgstr ""
+
+#: R/bibliography.b.R
+#: bibliography/results/citationsTable.title
+msgid "Citations"
+msgstr ""
+
+#: R/bibliography.b.R
+#: R/fiabilitylibrary.b.R
+#: bibliography/options/topic/ctt.title
+#: bibliography/ui/topic/ctt.title
+msgid "Classical Test Theory"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Classical Test Theory (CTT)"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+#: internalConsistency/results/mainTable.columns.title
+#: internalConsistency/results/bootstrapTable.columns.title
+#: interRater/results/mainTable.columns.title
+msgid "Coefficient"
+msgstr ""
+
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+#: internalConsistency/results/plotComparison.title
+#: interRater/results/plotComparison.title
+msgid "Coefficient Comparison"
+msgstr ""
+
+#: internalConsistency/results/discordanceNote.title
+#: interRater/results/discordanceNote.title
+msgid "Coefficient Discordance"
+msgstr ""
+
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+msgid "Coefficients disagree"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+#: interRater/ui/kappa.label
+msgid "Cohen's / Fleiss' Kappa"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+#: R/interrater.b.R
+msgid "Cohen's Kappa"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+#: fiabilityLibrary/options/category/errors.title
+#: fiabilityLibrary/ui/category/errors.title
+#: fiabilityLibrary/results/errors.title
+msgid "Common Errors"
+msgstr ""
+
+#: advancedReliability/results/modelComparisonTable.columns.title
+msgid "Comparison"
+msgstr ""
+
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+msgid "Complete cases"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Composite Reliability (CR) / ω"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "Composite Reliability / ω"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Composite Reliability, AVE, and H are only as trustworthy as the "
+"confirmatory model they come from. FiabilityLab reports χ², CFI, TLI, RMSEA "
+"(with 90% CI), and SRMR for the fitted model, following Hu &amp; Bentler's "
+"(1999) cutoffs (CFI/TLI ≥ .95, RMSEA ≤ .06, SRMR ≤ .08 for good fit) — a "
+"model with poor fit should be revised (or its structure reconsidered) before "
+"its reliability numbers are reported."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Compute reliability per subscale in addition to the overall estimate."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Compute α/ω per subscale, or report ω/ωₕ from a fitted multi-factor model "
+"(Cronbach, 1951; McDonald, 1999)"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "Concern"
+msgstr ""
+
+#: internalConsistency/results/mainTable.columns.title
+msgid "Conditions"
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid "Configural"
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"Configural invariance is the highest level fully supported: the factor "
+"structure itself is comparable, but no numeric comparison (correlations, "
+"regression coefficients, group means) across these groups is yet justified "
+"-- this includes composite reliability (Omega/CR, Jak &amp; Jorgensen, "
+"2017): since metric invariance is not confirmed, the loadings Omega/CR is "
+"built from may genuinely differ by group, so a single pooled Omega/CR risks "
+"averaging over a real difference rather than describing either group "
+"correctly. Fitting one pooled model when loadings actually differ by group "
+"also forces that between-group difference into the model's error/residual "
+"variance, inflating it and deflating Omega/CR in a way that looks like a "
+"measurement problem but is really a violated-invariance problem. Suspect "
+"that reliability itself may differ by group here, and run Advanced "
+"Reliability separately within each group (rather than once on the pooled "
+"sample) to check."
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"Configural invariance means the same items load on the same factors in every "
+"group, with everything else free -- the minimum requirement for the "
+"construct to even be comparable across groups. Metric (weak) invariance -- "
+"equal loadings -- is required before comparing regression/correlation "
+"coefficients involving the factor across groups, and this includes composite "
+"reliability (Omega/CR, from Advanced Reliability): both are computed from "
+"the loadings, so a difference in Omega/CR between groups is not "
+"interpretable as a real reliability difference unless the loadings it is "
+"built from are already confirmed equal here. Scalar (strong) invariance -- "
+"also equal intercepts/thresholds -- is required before comparing group means "
+"or observed scores; without it, an observed mean difference may reflect item "
+"functioning differences, not a real difference on the construct. Strict "
+"invariance -- also equal residual variances -- is a stronger, less commonly "
+"required condition."
+msgstr ""
+
+#: advancedReliability/results/fitTable.title
+msgid "Confirmatory Factor Model Fit"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Confusing reliability with validity"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"Consider whether the flagged factor pair(s) are conceptually distinct "
+"constructs at all before merging them or revising cross-loading items."
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"Consistency and absolute-agreement ICC agree closely — no evidence of "
+"systematic rater bias."
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"Consistency-type ICC ({icc_c}) is notably higher than "
+"absolute-agreement-type ICC ({icc_a}). This pattern indicates at least one "
+"rater has a systematic mean bias (shifted scores) even though raters rank "
+"cases similarly (Shrout &amp; Fleiss, 1979). Report the absolute-agreement "
+"form if raters' raw scores are meant to be used interchangeably."
+msgstr ""
+
+#: R/interrater.b.R
+#: advancedReliability/options/itemType/continuous.title
+#: interRater/options/dataType/continuous.title
+#: measurementInvariance/options/itemType/continuous.title
+msgid "Continuous"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Continuous items; highly sensitive to how items are split"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Continuous/ordinal"
+msgstr ""
+
+#: advancedReliability/results/solutionDiagnosticsTable.columns.title
+msgid "Converged"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"Convergence only means the optimizer stopped at some solution; it does not "
+"mean that solution is admissible. \"Admissible\" (from lavaan's own "
+"post-estimation check) means no negative residual variances, no "
+"non-positive-definite covariance matrix, and no other Heywood-case symptom "
+"-- a prerequisite for trusting CR, AVE, H, HTMT or omega hierarchical from "
+"that model. Negative residual variances and standardized loadings at or "
+"beyond 1 are two common, visible symptoms of an inadmissible solution; the "
+"largest latent correlation flags whether two factors may not be empirically "
+"distinct. For ordinal items, an item pair with an empty cell in its "
+"contingency table (some combination of categories that no one in the sample "
+"chose) makes that pair's underlying polychoric/tetrachoric correlation "
+"unstable or inestimable, which can silently degrade everything downstream "
+"even when the model still converges."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Convergence only means the optimizer stopped at some solution; it does not "
+"mean that solution is usable. FiabilityLab additionally checks lavaan's own "
+"post-estimation check for Heywood cases and non-positive-definite matrices, "
+"counts negative residual variances and standardized loadings at or beyond 1, "
+"reports the largest latent factor correlation (near/at 1 signals two factors "
+"may not be empirically distinct), and — for ordinal items — flags item pairs "
+"with an empty cell in their contingency table, which makes that pair's "
+"polychoric/tetrachoric correlation unstable or inestimable. None of CR, AVE, "
+"H, HTMT, or omega hierarchical should be interpreted from a model that fails "
+"this check."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Core idea"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Corrected item-total r"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "Correlated factors"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Correlates two halves of the test, then corrects that correlation upward "
+"with the Spearman-Brown prophecy formula to estimate the reliability of the "
+"full-length test. Highly sensitive to which items land in which half, which "
+"is why FiabilityLab reports the mean across many random splits rather than a "
+"single one."
+msgstr ""
+
+#: advancedReliability/results/reliabilityTable.columns.title
+msgid "CR / ω"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"CR/ω (Composite Reliability, Fornell &amp; Larcker, 1981; under this model — "
+"one common factor per subscale, no correlated residuals — numerically the "
+"same as McDonald's, 1999, total ω) is the proportion of each factor's own "
+"composite-score variance attributable to its common factor, from this "
+"model's standardized loadings — unlike Cronbach's α, it does not assume "
+"equal (tau-equivalent) loadings. AVE (Fornell &amp; Larcker, 1981) is the "
+"average squared loading — convergent validity, not reliability; ≥ .50 is the "
+"field-standard minimum. H (Hancock &amp; Mueller, 2001) is an alternative "
+"construct-reliability index computed from the same loadings, less sensitive "
+"than CR/ω to a single weak indicator."
+msgstr ""
+
+#: internalConsistency/ui[2][0]/alpha.label
+msgid "Cronbach's Alpha"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+#: R/internalconsistency.b.R
+msgid "Cronbach's α"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"Cronbach's α ({alpha}) and McDonald's ω ({omega}) differ by more than .04. α "
+"assumes equal item loadings (τ-equivalence); "
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"Cronbach's α and McDonald's ω agree closely — the τ-equivalence assumption "
+"behind α looks reasonable here."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"Cronbach's α is the most commonly reported reliability coefficient and also "
+"the most assumption-laden: it equals the true reliability only when items "
+"are tau-equivalent (equal true-score loadings on a single common factor) "
+"(Cronbach, 1951; Zumbo, Gadermann &amp; Zeisser, 2007). Unlike McDonald's ω, "
+"GLB, or the Guttman λ family above (none of which require tau-equivalence), "
+"α is biased -- usually downward -- whenever this assumption fails."
+msgstr ""
+
+#: bibliography/results/notes.title
+msgid "Curation Notes"
+msgstr ""
+
+#: internalConsistency/results/autoDetectNote.title
+#: interRater/results/autoDetectNote.title
+msgid "Data Summary"
+msgstr ""
+
+#: interRater/ui/dataType.label
+msgid "Data Type"
+msgstr ""
+
+#: internalConsistency/results/normalityTable.columns.title
+msgid "Decision"
+msgstr ""
+
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+msgid "Detected level"
+msgstr ""
+
+#: advancedReliability/results/fitTable.columns.title
+#: internalConsistency/results/reliabilityAssumptionsTable.columns.title
+#: interRater/results/iccAssumptionsTable.columns.title
+#: measurementInvariance/results/invarianceTable.columns.title
+msgid "df"
+msgstr ""
+
+#: advancedReliability/ui[5].label
+#: interRater/results/plotDiagnostic.title
+#: measurementInvariance/ui[3].label
+msgid "Diagnostic Plot"
+msgstr ""
+
+#: internalConsistency/ui[7].label
+msgid "Diagnostic Plots"
+msgstr ""
+
+#: internalConsistency/ui[2][1].label
+msgid "Dichotomous (0/1 items)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+#: internalConsistency/options/measureLevel/dichotomous.title
+msgid "Dichotomous (0/1)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Dichotomous (0/1) items only; equivalent to α for binary data"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Dichotomous items; assumes equal item difficulty (conservative estimate)"
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid "Did not converge"
+msgstr ""
+
+#: internalConsistency/ui[4].label
+msgid "Dimensionality"
+msgstr ""
+
+#: internalConsistency/results/dimensionalityNote.title
+msgid "Dimensionality Check"
+msgstr ""
+
+#: advancedReliability/results/htmtNote.title
+msgid "Discriminant Validity — What It Means"
+msgstr ""
+
+#: advancedReliability/results/htmtTable.title
+msgid "Discriminant Validity (HTMT)"
+msgstr ""
+
+#: advancedReliability/ui[0][0]/factors.template/blockList.ghostText
+#: measurementInvariance/ui[0][1]/factors.template/blockList.ghostText
+msgid "drag variables here"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"Each point is one factor's CR/ω on the 0-1 reliability scale — the same "
+"forest-plot convention used elsewhere in FiabilityLab, applied here to "
+"compare subscales at a glance instead of coefficients."
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"Each row after Configural is tested against the row just before it (not "
+"against Configural directly), on two criteria: a likelihood-ratio test (LRT; "
+"significant at p &lt; .05 means the added restriction costs a real amount of "
+"fit) and the change in CFI (ΔCFI &lt; -.01 is Cheung &amp; Rensvold's, 2002, "
+"sample-size-robust threshold for the same question). The LRT alone gets "
+"hypersensitive to trivial misfit in large samples -- part of why ΔCFI is "
+"reported alongside it -- but the two do not always agree: this report shows "
+"\"Supported by both criteria\" only when they do, and names which single "
+"criterion supports the restriction when they disagree, rather than treating "
+"either criterion passing as sufficient on its own."
+msgstr ""
+
+#: R/advancedreliability.b.R
+#: R/internalconsistency.b.R
+msgid "Eigenvalue"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"Eigenvalues from the actual items (observed) against the average eigenvalues "
+"from simulated random data of the same size and number of variables; the "
+"suggested number of factors is where the observed line still sits above the "
+"simulated one."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Error"
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"error variance differs across raters (Levene p &lt; .05) — at least one "
+"rater is far more (or less) internally consistent than the others across the "
+"score range, which biases the ICC's standard error and can invalidate its "
+"CI. Check the Rater Mean Score diagnostic plot above for which rater stands "
+"out."
+msgstr ""
+
+#: internalConsistency/results/mainTable.columns.title
+#: internalConsistency/results/bootstrapTable.columns.title
+msgid "Estimate"
+msgstr ""
+
+#: advancedReliability/ui[3].label
+#: measurementInvariance/ui[2].label
+msgid "Estimation"
+msgstr ""
+
+#: advancedReliability/options/estimator.title
+#: advancedReliability/ui[3]/estimator.label
+#: measurementInvariance/options/estimator.title
+#: measurementInvariance/ui[2]/estimator.label
+msgid "Estimator"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Estimator and Missing Data"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Every coefficient below is anchored to the source that introduced or "
+"formalized it. Full bibliographic details for every citation live in the "
+"Bibliography module."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"Every number downstream (CR, AVE, H, HTMT) inherits this model, so treat "
+"them with corresponding caution — see the Modification Indices below."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"Every table and plot below has its own note explaining what it shows and how "
+"to read this run's specific numbers — this panel only ties them together."
+msgstr ""
+
+#: R/advancedreliability.b.R
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+msgid "Excellent"
+msgstr ""
+
+#: advancedReliability/results/modificationIndicesTable.columns.title
+msgid "Expected Change"
+msgstr ""
+
+#: advancedReliability/ui[4].label
+msgid "Exploratory Dimensionality"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Exploratory Dimensionality (Parallel Analysis)"
+msgstr ""
+
+#: advancedReliability/results/parallelAnalysisTable.title
+msgid "Exploratory Dimensionality: Parallel Analysis"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Extends CTT by decomposing measurement error into several simultaneous "
+"sources (facets) — raters, occasions, items, forms — instead of treating all "
+"error as one undifferentiated term. A G-study estimates the variance from "
+"each facet; a D-study then projects reliability for a specific planned "
+"measurement design (Brennan, 2001; Shavelson &amp; Webb, 1991). Not yet "
+"implemented as a FiabilityLab module (see the roadmap in ARCHITECTURE.md)."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Extends CTT to decompose error into multiple simultaneous facets (raters, "
+"occasions, items)"
+msgstr ""
+
+#: R/advancedreliability.b.R
+#: R/internalconsistency.b.R
+#: R/measurementinvariance.b.R
+#: advancedReliability/results/reliabilityTable.columns.title
+msgid "Factor"
+msgstr ""
+
+#: advancedReliability/options/factors.default[0].label
+#: measurementInvariance/options/factors.default[0].label
+msgid "Factor 1"
+msgstr ""
+
+#: advancedReliability/results/htmtTable.columns.title
+msgid "Factor A"
+msgstr ""
+
+#: advancedReliability/results/htmtTable.columns.title
+msgid "Factor B"
+msgstr ""
+
+#: internalConsistency/results/itemTable.columns.title
+msgid "Factor load."
+msgstr ""
+
+#: advancedReliability/options/factors.title
+#: advancedReliability/ui[0][0].label
+#: measurementInvariance/options/factors.title
+#: measurementInvariance/ui[0][1].label
+msgid "Factors"
+msgstr ""
+
+#: advancedReliability/results/parallelAnalysisTable.columns.title
+msgid "Factors Specified in This Model"
+msgstr ""
+
+#: advancedReliability/results/parallelAnalysisTable.columns.title
+msgid "Factors Suggested"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Fair"
+msgstr ""
+
+#: package.title
+msgid "Fiability Lab"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+#: package/analyses/fiabilityLibrary.title
+#: package/analyses/fiabilityLibrary.menuTitle
+#: fiabilityLibrary/options.title
+#: fiabilityLibrary/ui.title
+#: fiabilityLibrary/results.title
+msgid "Fiability Library"
+msgstr ""
+
+#: package/analyses/fiabilityLibrary.menuGroup
+#: package/analyses/bibliography.menuGroup
+#: package/analyses/internalConsistency.menuGroup
+#: package/analyses/interRater.menuGroup
+#: package/analyses/advancedReliability.menuGroup
+#: package/analyses/measurementInvariance.menuGroup
+#: advancedReliability/options.menuGroup
+#: bibliography/options.menuGroup
+#: fiabilityLibrary/options.menuGroup
+#: internalConsistency/options.menuGroup
+#: interRater/options.menuGroup
+#: measurementInvariance/options.menuGroup
+msgid "FiabilityLab"
+msgstr ""
+
+#: package.description
+msgid ""
+"FiabilityLab is a pedagogical jamovi module for evaluating reliability, "
+"internal consistency, inter-rater agreement, confirmatory-factor-based (SEM) "
+"reliability, and measurement invariance across groups. It integrates a "
+"Library and Bibliography system to teach the theoretical foundations and "
+"assumptions behind each statistic."
+msgstr ""
+
+#: package/datasets/FiabilityLabTestDataset(n=450).name
+msgid "FiabilityLab Test Dataset (n=450)"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"FiabilityLab's Standardized Loadings plot flags two different problems, not "
+"one: a low-positive loading (below .50, a common though not universal "
+"minimum) means the item is a weak indicator of its factor and is a candidate "
+"for revision or removal. A <b>negative</b> loading is a different problem "
+"entirely — it almost always means the item needs reverse-scoring (its raw "
+"values run opposite the rest of the factor, typically because it is worded "
+"in the opposite direction from the other items) rather than that it is a bad "
+"item; recode it and re-run the analysis before drawing any conclusion about "
+"its quality."
+msgstr ""
+
+#: advancedReliability/options/missingData/fiml.title
+msgid "FIML"
+msgstr ""
+
+#: advancedReliability/results/fitTable.columns.title
+msgid "Fit"
+msgstr ""
+
+#: advancedReliability/ui/secondOrder.label
+msgid "Fit a second-order (hierarchical) general factor"
+msgstr ""
+
+#: R/measurementinvariance.b.R
+#: measurementInvariance/results/plotInvariance.title
+msgid "Fit Across Invariance Levels"
+msgstr ""
+
+#: measurementInvariance/results/plotInvarianceNote.title
+msgid "Fit Across Invariance Levels — What It Means"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "Fits comparably"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+#: R/interrater.b.R
+msgid "Fleiss' Kappa"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Fleiss' Kappa (unweighted)"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"For continuous or ordinal ratings. There are six standard forms, differing "
+"in whether raters are treated as a fixed or random sample, whether "
+"reliability is for a single rating or an average of several, and — the "
+"choice with the biggest practical consequence — whether it measures pure "
+"consistency (rank agreement) or absolute agreement (identical values) "
+"(Shrout &amp; Fleiss, 1979). A rater with a systematic mean bias can score "
+"high on consistency-type ICC and low on absolute-agreement-type ICC for the "
+"exact same data."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"For each Modification Indices suggestion, ask first whether it makes "
+"theoretical sense before adding it — purely statistical respecification may "
+"not replicate (MacCallum, Roznowski &amp; Necowitz, 1992)."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"For each row: a \"Possible cross-loading\" (=~) suggests an item may reflect "
+"more than one factor -- only add it if the item's content plausibly does so "
+"conceptually. A \"Possible correlated residual\" (~~) between two items "
+"suggests they share variance beyond their common factor -- often explainable "
+"by shared wording or format (e.g. two reverse-worded items, or two items "
+"sharing a stem), not a sign either item is bad. Removing an item is only one "
+"of several possible responses to poor fit, not the default one."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"For the flagged factor(s), report and interpret that subscale's own score "
+"rather than folding it into a total/general-factor score."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Four increasingly restrictive multi-group confirmatory models are fit and "
+"compared in sequence, each against the model just before it: "
+"<b>Configural</b> — the same items load on the same factors in every group, "
+"with everything else free; the minimum requirement for the construct to even "
+"be comparable. <b>Metric (weak)</b> — factor loadings are additionally "
+"constrained equal across groups; required before comparing correlations or "
+"regression coefficients involving the factor across groups. <b>Scalar "
+"(strong)</b> — item intercepts (or thresholds, for ordinal items) are "
+"additionally constrained equal; required before comparing group means or "
+"observed scores — without it, an observed mean difference may reflect item "
+"functioning differences rather than a real difference on the construct. "
+"<b>Strict</b> — item residual variances are additionally constrained equal; "
+"a stronger, less commonly required condition."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Framework"
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid "Full invariance is supported by both criteria through every level tested."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Full-test reliability estimated from two-half correlation"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "General-purpose default; robust to unequal loadings"
+msgstr ""
+
+#: R/bibliography.b.R
+#: R/fiabilitylibrary.b.R
+#: bibliography/options/topic/gtheory.title
+#: bibliography/ui/topic/gtheory.title
+msgid "Generalizability Theory"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "GLB (Greatest Lower Bound)"
+msgstr ""
+
+#: R/advancedreliability.b.R
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+msgid "Good"
+msgstr ""
+
+#: internalConsistency/ui[2][0]/glb.label
+msgid "Greatest Lower Bound (GLB)"
+msgstr ""
+
+#: measurementInvariance/results/groupSummaryTable.columns.title
+msgid "Group"
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"Group comparisons on this construct's means/scores are supported by this "
+"invariance sequence."
+msgstr ""
+
+#: measurementInvariance/results/groupSummaryTable.title
+msgid "Group Sizes"
+msgstr ""
+
+#: measurementInvariance/options/group.title
+msgid "Grouping variable"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Guttman λ2 / λ6"
+msgstr ""
+
+#: internalConsistency/ui[2][0]/guttman.label
+msgid "Guttman's Lambda (λ2–λ6)"
+msgstr ""
+
+#: interRater/ui/gwet.label
+msgid "Gwet's AC1 / AC2"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Gwet's coefficient ({v}), "
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Hancock &amp; Mueller's H"
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"Here the gap between the two ICC forms ({gap}) is large enough to matter — "
+"see the discordance diagnosis above the tables."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "Heywood case"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"High raw agreement with low Kappa signals the prevalence paradox, not poor "
+"agreement"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Highly sensitive to which items land in which half"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Homoscedasticity across raters"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Homoscedasticity violated"
+msgstr ""
+
+#: advancedReliability/results/htmtTable.columns.title
+msgid "HTMT"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"HTMT (Henseler, Ringle &amp; Sarstedt, 2015) is the ratio of average "
+"between-factor correlations to average within-factor correlations — a "
+"discriminant-validity check for whether two subscales are empirically "
+"distinct rather than measuring the same thing twice. The classical "
+"Fornell-Larcker criterion and cross-loading inspection were shown to miss "
+"this in common research situations that HTMT reliably detects; &gt; .85 "
+"signals a concern."
+msgstr ""
+
+#: R/interrater.b.R
+msgid "ICC (absolute agreement)"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "ICC (consistency)"
+msgstr ""
+
+#: interRater/results/iccAssumptionsNote.title
+msgid "ICC Assumptions — What It Means"
+msgstr ""
+
+#: interRater/results/iccAssumptionsTable.title
+msgid "ICC Assumptions Check"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "ICC forms disagree"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "ICC's Assumptions"
+msgstr ""
+
+#: internalConsistency/ui[4][1].label
+msgid ""
+"If multiple dimensions are detected, consider computing Alpha/Omega per "
+"subscale and reporting Omega Hierarchical overall."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "if removed"
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"In this case the gap between Kappa and Gwet's coefficient ({gap}) is large "
+"enough that the choice of formula changes the headline conclusion — see the "
+"discordance diagnosis above the tables."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"Inspect the content, scoring direction, and theoretical role of: {items} -- "
+"only revise or remove after that substantive review."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+#: package/analyses/interRater.title
+#: package/analyses/interRater.menuTitle
+#: fiabilityLibrary/options/category/interRater.title
+#: fiabilityLibrary/ui/category/interRater.title
+#: fiabilityLibrary/results/interRater.title
+#: interRater/options.title
+#: interRater/ui.title
+#: interRater/results.title
+msgid "Inter-Rater Agreement"
+msgstr ""
+
+#: R/bibliography.b.R
+#: bibliography/options/topic/irr.title
+#: bibliography/ui/topic/irr.title
+msgid "Inter-Rater Reliability"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+#: package/analyses/internalConsistency.title
+#: package/analyses/internalConsistency.menuTitle
+#: fiabilityLibrary/options/category/internalConsistency.title
+#: fiabilityLibrary/ui/category/internalConsistency.title
+#: fiabilityLibrary/results/internalConsistency.title
+#: internalConsistency/options.title
+#: internalConsistency/ui.title
+#: internalConsistency/results.title
+msgid "Internal Consistency"
+msgstr ""
+
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+#: advancedReliability/results/reliabilityTable.columns.title
+#: internalConsistency/results/mainTable.columns.title
+#: interRater/results/mainTable.columns.title
+msgid "Interpretation"
+msgstr ""
+
+#: advancedReliability/results/interpretation.title
+#: internalConsistency/results/interpretation.title
+#: interRater/results/interpretation.title
+#: measurementInvariance/results/interpretation.title
+msgid "Interpretation & Recommendations"
+msgstr ""
+
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+msgid "Interpretation Benchmarks"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Interpreting Kappa without checking prevalence"
+msgstr ""
+
+#: interRater/ui/icc.label
+msgid "Intraclass Correlation (ICC)"
+msgstr ""
+
+#: fiabilityLibrary/results/intro.title
+msgid "Introduction"
+msgstr ""
+
+#: internalConsistency/results/normalityTable.columns.title
+#: internalConsistency/results/itemTable.columns.title
+msgid "Item"
+msgstr ""
+
+#: internalConsistency/ui[3].label
+#: internalConsistency/results/itemTable.title
+msgid "Item Analysis"
+msgstr ""
+
+#: internalConsistency/ui[3]/itemAnalysis.label
+msgid "Item analysis table (mean, SD, r item-total, α if deleted)"
+msgstr ""
+
+#: internalConsistency/results/normalityTable.title
+msgid "Item Normality (Shapiro-Wilk)"
+msgstr ""
+
+#: internalConsistency/ui[3]/normality.label
+msgid "Item normality tests (Shapiro-Wilk, skewness, kurtosis)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Item normality violated"
+msgstr ""
+
+#: advancedReliability/results/solutionDiagnosticsTable.columns.title
+msgid "Item Pairs with Empty Cells"
+msgstr ""
+
+#: R/bibliography.b.R
+#: R/fiabilitylibrary.b.R
+#: bibliography/options/topic/irt.title
+#: bibliography/ui/topic/irt.title
+msgid "Item Response Theory"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Item Response Theory (IRT)"
+msgstr ""
+
+#: internalConsistency/ui[7]/plotItemDist.label
+msgid "Item score distributions"
+msgstr ""
+
+#: internalConsistency/results/plotItemDist.title
+msgid "Item Score Distributions"
+msgstr ""
+
+#: advancedReliability/options/itemType.title
+#: advancedReliability/ui[3]/itemType.label
+#: measurementInvariance/options/itemType.title
+#: measurementInvariance/ui[2]/itemType.label
+msgid "Item type"
+msgstr ""
+
+#: internalConsistency/ui[7]/plotItemTotal.label
+msgid "Item-total correlation chart"
+msgstr ""
+
+#: internalConsistency/results/plotItemTotal.title
+msgid "Item–Total Correlations"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Item–Total Correlations (threshold = .30)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+#: advancedReliability/results/reliabilityTable.columns.title
+msgid "Items"
+msgstr ""
+
+#: R/advancedreliability.b.R
+#: R/measurementinvariance.b.R
+msgid "Items were treated as continuous, fit with ML."
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"Items were treated as continuous, fit with MLR (robust to non-normality). "
+"χ², CFI and RMSEA below are the scaled/robust versions MLR recommends, not "
+"the plain ones."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"Items were treated as continuous, fit with MLR (robust to non-normality). "
+"χ², CFI, TLI and RMSEA below are the scaled/robust versions MLR recommends, "
+"not the plain ones."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"Items were treated as ordinal (WLSMV estimator on polychoric/tetrachoric "
+"correlations), which requires complete cases. χ², CFI, TLI and RMSEA below "
+"are the scaled/robust versions WLSMV recommends, not the plain ones."
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"Items were treated as ordinal (WLSMV estimator on polychoric/tetrachoric "
+"correlations). χ², CFI and RMSEA below are the scaled/robust versions WLSMV "
+"recommends, not the plain ones."
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Journal"
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Journal-Level Quality and Dissemination Metrics"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Kappa"
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"Kappa ({kappa}) and Gwet's {gname} ({gwet}) differ by more than .05. This is "
+"the classic “Kappa paradox”: Kappa penalizes agreement heavily when one "
+"category is much more common than the others, even when raters are genuinely "
+"consistent (Gwet, 2014). Trust Gwet's {gname} over Kappa here."
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Kappa ({v}), "
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"Kappa above is Fleiss' Kappa (unweighted): with more than 2 raters, no "
+"weighted-Kappa formula is used, so it does not credit near-misses between "
+"adjacent ordinal categories the way the 2-rater case or Gwet's "
+"AC2/Krippendorff's ordinal α above do. Prefer AC2 or Krippendorff's α as the "
+"primary ordinal estimate for this reason."
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"Kappa and Gwet's coefficient agree closely — no evidence of a "
+"prevalence-driven paradox here."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+#: interRater/ui/kendallW.label
+msgid "Kendall's W"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Key sources"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Knowledge/aptitude tests scored right/wrong"
+msgstr ""
+
+#: internalConsistency/ui[2][1]/kr20.label
+msgid "KR-20 (Kuder-Richardson)"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"KR-20 is Cronbach's α specialized to strictly dichotomous (0/1) items, "
+"computed from each item's p&middot;q variance; KR-21 further simplifies "
+"KR-20 by assuming all items share the same difficulty (proportion correct) "
+"(Kuder &amp; Richardson, 1937). KR-21 understates reliability when item "
+"difficulties actually vary."
+msgstr ""
+
+#: internalConsistency/ui[2][1]/kr21.label
+msgid "KR-21"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"KR-21 assumes equal item difficulty — understates reliability when "
+"difficulties vary (Kuder &amp; Richardson, 1937)"
+msgstr ""
+
+#: interRater/ui/krippendorff.label
+msgid "Krippendorff's Alpha"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+#: R/interrater.b.R
+msgid "Krippendorff's α"
+msgstr ""
+
+#: internalConsistency/results/normalityTable.columns.title
+msgid "Kurtosis"
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"Landis &amp; Koch (1977) bands, applied to chance-corrected categorical "
+"agreement (Kappa, Gwet, Krippendorff on nominal/ordinal data)."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "lavaan not installed"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Less familiar/standard in some fields (Gwet, 2014)"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Less intuitive interpretation scale than Kappa (Krippendorff, 2018)"
+msgstr ""
+
+#: package/analyses/fiabilityLibrary.menuSubgroup
+#: package/analyses/bibliography.menuSubgroup
+msgid "library"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Likert/continuous items; quick default estimate"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Linearity (subject × rater additivity)"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Linearity/additivity violated"
+msgstr ""
+
+#: advancedReliability/options/missingData/listwise.title
+msgid "Listwise deletion"
+msgstr ""
+
+#: advancedReliability/results/solutionDiagnosticsTable.columns.title
+msgid "Loadings ≥ 1"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Main limitation"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "Matches the specified structure"
+msgstr ""
+
+#: advancedReliability/results/solutionDiagnosticsTable.columns.title
+msgid "Max. Latent Correlation"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Max. response options"
+msgstr ""
+
+#: internalConsistency/ui[2][0]/omega.label
+msgid "McDonald's Omega (total)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "McDonald's ω"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "McDonald's ω (total and hierarchical)"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+#: R/internalconsistency.b.R
+msgid "McDonald's ω (total)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "McDonald's ω hierarchical"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "McDonald's ω hierarchical (ωₕ)"
+msgstr ""
+
+#: internalConsistency/results/itemTable.columns.title
+msgid "Mean"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Mean score"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Meaningless with only 1 factor fit — collapses onto ω total (McDonald, 1999)"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+#: package/analyses/measurementInvariance.title
+#: package/analyses/measurementInvariance.menuTitle
+#: bibliography/options/topic/invariance.title
+#: bibliography/ui/topic/invariance.title
+#: fiabilityLibrary/options/category/invariance.title
+#: fiabilityLibrary/ui/category/invariance.title
+#: fiabilityLibrary/results/invariance.title
+#: measurementInvariance/options.title
+#: measurementInvariance/ui.title
+#: measurementInvariance/results.title
+msgid "Measurement Invariance"
+msgstr ""
+
+#: measurementInvariance/results/invarianceNote.title
+msgid "Measurement Invariance — What It Means"
+msgstr ""
+
+#: measurementInvariance/results/invarianceTable.title
+msgid "Measurement Invariance Sequence (Nested Model Comparisons)"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+#: internalConsistency/options/measureLevel.title
+msgid "Measurement level"
+msgstr ""
+
+#: internalConsistency/ui[1].label
+msgid "Measurement Level"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Measures agreement among multiple rankers on the relative ORDER of a set of "
+"objects, not on their raw ratings — applicable only when the data are "
+"genuinely rankings."
+msgstr ""
+
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+msgid "Met"
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Methodological"
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Methodological Bibliography"
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid "Metric (weak)"
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"Metric (weak) invariance is the highest level fully supported: "
+"correlations/regression coefficients involving the factor can be compared "
+"across these groups, and so can composite reliability (Omega/CR from "
+"Advanced Reliability) -- it is computed from the same loadings this level "
+"confirms are equal. Group means/observed scores should not be compared -- "
+"that requires scalar invariance, which is not confirmed here."
+msgstr ""
+
+#: advancedReliability/results/modificationIndicesTable.columns.title
+msgid "MI"
+msgstr ""
+
+#: advancedReliability/options/missingData.title
+#: advancedReliability/ui[3]/missingData.label
+msgid "Missing data"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"Missing values were handled with Full Information Maximum Likelihood (FIML), "
+"which uses all available information per case under the assumption that data "
+"are missing at random conditional on the model's variables, rather than "
+"discarding any case outright."
+msgstr ""
+
+#: advancedReliability/options/estimator/ml.title
+#: measurementInvariance/options/estimator/ml.title
+msgid "ML"
+msgstr ""
+
+#: advancedReliability/options/estimator/mlr.title
+#: measurementInvariance/options/estimator/mlr.title
+msgid "MLR (robust to non-normality)"
+msgstr ""
+
+#: advancedReliability/results/fitTable.columns.title
+#: advancedReliability/results/solutionDiagnosticsTable.columns.title
+#: measurementInvariance/results/invarianceTable.columns.title
+msgid "Model"
+msgstr ""
+
+#: advancedReliability/results/modelComparisonNote.title
+msgid "Model Comparison — What It Means"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Model Comparison (Likelihood-Ratio Test)"
+msgstr ""
+
+#: advancedReliability/results/modelComparisonTable.title
+msgid "Model Comparison: Second-Order vs. Correlated Factors (Likelihood-Ratio Test)"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Model Fit"
+msgstr ""
+
+#: advancedReliability/results/fitNote.title
+msgid "Model Fit — What It Means"
+msgstr ""
+
+#: R/advancedreliability.b.R
+#: advancedReliability/results/plotFitComparison.title
+msgid "Model Fit Comparison"
+msgstr ""
+
+#: advancedReliability/results/plotFitComparisonNote.title
+msgid "Model Fit Comparison — What It Means"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"Model fit is not fully adequate — reconsider whether the factor assignments "
+"match the instrument's theoretical structure before trusting CR/AVE/H from "
+"this model."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"Model fit is not Good, so the largest candidate respecifications are listed "
+"above -- as diagnostics, never as automatic edits. Purely data-driven "
+"respecification capitalizes on chance features of this specific sample and "
+"may not replicate in a new one (MacCallum, Roznowski &amp; Necowitz, 1992)."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Model-free lower bound; robust alternative to α"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Model-free lower bounds (alternative to GLB)"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Model-free lower-bound estimates of reliability, like GLB but computed "
+"differently: λ2 uses the covariance structure directly; λ6 uses each item's "
+"squared multiple correlation with the rest of the scale. λ6 becomes unstable "
+"when an item correlates almost perfectly with the rest of the scale."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Models every observed score X as the sum of a true score T and random error "
+"E. Reliability, in this framework, is defined as the proportion of "
+"observed-score variance attributable to T — every coefficient in the "
+"Internal Consistency category above is an estimator of this same quantity, "
+"under different assumptions (Cronbach, 1951; McDonald, 1999; Nunnally &amp; "
+"Bernstein, 1994)."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Models the probability of a response as a function of person ability and "
+"item parameters"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Models the probability of a specific item response as a function of the "
+"respondent's ability (or trait level) and the item's own parameters "
+"(difficulty, discrimination, and, in some models, guessing) — a "
+"fundamentally different approach from CTT's total-score-variance "
+"decomposition (Embretson &amp; Reise, 2000; Baker &amp; Kim, 2017). "
+"Referenced here as a theoretical foundation; not yet implemented as a "
+"FiabilityLab module."
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Moderate"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Modification Indices — Interpret Through Theory, Not Automatically"
+msgstr ""
+
+#: advancedReliability/results/modificationIndicesNote.title
+msgid "Modification Indices — What It Means"
+msgstr ""
+
+#: advancedReliability/results/modificationIndicesTable.title
+msgid "Modification Indices (interpret through theory, not automatically)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Multidimensional scales; proportion of variance due to g-factor"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Multidimensional structure detected: {nf} factor(s), {nc} component(s)."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Multidimensional/bifactor scales"
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"n = {n} is a small sample for agreement statistics; treat the confidence "
+"intervals above as wide."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"n = {n} is below the n ≥ 200 rule of thumb for a stable estimate; treat the "
+"CI above as wide."
+msgstr ""
+
+#: R/interrater.b.R
+msgid "n = {n} subjects rated by k = {k} raters — this is "
+msgstr ""
+
+#: advancedReliability/results/solutionDiagnosticsTable.columns.title
+msgid "n Analyzed"
+msgstr ""
+
+#: advancedReliability/results/solutionDiagnosticsTable.columns.title
+msgid "n Available"
+msgstr ""
+
+#: R/advancedreliability.b.R
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+msgid "N/A"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"N/A -- parallel analysis suggests 1 factor, so this is not conceptually "
+"distinct from ω total"
+msgstr ""
+
+#: advancedReliability/results/solutionDiagnosticsTable.columns.title
+msgid "Negative Residual Variances"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "No"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "No admissibility symptoms detected in the model(s) above."
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "no current SJR/JCR quartile found"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "No evidence against equal error variance across raters (Levene p ≥ .05)."
+msgstr ""
+
+#: R/interrater.b.R
+msgid "No evidence against normality of residuals (Shapiro-Wilk p ≥ .05)."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"No evidence against tau-equivalence -- the congeneric and tau-equivalent "
+"models fit comparably well, so α's assumption looks reasonable here."
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"No evidence of a subject × rater interaction — the additivity/linearity "
+"assumption holds (Tukey p ≥ .05)."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "No items fall below the r(item-total) ≥ .30 threshold."
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"No single rater stands out from the rest — pairwise agreement is fairly even "
+"across all rater pairs, so the pattern found here reflects the measurement "
+"design (category prevalence) rather than one rater's individual behavior."
+msgstr ""
+
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+msgid ""
+"No specific corrective action indicated — the primary estimate can be "
+"reported as-is."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "No specific corrective action indicated from the advanced analysis."
+msgstr ""
+
+#: R/interrater.b.R
+#: interRater/options/dataType/nominal.title
+msgid "Nominal"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Nominal, &gt;2 raters"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Nominal, 2 raters"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Nominal/ordinal, any number of raters"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Nominal/ordinal/interval/ratio, any raters, handles missing data"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Non-normal"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Normal"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Normality of items"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Normality of residuals"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Normality testing is off (enable it in Item Analysis to check this)."
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Normality violated"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Not applicable (dichotomous/ordinal)"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Not applicable to continuous data; see ICC below"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"Not applicable to dichotomous or ordinal items -- normality is a "
+"continuous-distribution concept."
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Not applicable to nominal data"
+msgstr ""
+
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+msgid "Not enough complete cases (minimum 5 required)."
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"Not enough complete cases per group to fit a multi-group confirmatory factor "
+"model (roughly 20+ per group recommended)."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"Not enough complete cases to fit a confirmatory factor model (minimum 20 "
+"required)."
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"Not even configural invariance is fully confirmed -- this construct's "
+"structure is not yet established as comparable across groups at all."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Not interchangeable with raw α; can differ by .05–.10+ on skewed data (Zumbo "
+"et al., 2007)"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"Not significant: the general factor accounts for the correlations among "
+"subscales about as well as letting them correlate freely (see the table "
+"above), supporting the second-order structure statistically — though this is "
+"not the same as it being the theoretically correct structure; that judgment "
+"still rests on the instrument's conceptual design."
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid "Not supported"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "Not testable (0 df)"
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"not yet strong enough to treat a single rater's classification — or even the "
+"consensus across raters — as trustworthy for consequential decisions (e.g. "
+"diagnosis, selection); a non-trivial share of individual classifications "
+"likely do not reflect a shared criterion."
+msgstr ""
+
+#: R/bibliography.b.R
+msgid ""
+"Note. Journal-level data (Scopus, Web of Science, quartile, other indexes) "
+"were verified per journal, not per individual article, since they belong to "
+"the publication, not the article. Each article's reference type is shown in "
+"Table 1 (Citations), not here. Books are not included, since the indicators "
+"in this table are specific to periodicals."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "Observed data"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "OK"
+msgstr ""
+
+#: internalConsistency/ui[2][0]/omegaHierarchical.label
+msgid "Omega Hierarchical (multidimensional)"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"Omega hierarchical for the total scale is <b>{val}</b> ({lbl}) — the "
+"proportion of total-score variance attributable specifically to the general "
+"factor G, net of each subscale's own specific variance (McDonald, 1999)."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"One bar per item, grouped by factor, showing its standardized loading; the "
+"dashed line marks .50, a common (not universal) minimum for an item to be "
+"considered a reasonably strong indicator of its factor."
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"One or more models in the sequence did not converge -- the invariance "
+"question cannot be answered past that point with this data/structure."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"Only after ruling out a theoretically defensible respecification: consider "
+"revising or replacing items in the low-AVE factor(s) above."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Only applies to ranking data, not raw ratings"
+msgstr ""
+
+#: internalConsistency/results/itemTable.columns.title
+msgid "Options"
+msgstr ""
+
+#: advancedReliability/options/itemType/ordinal.title
+#: interRater/options/dataType/ordinal.title
+#: measurementInvariance/options/itemType/ordinal.title
+msgid "Ordinal"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Ordinal ({n} categories)"
+msgstr ""
+
+#: internalConsistency/ui[2][0]/ordinalAlpha.label
+msgid "Ordinal Alpha (polychoric)"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Ordinal rankings"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+#: R/internalconsistency.b.R
+msgid "Ordinal α"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+#: R/internalconsistency.b.R
+msgid "Ordinal α (polychoric)"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Ordinal/Likert items with few categories or skewed distributions"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"Ordinal/Likert items; assumes τ-equivalence -- see the Reliability "
+"Assumptions Check below"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Ordinal/Likert items; does not require normality"
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Original/seminal"
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Other relevant indexes"
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Other sources"
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"Overall agreement is Fair or worse: before using these ratings for any "
+"consequential decision, run a rater-training session with shared examples "
+"and explicit category anchors, then re-rate a fresh sample to confirm "
+"agreement improves."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Paradoxically low with skewed category prevalence, even when raw agreement "
+"is high (Cohen, 1960; Gwet, 2014)"
+msgstr ""
+
+#: advancedReliability/results/parallelAnalysisNote.title
+msgid "Parallel Analysis — What It Means"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Parallel analysis (factors suggested)"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"Parallel analysis (Horn, 1965) compares the eigenvalues from an exploratory "
+"factor analysis of these items against the eigenvalues expected from random "
+"data of the same size -- the suggested number of factors is how many real "
+"eigenvalues exceed their random counterpart (see the scree plot below). This "
+"is exploratory and does not know about the factor structure assigned above; "
+"it is a sanity check on that structure, not a replacement for it."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"Parallel analysis recommends {nf} factor(s) and {nc} component(s). "
+"Cronbach’s α and McDonald’s ω are appropriate."
+msgstr ""
+
+#: R/advancedreliability.b.R
+#: advancedReliability/results/plotParallelAnalysis.title
+msgid "Parallel Analysis Scree Plot"
+msgstr ""
+
+#: advancedReliability/results/plotParallelAnalysisNote.title
+msgid "Parallel Analysis Scree Plot — What It Means"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"Parallel analysis suggests {n} factor(s) — this scale is likely "
+"multidimensional. A single overall α/ω may blend distinct dimensions; "
+"consider reporting reliability per subscale."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"parallel analysis suggests {n} factors. A single overall α mixes distinct "
+"dimensions into one number; see the Dimensionality Check panel below for "
+"what to do about it."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"Parallel analysis suggests a single (unidimensional) factor — a single "
+"overall reliability estimate is appropriate."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"Parallel analysis supports a single underlying factor -- consistent with "
+"what a single overall α is meant to measure."
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "pending"
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Pending"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Please select at least 2 rating variables to compute agreement coefficients."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Polytomous ({n} response options)"
+msgstr ""
+
+#: internalConsistency/ui[2][0].label
+msgid "Polytomous (Likert / rating scales)"
+msgstr ""
+
+#: internalConsistency/options/measureLevel/polytomous.title
+msgid "Polytomous (Likert / rating)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Polytomous, continuous items; assumes τ-equivalence & normality"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Polytomous; robust to non-normality; preferred over α"
+msgstr ""
+
+#: R/advancedreliability.b.R
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+msgid "Poor"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "Possible correlated residual"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "Possible cross-loading"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Prefer {alt} over raw Cronbach's α for the primary estimate."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Proposed as a more stable alternative to Kappa specifically because it does "
+"not degrade under extreme category prevalence or rater bias (Gwet, 2014). "
+"AC1 is for nominal data, AC2 extends the same logic to ordinal/interval "
+"scales."
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "PsycINFO, EMBASE, ScienceDirect"
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Q3-Q4 (SJR, varies by subject category)"
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Quartile"
+msgstr ""
+
+#: R/advancedreliability.b.R
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+msgid "Questionable"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Quick cross-check for long instruments"
+msgstr ""
+
+#: internalConsistency/results/itemTable.columns.title
+msgid "r(item-total)"
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"Rater “{rater}” also stands out: their average pairwise agreement with the "
+"other raters is {worst}%, versus {others}% among the remaining rater pairs — "
+"a {gap}-point gap. This points to that specific rater applying a different "
+"criterion, rather than a problem with the measurement design itself."
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"Rater “{rater}” averages {mean} points against an overall mean of {grand} — "
+"a {sign}{gap}-point systematic shift. This is exactly what produces a gap "
+"between the two ICC forms: raters agree on WHO scores higher or lower "
+"(preserving rank, hence high consistency-type ICC), but not on the exact "
+"MAGNITUDE of the score (hurting absolute-agreement-type ICC) (Shrout &amp; "
+"Fleiss, 1979)."
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"Rater “{rater}” disagrees with the group more than the others do. Review "
+"that rater's criteria against the category definitions, consider a "
+"calibration/training session with shared examples, or add an adjudication "
+"step for cases where that rater's classification is the deciding vote."
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"Rater “{rater}” has a systematic mean shift ({sign}{gap} points). Consider a "
+"calibration session with shared anchor cases, or mean-center that rater's "
+"scores before combining them with the others."
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Rater Mean Score (dashed = grand mean)"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Rater reliability for numeric scores; separates consistency from absolute "
+"agreement"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Raters"
+msgstr ""
+
+#: interRater/ui[0][0].label
+msgid "Ratings"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Reading Standardized Loadings"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"Recommendation: (1) Compute Cronbach’s α per subscale separately. (2) Report "
+"Omega Hierarchical (ωₕ) for the total scale. (3) Overall α across all items "
+"may be misleading."
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Reference"
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Reference book"
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Reference style: "
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Reference type"
+msgstr ""
+
+#: bibliography/results/references.title
+msgid "References"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Reliability assuming &tau;-equivalence (equal item loadings)"
+msgstr ""
+
+#: internalConsistency/ui[5].label
+msgid "Reliability Assumptions"
+msgstr ""
+
+#: internalConsistency/results/reliabilityAssumptionsNote.title
+msgid "Reliability Assumptions — What It Means"
+msgstr ""
+
+#: internalConsistency/results/reliabilityAssumptionsTable.title
+msgid "Reliability Assumptions Check"
+msgstr ""
+
+#: R/advancedreliability.b.R
+#: advancedReliability/results/reliabilityTable.title
+msgid "Reliability by Factor"
+msgstr ""
+
+#: advancedReliability/results/reliabilityNote.title
+msgid "Reliability by Factor — What It Means"
+msgstr ""
+
+#: internalConsistency/results/mainTable.title
+msgid "Reliability Coefficients"
+msgstr ""
+
+#: advancedReliability/results/plotComparison.title
+msgid "Reliability Comparison"
+msgstr ""
+
+#: advancedReliability/results/plotComparisonNote.title
+msgid "Reliability Comparison — What It Means"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Reliability Due to G"
+msgstr ""
+
+#: advancedReliability/results/reliabilityTable.columns.title
+msgid "Reliability due to G"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Reliability from actual factor loadings; no equal-loading assumption"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Reliability is necessary but not sufficient for validity (Nunnally &amp; "
+"Bernstein, 1994)"
+msgstr ""
+
+#: internalConsistency/ui[2].label
+msgid "Reliability Statistics"
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"Reliability was assessed via two ICC forms and Krippendorff's interval α on "
+"the same {k} raters and {n} cases. ICC (consistency) asks whether raters "
+"RANK cases similarly, tolerating a rater who is systematically higher or "
+"lower than the others; ICC (absolute agreement) additionally requires their "
+"raw VALUES to be interchangeable (Shrout &amp; Fleiss, 1979)."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"Reliability-due-to-G is a substantial share of each factor's own CR/ω -- the "
+"general-factor structure captures most of what each subscale reliably "
+"measures."
+msgstr ""
+
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+msgid "removed listwise"
+msgstr ""
+
+#: internalConsistency/results/bootstrapTable.columns.title
+msgid "Replicates Used"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Report Gwet's AC1/AC2 alongside Kappa (Gwet, 2014)"
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"Report Gwet's coefficient (or Krippendorff's α) as the primary estimate, not "
+"Kappa — Kappa's value here is an artifact of category prevalence, not weaker "
+"rater agreement."
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"Report ICC (absolute agreement) rather than ICC (consistency) if raters' raw "
+"scores must be interchangeable; if only relative ranking matters, the "
+"consistency form is the right one to report instead."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Report McDonald's ω as the primary coefficient, not α."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Report Ordinal α alongside α given the non-normal items."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Requires a fitted factor model (McDonald, 1999)"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Requires continuous ratings"
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"residuals depart from normality (Shapiro-Wilk p &lt; .05). The ICC point "
+"estimate is fairly robust to mild non-normality, but its confidence interval "
+"is not — treat the reported CI with caution and prefer the bootstrap CIs "
+"already computed above for the other coefficients when reporting precision."
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"Resolve the convergence failure first -- fewer groups/factors, more items "
+"per factor, or more cases per group may help."
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Review/comparison"
+msgstr ""
+
+#: advancedReliability/results/fitTable.columns.title
+#: measurementInvariance/results/invarianceTable.columns.title
+msgid "RMSEA"
+msgstr ""
+
+#: advancedReliability/results/fitTable.columns.title
+msgid "RMSEA (robust)"
+msgstr ""
+
+#: advancedReliability/results/fitTable.columns.title
+msgid "RMSEA 90% CI"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Robust alternative to Kappa under high/low prevalence"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Same prevalence paradox as Cohen's Kappa"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Same standardized-α formula, computed on polychoric correlations"
+msgstr ""
+
+#: internalConsistency/results/sampleAdequacy.title
+msgid "Sample & Data Quality"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Sample size"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Sample size compounds all three: small samples (roughly n &lt; 30) both "
+"widen the ICC's confidence interval and make its F-based inference more "
+"sensitive to non-normality, while the coefficient's other assumptions "
+"(homoscedasticity, linearity) are unaffected by n but become harder to "
+"detect statistically with few subjects. FiabilityLab reports minimum-sample "
+"guidance from Koo &amp; Li (2016) and Bujang &amp; Baharum (2017) alongside "
+"the assumption tests. The bootstrap confidence intervals available for "
+"Kappa, Gwet, Krippendorff, and Kendall's W above are themselves the "
+"practical antidote to small-n imprecision for those coefficients, since none "
+"of them relies on ICC's F-distribution assumption in the first place."
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid "Scalar (strong)"
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"Scalar (strong) invariance is the highest level fully supported -- this is "
+"exactly the level group mean/score comparisons require, so those comparisons "
+"are on solid footing, even though strict invariance (a stronger, less "
+"commonly needed condition) is not confirmed."
+msgstr ""
+
+#: internalConsistency/ui[0][0].label
+msgid "Scale Items"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Scree Plot — Parallel Analysis"
+msgstr ""
+
+#: internalConsistency/ui[7]/plotScree.label
+msgid "Scree plot (parallel analysis)"
+msgstr ""
+
+#: internalConsistency/results/plotScree.title
+msgid "Scree Plot (Parallel Analysis)"
+msgstr ""
+
+#: internalConsistency/results/itemTable.columns.title
+msgid "SD"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "Second-order"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "Second-order (general factor)"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "Second-order fits worse"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+#: advancedReliability/results/omegaHNote.title
+msgid "Second-Order Omega Hierarchical"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "Second-order vs. correlated factors"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"See Fiability Library → Coefficients for full definitions, assumptions and "
+"references (Bibliography → Classical Test Theory)."
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"See Fiability Library → Inter-Rater Agreement for full definitions and "
+"assumptions, and Bibliography → Inter-Rater Reliability for references."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"See the Fiability Library → Advanced Reliability (SEM) section for full "
+"definitions, formulas, and assumptions of CR, AVE, H, HTMT, second-order "
+"omega, the model-comparison likelihood-ratio test, and modification indices, "
+"and Bibliography → Advanced Reliability (SEM) for the underlying citations."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"See the Reliability Coefficients and Item Analysis tables above for the "
+"exact numbers behind each point below; the Fiability Library (Coefficients "
+"section) documents each coefficient's assumptions and formula in full."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Select at least 2 items to compute reliability coefficients."
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Selected topic: "
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Sensitivity check against α/ω, no distributional assumptions"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Shapiro-Wilk (items failing)"
+msgstr ""
+
+#: advancedReliability/options/showParallelAnalysis.title
+#: advancedReliability/ui[4]/showParallelAnalysis.label
+msgid "Show exploratory dimensionality (parallel analysis)"
+msgstr ""
+
+#: measurementInvariance/ui[3]/showPlots.label
+msgid "Show fit-by-level plot"
+msgstr ""
+
+#: internalConsistency/ui[7]/showPlots.label
+msgid "Show plots"
+msgstr ""
+
+#: advancedReliability/ui[5]/showPlots.label
+msgid "Show reliability comparison plot"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "Significant: imposing a single general factor over the "
+msgstr ""
+
+#: package/datasets/FiabilityLabTestDataset(n=450).description
+msgid ""
+"Simulated data covering every FiabilityLab design: dichotomous parallel test "
+"forms, a hierarchical Likert scale, multi-rater nominal/ordinal/ continuous "
+"agreement, and a test-retest block — see data/README.md"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "Simulated random data"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Since each level is nested within the one before it, their χ²/df difference "
+"is itself χ²-distributed — a formal likelihood-ratio test (via "
+"lavaan::lavTestLRT()) of whether the added restriction costs a significant "
+"amount of fit. But the LRT alone becomes hypersensitive to trivial misfit in "
+"large samples, so FiabilityLab also reports the change in CFI (ΔCFI) between "
+"consecutive levels and applies the sample-size-robust criterion of Cheung "
+"&amp; Rensvold (2002): a restriction is treated as holding if the LRT is "
+"non-significant (p ≥ .05) <i>or</i> ΔCFI ≥ -.01 — either criterion passing "
+"is enough, since they are two different ways of detecting the same problem "
+"and can disagree in either direction depending on sample size. Schmitt &amp; "
+"Kuljanin (2008) review how this sequence is actually applied in practice, "
+"including how often each level is tested and reported."
+msgstr ""
+
+#: internalConsistency/results/itemTable.columns.title
+msgid "Skew"
+msgstr ""
+
+#: internalConsistency/results/normalityTable.columns.title
+msgid "Skewness"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Slight"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "small (n &lt; 30) — expect wide, imprecise ICC confidence intervals"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+#: advancedReliability/results/solutionDiagnosticsTable.title
+msgid "Solution Admissibility"
+msgstr ""
+
+#: advancedReliability/results/solutionDiagnosticsNote.title
+msgid "Solution Admissibility — What It Means"
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Source"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+#: R/internalconsistency.b.R
+#: internalConsistency/ui[2][0]/splitHalf.label
+msgid "Split-half (Spearman-Brown)"
+msgstr ""
+
+#: advancedReliability/results/fitTable.columns.title
+msgid "SRMR"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "Standardized loading"
+msgstr ""
+
+#: advancedReliability/results/plotLoadingsNote.title
+msgid "Standardized Loadings — What It Means"
+msgstr ""
+
+#: advancedReliability/results/plotLoadings.title
+msgid "Standardized Loadings by Factor"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "Standardized Loadings by Factor (dashed = .50)"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"State which one was used, and prefer Ordinal α for skewed/ordinal items "
+"(Zumbo et al., 2007)"
+msgstr ""
+
+#: internalConsistency/results/reliabilityAssumptionsTable.columns.title
+#: interRater/results/iccAssumptionsTable.columns.title
+msgid "Statistic"
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid "Strict"
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"Strict invariance is fully supported through every level tested. Group "
+"mean/score comparisons only require the scalar level reached before it, so "
+"this is more than sufficient for that purpose."
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"strong enough to support using the raters' consensus classification (e.g. "
+"the modal category across raters) as a dependent variable with reasonable "
+"confidence."
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Substantial"
+msgstr ""
+
+#: advancedReliability/results/modificationIndicesTable.columns.title
+msgid "Suggested parameter"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "Suggests fewer factors than specified"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "Suggests more factors than specified"
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid "Supported by both criteria"
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid "Supported by LRT only"
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid "Supported by ΔCFI only"
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Table 1"
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Table 2"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Tau-equivalence"
+msgstr ""
+
+#: internalConsistency/ui[5][1].label
+msgid ""
+"Tau-equivalence is tested via a CFA likelihood-ratio test (requires the "
+"lavaan package); unidimensionality and normality reuse the Dimensionality "
+"and Item Analysis checks above."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Tau-equivalence violated"
+msgstr ""
+
+#: internalConsistency/results/reliabilityAssumptionsTable.columns.title
+#: interRater/results/iccAssumptionsTable.columns.title
+msgid "Test"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Testing Each Level (LRT and ΔCFI)"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"The average of all possible split-half reliabilities; equivalently, the "
+"proportion of total-score variance attributable to a common source among "
+"items, under the assumption that every item contributes equally to the true "
+"score (Cronbach, 1951)."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"The average of the squared standardized loadings of a factor's own items — "
+"the proportion of variance its indicators share with the factor itself, as "
+"opposed to error. AVE ≥ .50 is the field-standard threshold for adequate "
+"convergent validity (Fornell &amp; Larcker, 1981); it is a validity index, "
+"not a reliability coefficient, and is reported alongside CR/ω by convention."
+msgstr ""
+
+#: R/bibliography.b.R
+msgid ""
+"The bibliography presented here brings together articles and books by the "
+"original authors, prioritizing classic references and those that have "
+"received the greatest recognition and use in current research. It does not "
+"aim to be exhaustive, but rather to offer a precise selection of the sources "
+"most relevant to the reliability designs considered in FiabilityLab. It is "
+"advisable to periodically compare these references against the most recent "
+"scientific literature, since new studies may be published that support, "
+"challenge, or expand the methods included here."
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"The category system is heavily imbalanced ({pct}% in one category). If more "
+"data will be collected, deliberately oversample the minority categories; if "
+"the categories themselves are the issue, consider whether they need to be "
+"redefined or collapsed."
+msgstr ""
+
+#: R/bibliography.b.R
+msgid ""
+"The citation count for each reference is the higher of the two values "
+"returned by OpenAlex and Crossref's own “is-referenced-by-count” for that "
+"DOI (both queried directly, not estimated); the lower value is kept in the "
+"“Other sources” column. Values correspond to a snapshot taken in September "
+"2026 and change continuously. Books are not included in this table; only "
+"journal-published articles are listed here."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"The classical coefficients above (α, ω, GLB, ...) treat the scale's factor "
+"structure as either unknown (a single common source) or only exploratorily "
+"detected (parallel analysis). When the structure is already known — from "
+"theory or a prior validation — the separate Advanced Reliability (SEM) "
+"analysis lets the user assign items to named factors and fits a confirmatory "
+"factor model (via lavaan/semTools) instead, giving structure-specific "
+"reliability and validity evidence."
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"The configural (baseline) model did not converge -- try fewer factors, more "
+"items per factor, or check the item/group assignments before testing "
+"invariance."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"The confirmatory factor model did not converge on this data/structure -- try "
+"fewer factors, more items per factor, or check the item assignments."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"The confirmatory model's estimator depends on item type: continuous items "
+"fit via ML by default, or MLR for robustness to non-normality (adjusted "
+"standard errors and a scaled χ²); ordinal items (auto-detected as "
+"whole-number values with ≤7 categories, or set explicitly) always fit via "
+"WLSMV on their polychoric/tetrachoric correlations, which requires complete "
+"cases. Under a robust estimator (MLR or WLSMV), the plain χ²/CFI/TLI/RMSEA "
+"are not the recommended numbers to interpret — WLSMV's plain versions can "
+"even fall outside the [0,1] range — the scaled/robust versions are. For "
+"continuous items with missing values plausibly missing-at-random, Full "
+"Information Maximum Likelihood (FIML) uses all available information per "
+"case instead of discarding any case outright; it has no equivalent for "
+"ordinal/WLSMV items."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"The congeneric/tau-equivalent models below were fit with WLSMV on "
+"polychoric/tetrachoric correlations, matching how these items were "
+"detected/set (ordinal or dichotomous). "
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "The correlated-factors model above is {verdict}."
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"The estimators agree closely here, so the choice of formula does not change "
+"the substantive conclusion."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "The exploratory and confirmatory factor counts agree."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"the following item(s) fall below the r(item-total) ≥ .30 screening "
+"threshold: "
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"The grouping variable needs at least 2 levels (after removing missing "
+"values) to test invariance."
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"The ICC is a variance-partition of the same subject × rater ANOVA that its "
+"confidence interval is computed from (Shrout &amp; Fleiss, 1979), so it "
+"inherits that model's usual assumptions. Unlike Kappa, Gwet's AC1/AC2, "
+"Krippendorff's α, and Kendall's W above (which are rank- or category-based "
+"and distribution-free), the ICC's point estimate and especially its "
+"F-distribution-based CI are sensitive to non-normal residuals, unequal error "
+"variance across raters, and a non-additive (curvilinear) rater relationship."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "The Invariance Sequence"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"The item(s) below this line are listed in the note above the Reliability by "
+"Factor table."
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"The Kappa/Gwet discordance is not a mere technicality: reporting only Kappa "
+"here would lead a reader to conclude the agreement is weaker than the rating "
+"pattern actually supports, given the observed category skew."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"The mathematically tightest lower-bound estimate of reliability achievable "
+"without any distributional or factor-structure assumption, obtained by "
+"constrained optimization over the item covariance matrix. Known to be "
+"upward-biased in small samples relative to the number of items."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"The n and subject-to-item thresholds below are rule-of-thumb screening "
+"guidance, not universal statistical criteria -- treat them as prompts to "
+"interpret estimates more cautiously, not as pass/fail cutoffs."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"The normality check itself is measurement-level-aware rather than applying "
+"Shapiro-Wilk unconditionally: Shapiro-Wilk assumes a genuinely continuous "
+"variable, so running it on a discrete Likert item (a handful of whole-number "
+"categories) mostly detects the item's own discreteness/ties rather than a "
+"real distributional problem — a module whose purpose is checking assumptions "
+"should not itself apply a continuous-data test to ordinal data. FiabilityLab "
+"therefore runs Shapiro-Wilk only when items are genuinely continuous; for "
+"ordinal (Likert-type, ≤7 whole-number categories) items it instead flags "
+"items exceeding |skew| &gt; 2 or |kurtosis| &gt; 7, the same "
+"floor/ceiling-effect threshold already used elsewhere in this module; and it "
+"runs no normality check at all on dichotomous items, since the concept does "
+"not apply to a two-point (Bernoulli) variable."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "The primary reliability estimate for this scale is <b>{val}</b> ({lbl})."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"The proportion of a factor's composite-score variance attributable to its "
+"common factor, computed from the confirmatory model's own standardized "
+"loadings — CR (Fornell &amp; Larcker, 1981) and ω (McDonald, 1999) are the "
+"same underlying quantity from two different literatures (marketing/PLS vs. "
+"psychometrics), so FiabilityLab reports one number under both names. Unlike "
+"Cronbach's α, it does not assume equal (tau-equivalent) loadings."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"The same standardized-α formula, applied to the polychoric correlation "
+"matrix — which models each ordinal item as a coarsely categorized continuous "
+"variable — instead of Pearson correlations (Zumbo, Gadermann &amp; Zeisser, "
+"2007)."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"The second-order model did not converge -- the general-factor structure may "
+"not fit this data even though the correlated-factors model above does."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"The second-order model fits significantly worse than free correlations (see "
+"the Model Comparison table above), so these reliability-due-to-G values "
+"overstate how much of each factor's reliable variance is really shared with "
+"a general trait -- treat them, like Omega Hierarchical, with real skepticism."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"The second-order structure fits significantly worse than free correlations — "
+"report per-factor reliability (CR/ω/H above) rather than a single "
+"general-factor score, unless there is a strong theoretical reason to insist "
+"on one."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"The Solution Admissibility table above flags at least one symptom of an "
+"inadmissible or borderline solution -- resolve this first; every other "
+"number in this report inherits whichever model is affected."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"The suggested and specified number of factors disagree. This does not "
+"automatically mean the specified structure is wrong -- theory-driven "
+"confirmatory structures legitimately group items in ways a purely "
+"data-driven exploratory method may not recover, especially with correlated "
+"factors or a small number of items per factor. But it is worth understanding "
+"why they disagree before treating the confirmatory results as the final word."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"The tau-equivalence models did not converge on this data -- no formal "
+"verdict available; rely on the discordance panel above instead."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"The tau-equivalence test requires the lavaan package, which is not installed "
+"here -- install it for a direct statistical test; in the meantime, the "
+"discordance panel above (α vs. ω) is an indirect signal of the same thing."
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid ""
+"The ΔCFI criterion follows Cheung &amp; Rensvold (2002); the invariance "
+"level requirements for mean/score comparisons follow standard SEM practice "
+"(e.g. Vandenberg &amp; Lance, 2000)."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+#: fiabilityLibrary/options/category/foundations.title
+#: fiabilityLibrary/ui/category/foundations.title
+#: fiabilityLibrary/results/foundations.title
+msgid "Theoretical Foundations"
+msgstr ""
+
+#: R/bibliography.b.R
+msgid ""
+"There are no curated references for this topic yet. References are added "
+"progressively as each FiabilityLab module is developed (see the Documento "
+"Maestro's Library/Bibliography admission contract)."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "They are different estimators computed on different correlation matrices"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"This analysis requires the lavaan and semTools packages, which are not both "
+"installed here."
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid "This analysis requires the lavaan package, which is not installed here."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"This is a diagnostic flag, not a retention rule: a low item-total "
+"correlation can come from reverse-scoring that was never recoded, "
+"multidimensionality, deliberately heterogeneous content, or an item that "
+"genuinely doesn't function as intended. Inspect the item's content and "
+"scoring direction, and consider its theoretical role in the construct, "
+"before deciding to revise, recode, or remove it — the item-analysis table "
+"above shows α if each item were dropped only as one input to that judgment, "
+"not as the criterion itself."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"This number is only as trustworthy as the model comparison above: if the "
+"likelihood-ratio test found the second-order structure fits significantly "
+"worse, treat this value as conditional on a structure the data do not "
+"support, not as independent evidence of a general dimension. Each factor's "
+"Reliability Table row below also lists its reliability specifically due to G "
+"— the share of that factor's own reliable variance that reflects the general "
+"trait rather than something specific to the subscale; a factor with high "
+"CR/ω but low reliability-due-to-G is measuring its own specific construct "
+"well, but a total score built by summing all items would discard most of "
+"that factor's reliable variance as if it were noise."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"This omega hierarchical is derived from a second-order model, which forces "
+"the general factor's relationship to each subscale to run entirely through "
+"that subscale's overall factor (a restricted, nested special case). It is a "
+"different quantity from the omega hierarchical of an exploratory or "
+"confirmatory bifactor model, which lets each item load on the general factor "
+"directly as well as its own subscale; the two need not agree, and "
+"disagreement between them is itself informative about which structure fits "
+"the construct better."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"this scale's items likely load unequally on the underlying factor, so α is "
+"probably biased here — trust ω instead."
+msgstr ""
+
+#: R/bibliography.b.R
+msgid ""
+"This section collects the methodological references that support the "
+"decisions, criteria, and interpretations in FiabilityLab. Each reference was "
+"individually verified (authors, journal or publisher, volume, pages, and DOI "
+"or direct link) before being included; FiabilityLab does not auto-generate "
+"citations or accept unverified references."
+msgstr ""
+
+#: R/bibliography.b.R
+msgid ""
+"This table describes, for each journal in which at least one of "
+"FiabilityLab's references was published, its presence in the main "
+"bibliographic indexing databases (Scopus, Web of Science) and, where "
+"applicable, other relevant indexes and the journal's quartile. These "
+"indicators reflect the editorial quality and dissemination reach of the "
+"publication, not the quality of the individual cited article. Each journal "
+"appears only once, even if several articles published in it were cited."
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"Three estimators of the same question — how much do raters agree beyond "
+"chance? — were computed on the same {k} raters and {n} cases: {vals}. They "
+"can legitimately disagree because each one defines “agreement expected by "
+"chance” differently: Kappa (Cohen, 1960 for 2 raters; Fleiss, 1971 for more "
+"than 2) derives it from the observed marginal distribution of each category, "
+"which makes it highly sensitive to skewed prevalence; Gwet's AC1/AC2 (Gwet, "
+"2014) was designed specifically to not degrade under that same skew; and "
+"Krippendorff's α (Krippendorff, 2018) generalizes the calculation across any "
+"measurement level and tolerates missing data."
+msgstr ""
+
+#: R/interrater.b.R
+msgid "ties detected"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Tighter lower bound without fitting a factor model"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Tightest model-free lower bound on reliability"
+msgstr ""
+
+#: advancedReliability/results/fitTable.columns.title
+msgid "TLI"
+msgstr ""
+
+#: advancedReliability/results/fitTable.columns.title
+msgid "TLI (robust)"
+msgstr ""
+
+#: bibliography/ui/topic.label
+msgid "Topic"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Treating Ordinal α as interchangeable with raw α"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Tukey's non-additivity"
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"Tukey's test detects a subject × rater interaction (p &lt; .05): at least "
+"one rater's scores curve relative to the others rather than following the "
+"same straight-line relationship the ICC model assumes. This is the most "
+"severe of the three violations — the ICC will systematically understate true "
+"agreement when it happens. Inspect a rater-by-rater scatterplot for a curved "
+"(not straight-line) pattern before trusting the ICC value above; Kendall's "
+"W, already available in this analysis, is a rank-based alternative that does "
+"not assume linearity."
+msgstr ""
+
+#: advancedReliability/results/modificationIndicesTable.columns.title
+msgid "Type"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Typical use"
+msgstr ""
+
+#: R/measurementinvariance.b.R
+msgid "Unable to determine"
+msgstr ""
+
+#: R/advancedreliability.b.R
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+msgid "Unacceptable"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Unidimensional structure suggested."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Unidimensionality"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Unidimensionality violated"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Universal coefficient across measurement levels"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Upward-biased in small samples relative to item count"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Using Cronbach's α on a multidimensional scale"
+msgstr ""
+
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+#: interRater/results/mainTable.columns.title
+msgid "Value"
+msgstr ""
+
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+msgid "Value (95% CI)"
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid "Value (dashed = .95 good-fit reference)"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Variance due to one general factor, net of group-factor variance"
+msgstr ""
+
+#: advancedReliability/results/parallelAnalysisTable.columns.title
+#: advancedReliability/results/modelComparisonTable.columns.title
+#: advancedReliability/results/htmtTable.columns.title
+#: internalConsistency/results/reliabilityAssumptionsTable.columns.title
+#: interRater/results/iccAssumptionsTable.columns.title
+#: measurementInvariance/results/invarianceTable.columns.title
+msgid "Verdict"
+msgstr ""
+
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+msgid "Violated"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Weak item-total correlation(s)"
+msgstr ""
+
+#: R/bibliography.b.R
+msgid "Web of Science"
+msgstr ""
+
+#: R/interrater.b.R
+msgid "Weighted Cohen's Kappa"
+msgstr ""
+
+#: R/interrater.b.R
+msgid ""
+"Weighted multi-rater Kappa is not available here for >2 raters; "
+"Krippendorff's ordinal α already accounts for the ordinal scale with any "
+"number of raters."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"Welcome to FiabilityLab. <b>Reliability</b> is the consistency of a measure: "
+"an instrument is reliable if it produces similar results under consistent "
+"conditions. FiabilityLab covers three main designs — <b>internal "
+"consistency</b> (one instrument, one administration), <b>inter-rater "
+"agreement</b> (multiple raters, one occasion), and <b>temporal stability</b> "
+"(one instrument, repeated occasions; planned)."
+msgstr ""
+
+#: R/advancedreliability.b.R
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+#: R/measurementinvariance.b.R
+msgid "What happened"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "What it estimates"
+msgstr ""
+
+#: R/advancedreliability.b.R
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+msgid "What it means"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "What to do instead"
+msgstr ""
+
+#: R/advancedreliability.b.R
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+#: R/measurementinvariance.b.R
+msgid "What to do now"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "When a Level Does Not Hold: Partial Invariance"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"When a second-order general factor (G) is specified over 3 or more "
+"first-order factors (fewer leaves the higher-order layer statistically "
+"unidentified), omega hierarchical is generalized to this confirmatory "
+"structure: the proportion of the TOTAL scale's variance attributable "
+"specifically to G, net of each subscale's own group-factor variance "
+"(McDonald, 1999) — the same concept the exploratory Omega Hierarchical "
+"checkbox in the classical tab estimates via Schmid-Leiman rotation, computed "
+"here instead from a user-specified, confirmatory structure."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"When a second-order structure is fit, each factor's Reliability Table row "
+"also reports its reliability specifically attributable to G — a different "
+"(and typically smaller) quantity than that factor's own CR/ω, since it asks "
+"what share of the factor's reliable variance reflects the general trait "
+"rather than something specific to the subscale. A factor whose "
+"reliability-due-to-G is a small fraction of its own CR/ω is measuring its "
+"specific construct well but would lose most of that reliable variance if "
+"folded into a single general-factor or total score."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"When model fit is not Good, FiabilityLab reports the largest modification "
+"indices (MI) — the expected χ² improvement from freeing one additional "
+"cross-loading or correlated residual — as candidates, never as automatic "
+"edits. Purely data-driven model modification capitalizes on chance features "
+"of the specific sample and may not replicate in a new one (MacCallum, "
+"Roznowski &amp; Necowitz, 1992): a modification index only becomes a "
+"defensible change once it is justified by the instrument's theoretical "
+"structure (does an item plausibly reflect two constructs at once? does a "
+"correlated residual reflect known shared method variance, such as two "
+"reverse-worded items on the same scale?). Removing an item is only one of "
+"several possible responses to poor fit, not the default one — respecifying "
+"the model, or reconsidering whether the theoretical factor structure itself "
+"is correct, are equally valid next steps."
+msgstr ""
+
+#: R/advancedreliability.b.R
+#: R/internalconsistency.b.R
+#: R/interrater.b.R
+msgid "Why"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "Why it's wrong"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"With 4 or more first-order factors, the second-order model is a constrained "
+"(nested) version of the freely-correlated one, so their χ²/df difference is "
+"itself χ²-distributed — a formal test of whether imposing one general factor "
+"costs a significant amount of fit. A significant difference means the "
+"general-factor structure fits worse than letting subscales correlate freely, "
+"and any general-factor score (or the omega hierarchical value above) should "
+"be trusted accordingly less; a non-significant difference supports the "
+"second-order structure statistically, though not on its own as evidence that "
+"it is the theoretically correct one."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"With exactly 3 first-order factors, the second-order model is mathematically "
+"equivalent to (has identical fit as) the correlated-factors model above it — "
+"a second-order factor over exactly 3 lower factors perfectly reproduces "
+"their 3 pairwise correlations without adding any constraint. The two fit "
+"rows will show identical χ²/CFI/RMSEA/SRMR in that case; a genuinely "
+"testable comparison of whether the general-factor structure fits worse than "
+"free correlations among subscales requires 4 or more first-order factors."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"With exactly 3 first-order factors, the second-order model is mathematically "
+"equivalent to the correlated-factors model above (identical fit, 0 degrees "
+"of freedom difference, shown as Δdf = 0 in the table above) — a genuinely "
+"testable comparison needs 4 or more first-order factors."
+msgstr ""
+
+#: advancedReliability/options/estimator/wlsmv.title
+#: measurementInvariance/options/estimator/wlsmv.title
+msgid "WLSMV (for ordinal items)"
+msgstr ""
+
+#: R/advancedreliability.b.R
+#: R/bibliography.b.R
+msgid "Yes"
+msgstr ""
+
+#: R/advancedreliability.b.R
+#: R/measurementinvariance.b.R
+msgid ""
+"You selected {estimator}, but WLSMV was used instead because the items are "
+"ordinal."
+msgstr ""
+
+#: R/advancedreliability.b.R
+msgid ""
+"You selected FIML, but listwise deletion was used instead because FIML has "
+"no equivalent for ordinal/WLSMV items."
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"α assumes &tau;-equivalence (unidimensionality); with multiple dimensions it "
+"can be a misleading estimate"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"α equals the true reliability only when items are tau-equivalent — equal "
+"true-score loadings on a single common factor (Cronbach, 1951; Zumbo, "
+"Gadermann &amp; Zeisser, 2007). Unlike McDonald's ω, GLB, or the Guttman λ "
+"family (none of which require this), α is biased — usually downward — "
+"whenever tau-equivalence fails. FiabilityLab's Internal Consistency module "
+"tests this formally as a likelihood-ratio comparison between a congeneric "
+"single-factor CFA (item loadings free) and a tau-equivalent one (loadings "
+"constrained equal): a significant difference rejects tau-equivalence, in "
+"which case ω should be reported instead of α. This requires the lavaan "
+"package; when it is unavailable, the discordance panel's α-vs-ω gap remains "
+"as an indirect signal of the same thing."
+msgstr ""
+
+#: internalConsistency/results/itemTable.columns.title
+msgid "α if deleted"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "α specialized to dichotomous (0/1) items"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "α's Assumptions Check"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"α's standard-error formula also assumes approximate multivariate normality "
+"and unidimensionality (a single common factor). FiabilityLab's assumptions "
+"check reuses the parallel-analysis factor count for the latter — so the same "
+"three checks (tau-equivalence, normality, unidimensionality) that determine "
+"whether α is trustworthy are reported together in one panel, the way "
+"interRater reports ICC's normality/homoscedasticity/linearity checks "
+"together."
+msgstr ""
+
+#: measurementInvariance/results/invarianceTable.columns.title
+msgid "ΔCFI"
+msgstr ""
+
+#: advancedReliability/results/modelComparisonTable.columns.title
+#: measurementInvariance/results/invarianceTable.columns.title
+msgid "Δdf"
+msgstr ""
+
+#: advancedReliability/results/modelComparisonTable.columns.title
+msgid "Δχ²"
+msgstr ""
+
+#: measurementInvariance/results/invarianceTable.columns.title
+msgid "Δχ² (vs. prior)"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid "λ6 unstable with near-duplicate items"
+msgstr ""
+
+#: R/fiabilitylibrary.b.R
+msgid ""
+"ω total is the proportion of total-score variance explained by a fitted "
+"factor model, computed from the model's actual loadings rather than assuming "
+"they are equal (McDonald, 1999). ω hierarchical (ωₕ) is the narrower "
+"quantity: the variance attributable specifically to ONE general factor "
+"running through all items, net of whatever group-factor (subscale) variance "
+"also exists — it requires a genuine bifactor/multi-factor model, and is not "
+"a distinct number from ω total when only one factor is fit."
+msgstr ""
