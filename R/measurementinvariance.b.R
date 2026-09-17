@@ -203,27 +203,35 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
             res <- self$results
             esc <- private$.esc
 
-            all_result_names <- c("groupSummaryTable", "invarianceTable", "invarianceNote",
-                                   "plotInvariance", "plotInvarianceNote", "interpretation")
-            hide_all <- function() for (nm in all_result_names) res[[nm]]$setVisible(FALSE)
-            bail <- function(msg_en, msg_es) {
-                hide_all()
-                res$interpretation$setVisible(TRUE)
-                res$interpretation$setContent(.fl_prose("<p>&#9888; ", tr(msg_en, msg_es), "</p>"))
-            }
+            # jamovi's official module review (2026-09-16) found this file
+            # hiding every result and leaving one Html message on conditions
+            # the user can fix -- jamovi already has a presentation for a
+            # failed analysis (a stable, greyed pane with an error message);
+            # that only works if the results stay in place instead of
+            # collapsing/re-expanding as the user drags items into factors
+            # one at a time. jmvcore::reject() throws so jamovi shows that
+            # standard presentation instead of a custom hide-everything one.
+            # ES: La revisión oficial de módulos de jamovi (2026-09-16)
+            # encontró que este archivo ocultaba todo resultado y dejaba un
+            # solo mensaje Html en condiciones que el usuario puede corregir
+            # -- jamovi ya tiene una presentación para un análisis fallido
+            # (un panel gris estable con un mensaje de error); eso solo
+            # funciona si los resultados quedan en su lugar en vez de
+            # colapsar/reexpandirse mientras el usuario arrastra ítems a los
+            # factores uno por uno. jmvcore::reject() lanza una excepción
+            # para que jamovi muestre esa presentación estándar en vez de
+            # una propia que oculta todo.
 
-            if (!requireNamespace("lavaan", quietly = TRUE)) {
-                bail("This analysis requires the lavaan package, which is not installed here.",
-                     "Este análisis requiere el paquete lavaan, que no está instalado aquí.")
-                return()
-            }
+            if (!requireNamespace("lavaan", quietly = TRUE))
+                jmvcore::reject(tr(
+                    "This analysis requires the lavaan package, which is not installed here.",
+                    "Este análisis requiere el paquete lavaan, que no está instalado aquí."))
 
             group_name <- opt$group
-            if (is.null(group_name) || !nzchar(group_name)) {
-                bail("Assign a grouping variable to test invariance across.",
-                     "Asigne una variable de agrupación para comprobar la invariancia a través de ella.")
-                return()
-            }
+            if (is.null(group_name) || !nzchar(group_name))
+                jmvcore::reject(tr(
+                    "Assign a grouping variable to test invariance across.",
+                    "Asigne una variable de agrupación para comprobar la invariancia a través de ella."))
 
             factors <- list()
             factors_opt <- opt$factors
@@ -236,29 +244,53 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
                     factors[[length(factors) + 1L]] <- list(id = paste0("F", i), name = fname, items = fitems)
                 }
             }
-            if (length(factors) == 0L) {
-                bail("Assign at least 3 items to at least one factor to run the invariance sequence.",
-                     "Asigne al menos 3 ítems a al menos un factor para correr la secuencia de invariancia.")
-                return()
-            }
+            if (length(factors) == 0L)
+                jmvcore::reject(tr(
+                    "Assign at least 3 items to at least one factor to run the invariance sequence.",
+                    "Asigne al menos 3 ítems a al menos un factor para correr la secuencia de invariancia."))
 
             all_items <- unique(unlist(lapply(factors, function(f) f$items)))
             df_raw <- self$data[, c(all_items, group_name), drop = FALSE]
             for (col in all_items) df_raw[[col]] <- suppressWarnings(as.numeric(df_raw[[col]]))
             df_raw[[group_name]] <- factor(df_raw[[group_name]])
+
+            # See the note at .fl_safe_names()' own definition in
+            # shared-helpers.R for why -- item names go into lavaan model
+            # syntax below, so the item columns (not group_name, which
+            # lavaan takes as a plain data-frame column reference, never
+            # parsed as syntax text) switch to the safe encoding here.
+            # This file never shows an item name back to the user (only
+            # group_name/its levels, via esc() elsewhere), so no reverse
+            # mapping is needed, unlike advancedreliability.b.R's own use
+            # of the same helper.
+            # ES: Ver la nota en la propia definición de .fl_safe_names()
+            # en shared-helpers.R sobre por qué -- los nombres de ítem van
+            # a sintaxis de modelo de lavaan más abajo, así que las
+            # columnas de ítems (no group_name, que lavaan toma como una
+            # referencia de columna de data frame normal, nunca analizada
+            # como texto de sintaxis) cambian a la codificación segura
+            # aquí. Este archivo nunca muestra un nombre de ítem de vuelta
+            # al usuario (solo group_name/sus niveles, vía esc() en otras
+            # partes), así que no se necesita mapeo inverso, a diferencia
+            # del propio uso del mismo ayudante en advancedreliability.b.R.
+            safe_names <- .fl_safe_names(all_items)
+            for (col in all_items) names(df_raw)[names(df_raw) == col] <- unname(safe_names$to_safe[col])
+            factors <- lapply(factors, function(f) {
+                f$items <- unname(safe_names$to_safe[f$items])
+                f
+            })
+            all_items <- unname(safe_names$to_safe[all_items])
             df_adv <- na.omit(df_raw)
             n_adv <- nrow(df_adv)
             group_levels <- levels(droplevels(df_adv[[group_name]]))
-            if (length(group_levels) < 2L) {
-                bail("The grouping variable needs at least 2 levels (after removing missing values) to test invariance.",
-                     "La variable de agrupación necesita al menos 2 niveles (tras remover valores faltantes) para probar invariancia.")
-                return()
-            }
-            if (n_adv < 20L * length(group_levels)) {
-                bail("Not enough complete cases per group to fit a multi-group confirmatory factor model (roughly 20+ per group recommended).",
-                     "No hay suficientes casos completos por grupo para ajustar un modelo factorial confirmatorio multigrupo (se recomiendan aproximadamente 20+ por grupo).")
-                return()
-            }
+            if (length(group_levels) < 2L)
+                jmvcore::reject(tr(
+                    "The grouping variable needs at least 2 levels (after removing missing values) to test invariance.",
+                    "La variable de agrupación necesita al menos 2 niveles (tras remover valores faltantes) para probar invariancia."))
+            if (n_adv < 20L * length(group_levels))
+                jmvcore::reject(tr(
+                    "Not enough complete cases per group to fit a multi-group confirmatory factor model (roughly 20+ per group recommended).",
+                    "No hay suficientes casos completos por grupo para ajustar un modelo factorial confirmatorio multigrupo (se recomiendan aproximadamente 20+ por grupo)."))
 
             item_is_ordinal <- identical(opt$itemType, "ordinal") || identical(opt$estimator, "wlsmv") ||
                 (identical(opt$itemType, "auto") && .fl_is_low_cardinality(df_raw[, all_items, drop = FALSE]))
@@ -272,7 +304,20 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
             gst <- res$groupSummaryTable
             grp_counts <- table(df_adv[[group_name]])
             private$.reset_table(gst, length(grp_counts))
-            for (i in seq_along(grp_counts)) gst$setRow(rowNo = i, values = list(level = esc(names(grp_counts)[i]), n = as.integer(grp_counts[i])))
+            # jamovi's official module review (2026-09-16) found esc()'s
+            # HTML-escaping applied to text bound for a native Table's cell
+            # here -- jamovi already escapes table/output text itself, so a
+            # group level named "A & B" would render literally as
+            # "A &amp; B". esc() stays on group_name/its levels elsewhere in
+            # this file, where they go into an Html result instead.
+            # ES: La revisión oficial de módulos de jamovi (2026-09-16)
+            # encontró el escapado HTML de esc() aplicado a texto destinado
+            # a la celda de una Table nativa aquí -- jamovi ya escapa el
+            # propio texto de tabla/salida, así que un nivel de grupo
+            # llamado "A & B" se mostraría literalmente como "A &amp; B".
+            # esc() se mantiene sobre group_name/sus niveles en otras
+            # partes de este archivo, donde van a un resultado Html.
+            for (i in seq_along(grp_counts)) gst$setRow(rowNo = i, values = list(level = names(grp_counts)[i], n = as.integer(grp_counts[i])))
 
             levels_seq <- list(
                 list(name = tr("Configural", "Configural"), equal = character(0)),
@@ -284,11 +329,10 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
                 private$.fit_cfa_group(model_cf, df_adv, group_name, ordered_items, estimator_eff, lvl$equal))
             ok <- vapply(fits, function(f) !is.null(f) && isTRUE(tryCatch(lavaan::lavInspect(f, "converged"), error = function(e) FALSE)), logical(1))
 
-            if (!ok[1]) {
-                bail("The configural (baseline) model did not converge -- try fewer factors, more items per factor, or check the item/group assignments before testing invariance.",
-                     "El modelo configural (base) no convergió -- intente con menos factores, más ítems por factor, o revise las asignaciones de ítems/grupo antes de probar invariancia.")
-                return()
-            }
+            if (!ok[1])
+                jmvcore::reject(tr(
+                    "The configural (baseline) model did not converge -- try fewer factors, more items per factor, or check the item/group assignments before testing invariance.",
+                    "El modelo configural (base) no convergió -- intente con menos factores, más ítems por factor, o revise las asignaciones de ítems/grupo antes de probar invariancia."))
 
             fm_list <- lapply(fits, function(f) if (is.null(f)) NULL else private$.fit_measures_ext(f, estimator_eff))
 
@@ -390,26 +434,26 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
 
             res$invarianceNote$setContent(.fl_prose(
                 "<p>", estim_desc, override_desc, " ", tr(
-                    paste0("Each row after Configural is tested against the row just before it (not against Configural directly), on two criteria: a likelihood-ratio test (LRT; significant at p &lt; .05 means the added restriction costs a real amount of fit) and the change in CFI (&Delta;CFI &lt; -.01 is Cheung &amp; Rensvold's, 2002, sample-size-robust threshold for the same question). The LRT alone gets hypersensitive to trivial misfit in large samples -- part of why &Delta;CFI is reported alongside it -- but the two do not always agree: this report shows \"Supported by both criteria\" only when they do, and names which single criterion supports the restriction when they disagree, rather than treating either criterion passing as sufficient on its own."),
-                    paste0("Cada fila después de Configural se prueba contra la fila justo anterior (no contra Configural directamente), con dos criterios: una prueba de razón de verosimilitud (LRT; significativa en p &lt; .05 significa que la restricción agregada cuesta una cantidad real de ajuste) y el cambio en CFI (&Delta;CFI &lt; -.01 es el umbral robusto al tamaño muestral de Cheung &amp; Rensvold, 2002, para la misma pregunta). El LRT por sí solo se vuelve hipersensible a desajustes triviales en muestras grandes -- parte de por qué se reporta el &Delta;CFI junto a él -- pero ambos no siempre coinciden: este informe muestra \"Respaldado por ambos criterios\" solo cuando coinciden, y nombra qué criterio único respalda la restricción cuando discrepan, en vez de tratar que cualquiera de los dos se cumpla como suficiente por sí solo.")),
+                    paste0("Each row after Configural is tested against the row just before it (not against Configural directly), on two criteria: a likelihood-ratio test (LRT; significant at p &lt; .05 means the added restriction costs a real amount of fit) and the change in CFI (ΔCFI &lt; -.01 is Cheung &amp; Rensvold's, 2002, sample-size-robust threshold for the same question). The LRT alone gets hypersensitive to trivial misfit in large samples -- part of why ΔCFI is reported alongside it -- but the two do not always agree: this report shows \"Supported by both criteria\" only when they do, and names which single criterion supports the restriction when they disagree, rather than treating either criterion passing as sufficient on its own."),
+                    paste0("Cada fila después de Configural se prueba contra la fila justo anterior (no contra Configural directamente), con dos criterios: una prueba de razón de verosimilitud (LRT; significativa en p &lt; .05 significa que la restricción agregada cuesta una cantidad real de ajuste) y el cambio en CFI (ΔCFI &lt; -.01 es el umbral robusto al tamaño muestral de Cheung &amp; Rensvold, 2002, para la misma pregunta). El LRT por sí solo se vuelve hipersensible a desajustes triviales en muestras grandes -- parte de por qué se reporta el ΔCFI junto a él -- pero ambos no siempre coinciden: este informe muestra \"Respaldado por ambos criterios\" solo cuando coinciden, y nombra qué criterio único respalda la restricción cuando discrepan, en vez de tratar que cualquiera de los dos se cumpla como suficiente por sí solo.")),
                 "</p>",
                 "<p>", tr(
                     "Configural invariance means the same items load on the same factors in every group, with everything else free -- the minimum requirement for the construct to even be comparable across groups. Metric (weak) invariance -- equal loadings -- is required before comparing regression/correlation coefficients involving the factor across groups, and this includes composite reliability (Omega/CR, from Advanced Reliability): both are computed from the loadings, so a difference in Omega/CR between groups is not interpretable as a real reliability difference unless the loadings it is built from are already confirmed equal here. Scalar (strong) invariance -- also equal intercepts/thresholds -- is required before comparing group means or observed scores; without it, an observed mean difference may reflect item functioning differences, not a real difference on the construct. Strict invariance -- also equal residual variances -- is a stronger, less commonly required condition.",
                     "La invariancia configural significa que los mismos ítems cargan sobre los mismos factores en cada grupo, con todo lo demás libre -- el requisito mínimo para que el constructo sea siquiera comparable entre grupos. La invariancia métrica (débil) -- cargas iguales -- se requiere antes de comparar coeficientes de regresión/correlación que involucren al factor entre grupos, y esto incluye la confiabilidad compuesta (Omega/CR, de Advanced Reliability): ambas se calculan a partir de las cargas, así que una diferencia en Omega/CR entre grupos no es interpretable como una diferencia real de confiabilidad a menos que las cargas de las que se construye ya estén confirmadas como iguales aquí. La invariancia escalar (fuerte) -- también interceptos/umbrales iguales -- se requiere antes de comparar medias de grupo o puntajes observados; sin ella, una diferencia de medias observada puede reflejar diferencias en el funcionamiento de los ítems, no una diferencia real en el constructo. La invariancia estricta -- también varianzas residuales iguales -- es una condición más fuerte, requerida con menos frecuencia."),
                 "</p>",
-                if (length(failed_to_converge) > 0L) paste0("<p>&#9888; ", tr(
+                if (length(failed_to_converge) > 0L) paste0("<p>⚠ ", tr(
                         "One or more models in the sequence did not converge -- the invariance question cannot be answered past that point with this data/structure.",
                         "Uno o más modelos de la secuencia no convergieron -- la pregunta de invariancia no puede responderse más allá de ese punto con estos datos/estructura."), "</p>",
                         "<p>", usage_desc, "</p>")
-                    else if (length(not_supported) > 0L) paste0("<p>&#9888; ", tr(
+                    else if (length(not_supported) > 0L) paste0("<p>⚠ ", tr(
                         paste0(not_supported[[1]]$model, " invariance is not supported by either criterion -- do not compare whatever that level of invariance is required for (see above) across ", esc(group_name), " groups without first identifying which specific parameters differ (partial invariance) via semTools::partialInvariance()/partialInvarianceCat()."),
                         paste0("La invariancia ", not_supported[[1]]$model, " no está respaldada por ningún criterio -- no compare aquello para lo que se requiere ese nivel de invariancia (vea arriba) entre grupos de ", esc(group_name), " sin antes identificar qué parámetros específicos difieren (invariancia parcial) vía semTools::partialInvariance()/partialInvarianceCat().")), "</p>",
                         "<p>", usage_desc, "</p>")
-                    else if (length(discordant) > 0L) paste0("<p>&#9888; ", tr(
+                    else if (length(discordant) > 0L) paste0("<p>⚠ ", tr(
                         paste0(discordant[[1]]$model, " invariance is supported by only one of the two criteria -- treat this level with real caution rather than as settled. Investigate partial invariance to see whether the discordance traces to specific items before relying on comparisons that require this level."),
                         paste0("La invariancia ", discordant[[1]]$model, " está respaldada por solo uno de los dos criterios -- trate este nivel con verdadera cautela en vez de darlo por resuelto. Investigue la invariancia parcial para ver si la discordancia se debe a ítems específicos antes de confiar en comparaciones que requieran este nivel.")), "</p>",
                         "<p>", usage_desc, "</p>")
-                    else paste0("<p>&#10003; ", tr("Full invariance is supported by both criteria through every level tested.",
+                    else paste0("<p>✓ ", tr("Full invariance is supported by both criteria through every level tested.",
                                                      "La invariancia completa está respaldada por ambos criterios en todos los niveles probados."), "</p>",
                         "<p>", usage_desc, "</p>")))
 
@@ -434,8 +478,8 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
             # sobrevive a esa segunda instancia.
             res$plotInvariance$setState(private$.fitcmp_data)
             res$plotInvarianceNote$setContent(.fl_prose("<p>", tr(
-                "CFI (0-1, higher is better) at each level of the invariance sequence; a level's bar noticeably shorter than the one before it is the same signal as a significant likelihood-ratio test or a large &Delta;CFI in the table above, shown graphically.",
-                "CFI (0-1, mayor es mejor) en cada nivel de la secuencia de invariancia; una barra de un nivel notablemente más corta que la anterior es la misma señal que una prueba de razón de verosimilitud significativa o un &Delta;CFI grande en la tabla de arriba, mostrada gráficamente."), "</p>"))
+                "CFI (0-1, higher is better) at each level of the invariance sequence; a level's bar noticeably shorter than the one before it is the same signal as a significant likelihood-ratio test or a large ΔCFI in the table above, shown graphically.",
+                "CFI (0-1, mayor es mejor) en cada nivel de la secuencia de invariancia; una barra de un nivel notablemente más corta que la anterior es la misma señal que una prueba de razón de verosimilitud significativa o un ΔCFI grande en la tabla de arriba, mostrada gráficamente."), "</p>"))
 
             adv_html <- paste0(.fl_prose_open(),
                 "<h4>", tr("What happened", "Qué pasó"), "</h4>",

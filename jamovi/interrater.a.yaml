@@ -49,10 +49,12 @@ options:
     default: false
 
   - name: bootstrapCi
+    title: Bootstrap confidence intervals (95%)
     type: Bool
     default: true
 
   - name: bootstrapSamples
+    title: Bootstrap samples
     type: Integer
     default: 1000
     min: 100

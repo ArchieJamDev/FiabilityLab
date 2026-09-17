@@ -197,6 +197,51 @@
     all(is_whole) && max(n_unique) <= max_categories
 }
 
+# jamovi's official module review (2026-09-16) found that variable names
+# with spaces, hyphens or accented characters (e.g. "Item 1", "Q3-a" --
+# common from spreadsheet headers) break lavaan's model-syntax parser when
+# pasted directly into a formula string. The parse error was swallowed by
+# the surrounding tryCatch and reported as "did not converge", sending the
+# user off rearranging factors to fix what was really just a naming issue.
+# jmvcore::toB64()/fromB64() (already used internally by jmvcore for the
+# same reason) give a reversible, always-syntax-safe encoding: rename a
+# data frame's columns and any item-name vector to the safe form before
+# building lavaan syntax or fitting, and translate back only at the
+# specific points where an item name is shown to the user (a factor's own
+# id, like "F1", is never a real column name and passes through the
+# reverse map unchanged since it was never encoded into it).
+# ES: La revisión oficial de módulos de jamovi (2026-09-16) encontró que
+# nombres de variable con espacios, guiones o caracteres acentuados (p.
+# ej. "Item 1", "Q3-a" -- comunes en encabezados de hoja de cálculo)
+# rompen el analizador de sintaxis de modelos de lavaan al pegarse
+# directamente en una cadena de fórmula. El error de análisis quedaba
+# absorbido por el tryCatch circundante y se reportaba como "no
+# convergió", enviando al usuario a reordenar factores para arreglar lo
+# que en realidad era solo un problema de nombres. jmvcore::toB64()/
+# fromB64() (ya usados internamente por jmvcore por la misma razón) dan
+# una codificación reversible y siempre segura para sintaxis: renombra las
+# columnas de un data frame y cualquier vector de nombres de ítem a la
+# forma segura antes de construir sintaxis de lavaan o ajustar el modelo,
+# y traduce de vuelta solo en los puntos específicos donde se muestra un
+# nombre de ítem al usuario (el propio id de un factor, como "F1", nunca
+# es un nombre de columna real y pasa sin cambios por el mapa inverso ya
+# que nunca se codificó en él).
+.fl_safe_names <- function(names) {
+    safe <- jmvcore::toB64(names)
+    list(to_safe = stats::setNames(safe, names), to_raw = stats::setNames(names, safe))
+}
+
+# Look up `name` in a .fl_safe_names() reverse map (to_raw), falling back
+# to `name` itself unchanged when it isn't in the map -- the case for a
+# factor id ("F1", "G") or any other non-item label that flows through the
+# same display code as an item name.
+# ES: Busca `name` en el mapa inverso (to_raw) de .fl_safe_names(),
+# devolviendo `name` sin cambios cuando no está en el mapa -- el caso de
+# un id de factor ("F1", "G") o cualquier otra etiqueta que no sea de
+# ítem y que fluya por el mismo código de presentación que un nombre de
+# ítem.
+.fl_unsafe_name <- function(name, to_raw) if (name %in% names(to_raw)) unname(to_raw[name]) else name
+
 .fl_bootstrap <- function(df, stat_fn, B = 1000L) {
     n <- nrow(df)
     vals <- numeric(B)

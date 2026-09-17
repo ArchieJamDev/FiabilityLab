@@ -48,53 +48,142 @@
 # misma suite de casos límite ya establecida para AssumptionsLab.
 # -----------------------------------------------------------------------------
 
-test_that("advancedReliability tolerates accented and symbol item names", {
+test_that("advancedReliability rejects cleanly (not a crash) with accented and symbol item names on unstructured data", {
 
+    # edgeItemsSpecialNameData()'s columns are independent noise (see its
+    # own definition), not a real factor structure, so a CFA on them is
+    # expected to fail to converge/produce a Heywood case regardless of
+    # naming -- the point of this test is that failure surfaces as
+    # jmvcore::reject()'s clean, informative message (jamovi's own greyed
+    # error pane), not an uncaught R/lavaan crash from broken variable-name
+    # syntax. See the dedicated fit-success test below (which uses a
+    # properly-structured fixture) for confirmation that the safe-names fix
+    # itself works when the data can actually support a real fit.
     d <- edgeItemsSpecialNameData()
     factors <- list(list(label = "F1", vars = names(d)))
 
-    expect_no_error(
-        advancedReliability(data = d, factors = factors, reportLang = "en")
+    expect_error(
+        advancedReliability(data = d, factors = factors, reportLang = "en"),
+        "did not converge"
     )
 })
 
-test_that("advancedReliability tolerates a single-row data set", {
+# -----------------------------------------------------------------------------
+# advancedReliability lavaan-safe-names regression test.
+# ES: Prueba de regresión de nombres seguros para lavaan en
+# advancedReliability.
+#
+# jamovi's official module review (2026-09-16) found that item names with
+# spaces, hyphens or accented characters break lavaan's model-syntax parser
+# when pasted directly into the CFA formula. The parse error was swallowed
+# by a tryCatch and reported as "did not converge" (via bail(), itself since
+# fixed to jmvcore::reject()) -- a graceful-looking failure the earlier
+# accented-name edge-case test above could not distinguish from a genuine
+# convergence failure, since it only asserted expect_no_error(). This test
+# instead confirms the CFA actually fits with these names, not just that
+# nothing crashed. Also confirms the loadings table shows the real
+# (decoded) item names, not the internal safe encoding.
+#
+# ES: La revisión oficial de módulos de jamovi (2026-09-16) encontró que
+# nombres de ítem con espacios, guiones o caracteres acentuados rompen el
+# analizador de sintaxis de modelos de lavaan al pegarse directamente en la
+# fórmula del AFC. El error de análisis quedaba absorbido por un tryCatch y
+# se reportaba como "no convergió" (vía bail(), ya arreglado a
+# jmvcore::reject()) -- una falla de apariencia correcta que la prueba de
+# caso límite de nombres acentuados de arriba no podía distinguir de una
+# falla de convergencia genuina, ya que solo verificaba expect_no_error().
+# Esta prueba en cambio confirma que el AFC realmente ajusta con estos
+# nombres, no solo que nada falló. También confirma que la tabla de cargas
+# muestra los nombres de ítem reales (decodificados), no la codificación
+# segura interna.
+# -----------------------------------------------------------------------------
+
+test_that("advancedReliability's CFA actually fits with accented/symbol item names, and displays them decoded", {
+
+    d <- edgeItemsSpecialNameFactorData()
+    factors <- list(list(label = "F1", vars = names(d)))
+
+    res <- advancedReliability(
+        data = d, factors = factors, itemType = "continuous",
+        estimator = "ml", reportLang = "en"
+    )
+
+    fit <- res$fitTable$asDF
+    expect_false(is.na(fit$chisq[1]))
+    expect_false(is.na(fit$cfi[1]))
+
+    loadings <- res$plotLoadings$state
+    expect_true(all(loadings$item %in% names(d)))
+})
+
+# -----------------------------------------------------------------------------
+# jamovi's official module review (2026-09-16) found this module hiding
+# every result and leaving one Html message (via bail()) on conditions
+# that genuinely block the whole analysis -- since fixed to call
+# jmvcore::reject(), which throws so jamovi shows its own standard
+# greyed-error presentation. Calling the exported wrapper function
+# directly (as these tests do, outside jamovi Desktop) means that throw
+# surfaces as a real R error -- the four tests below were written before
+# that fix and asserted expect_no_error() for exactly these conditions;
+# they now assert expect_error() with the expected message instead,
+# confirming the module rejects cleanly with an informative reason rather
+# than either silently doing nothing or crashing with a cryptic message.
+# ES: La revisión oficial de módulos de jamovi (2026-09-16) encontró que
+# este módulo ocultaba todo resultado y dejaba un solo mensaje Html (vía
+# bail()) en condiciones que bloquean genuinamente todo el análisis -- ya
+# arreglado para llamar a jmvcore::reject(), que lanza una excepción para
+# que jamovi muestre su propia presentación estándar de error en gris.
+# Llamar directamente a la función envoltorio exportada (como hacen estas
+# pruebas, fuera de jamovi Desktop) significa que ese lanzamiento se
+# manifiesta como un error real de R -- las cuatro pruebas de abajo se
+# escribieron antes de ese arreglo y afirmaban expect_no_error() para
+# exactamente estas condiciones; ahora afirman expect_error() con el
+# mensaje esperado en su lugar, confirmando que el módulo rechaza
+# limpiamente con una razón informativa en vez de no hacer nada en
+# silencio o fallar con un mensaje críptico.
+# -----------------------------------------------------------------------------
+
+test_that("advancedReliability rejects a single-row data set with an informative message", {
 
     d <- edgeSingleRowItemsData()
     factors <- list(list(label = "F1", vars = names(d)))
 
-    expect_no_error(
-        advancedReliability(data = d, factors = factors, reportLang = "en")
+    expect_error(
+        advancedReliability(data = d, factors = factors, reportLang = "en"),
+        "minimum 20"
     )
 })
 
-test_that("advancedReliability tolerates an item column that is entirely NA", {
+test_that("advancedReliability rejects an item column that is entirely NA (leaves too few complete cases)", {
 
     d <- edgeAllNaData(edgeItemsBaseData(), "item1")
     factors <- list(list(label = "F1", vars = names(d)))
 
-    expect_no_error(
-        advancedReliability(data = d, factors = factors, reportLang = "en")
+    expect_error(
+        advancedReliability(data = d, factors = factors, reportLang = "en"),
+        "minimum 20"
     )
 })
 
-test_that("advancedReliability tolerates a zero-variance item column", {
+test_that("advancedReliability rejects a zero-variance item column (CFA cannot converge)", {
 
     d <- edgeConstantData(edgeItemsBaseData(), "item1")
     factors <- list(list(label = "F1", vars = names(d)))
 
-    expect_no_error(
-        advancedReliability(data = d, factors = factors, reportLang = "en")
+    expect_error(
+        advancedReliability(data = d, factors = factors, reportLang = "en"),
+        "did not converge"
     )
 })
 
-test_that("advancedReliability tolerates fewer than 3 items across all factors", {
+test_that("advancedReliability rejects fewer than 3 items across all factors with an informative message", {
 
     d <- edgeItemsBaseData(n_items = 2)
     factors <- list(list(label = "F1", vars = names(d)))
 
-    expect_no_error(
-        advancedReliability(data = d, factors = factors, reportLang = "en")
+    expect_error(
+        advancedReliability(data = d, factors = factors, reportLang = "en"),
+        "at least 3 items"
     )
 })
 

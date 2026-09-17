@@ -112,71 +112,158 @@ test_that("a known scalar-invariance violation is caught specifically at the Sca
 # establecida para AssumptionsLab.
 # -----------------------------------------------------------------------------
 
-test_that("measurementInvariance tolerates accented and symbol item names", {
+test_that("measurementInvariance rejects cleanly (not a crash) with accented and symbol item names on an underpowered design", {
 
+    # edgeGroupItemsSpecialNameData()'s default n=30 (15/group) is below
+    # the 20-per-group minimum regardless of naming, so this is expected
+    # to reject on sample size, not to fit -- the point of this test is
+    # that the rejection surfaces as jmvcore::reject()'s clean, informative
+    # message (jamovi's own greyed error pane), not an uncaught R/lavaan
+    # crash from broken variable-name syntax. See the dedicated fit-success
+    # test below (a properly-sized, properly-structured fixture) for
+    # confirmation that the safe-names fix itself works when the design can
+    # actually support a real fit.
     d <- edgeGroupItemsSpecialNameData()
     items <- setdiff(names(d), "group")
     factors <- list(list(label = "F1", vars = items))
 
-    expect_no_error(
+    expect_error(
         measurementInvariance(
             data = d, group = "group", factors = factors,
             itemType = "continuous", estimator = "ml", reportLang = "en"
-        )
+        ),
+        "per group"
     )
 })
 
-test_that("measurementInvariance tolerates a single-row data set", {
+# -----------------------------------------------------------------------------
+# measurementInvariance lavaan-safe-names regression test.
+# ES: Prueba de regresión de nombres seguros para lavaan en
+# measurementInvariance.
+#
+# jamovi's official module review (2026-09-16) found that item names with
+# spaces, hyphens or accented characters break lavaan's model-syntax parser
+# when pasted directly into the configural-model formula. The parse error
+# was swallowed by a tryCatch and reported as "did not converge" (via
+# bail(), itself since fixed to jmvcore::reject()) -- a graceful-looking
+# failure the earlier accented-name edge-case test above could not
+# distinguish from a genuine convergence failure, since it only asserted
+# expect_no_error(). This test uses a properly-sized fixture (60/group,
+# comfortably above the 20-per-group minimum) to confirm the configural
+# model actually fits with these names, not just that nothing crashed.
+#
+# ES: La revisión oficial de módulos de jamovi (2026-09-16) encontró que
+# nombres de ítem con espacios, guiones o caracteres acentuados rompen el
+# analizador de sintaxis de modelos de lavaan al pegarse directamente en la
+# fórmula del modelo configural. El error de análisis quedaba absorbido por
+# un tryCatch y se reportaba como "no convergió" (vía bail(), ya arreglado
+# a jmvcore::reject()) -- una falla de apariencia correcta que la prueba de
+# caso límite de nombres acentuados de arriba no podía distinguir de una
+# falla de convergencia genuina, ya que solo verificaba expect_no_error().
+# Esta prueba usa un fixture de tamaño adecuado (60/grupo, cómodamente por
+# encima del mínimo de 20 por grupo) para confirmar que el modelo
+# configural realmente ajusta con estos nombres, no solo que nada falló.
+# -----------------------------------------------------------------------------
+
+test_that("measurementInvariance's configural model actually fits with accented/symbol item names", {
+
+    d <- edgeGroupItemsSpecialNameFactorData()
+    items <- setdiff(names(d), "group")
+    factors <- list(list(label = "F1", vars = items))
+
+    res <- measurementInvariance(
+        data = d, group = "group", factors = factors,
+        itemType = "continuous", estimator = "ml", reportLang = "en"
+    )
+
+    row <- res$invarianceTable$asDF
+    configural <- row[row$model == "Configural", ]
+    expect_false(is.na(configural$chisq))
+    expect_false(is.na(configural$cfi))
+})
+
+# -----------------------------------------------------------------------------
+# jamovi's official module review (2026-09-16) found this module hiding
+# every result and leaving one Html message (via bail()) on conditions
+# that genuinely block the whole analysis -- since fixed to call
+# jmvcore::reject(), which throws so jamovi shows its own standard
+# greyed-error presentation. Calling the exported wrapper function
+# directly (as these tests do, outside jamovi Desktop) means that throw
+# surfaces as a real R error -- the four tests below were written before
+# that fix and asserted expect_no_error() for exactly these conditions;
+# they now assert expect_error() with the expected message instead,
+# confirming the module rejects cleanly with an informative reason rather
+# than either silently doing nothing or crashing with a cryptic message.
+# ES: La revisión oficial de módulos de jamovi (2026-09-16) encontró que
+# este módulo ocultaba todo resultado y dejaba un solo mensaje Html (vía
+# bail()) en condiciones que bloquean genuinamente todo el análisis -- ya
+# arreglado para llamar a jmvcore::reject(), que lanza una excepción para
+# que jamovi muestre su propia presentación estándar de error en gris.
+# Llamar directamente a la función envoltorio exportada (como hacen estas
+# pruebas, fuera de jamovi Desktop) significa que ese lanzamiento se
+# manifiesta como un error real de R -- las cuatro pruebas de abajo se
+# escribieron antes de ese arreglo y afirmaban expect_no_error() para
+# exactamente estas condiciones; ahora afirman expect_error() con el
+# mensaje esperado en su lugar, confirmando que el módulo rechaza
+# limpiamente con una razón informativa en vez de no hacer nada en
+# silencio o fallar con un mensaje críptico.
+# -----------------------------------------------------------------------------
+
+test_that("measurementInvariance rejects a single-row data set with an informative message", {
 
     d <- edgeGroupItemsSingleRowData()
     items <- setdiff(names(d), "group")
     factors <- list(list(label = "F1", vars = items))
 
-    expect_no_error(
+    expect_error(
         measurementInvariance(
             data = d, group = "group", factors = factors,
             itemType = "continuous", estimator = "ml", reportLang = "en"
-        )
+        ),
+        "at least 2 levels"
     )
 })
 
-test_that("measurementInvariance tolerates an item column that is entirely NA", {
+test_that("measurementInvariance rejects an item column that is entirely NA (leaves too few complete cases)", {
 
     d <- edgeAllNaData(fixtureInvariantTwoGroupData(n_per_group = 30), "item1")
 
-    expect_no_error(
+    expect_error(
         measurementInvariance(
             data = d, group = "group",
             factors = list(list(label = "F1", vars = paste0("item", 1:4))),
             itemType = "continuous", estimator = "ml", reportLang = "en"
-        )
+        ),
+        "at least 2 levels"
     )
 })
 
-test_that("measurementInvariance tolerates a zero-variance item column", {
+test_that("measurementInvariance rejects a zero-variance item column (configural model cannot converge)", {
 
     d <- edgeConstantData(fixtureInvariantTwoGroupData(n_per_group = 30), "item1")
 
-    expect_no_error(
+    expect_error(
         measurementInvariance(
             data = d, group = "group",
             factors = list(list(label = "F1", vars = paste0("item", 1:4))),
             itemType = "continuous", estimator = "ml", reportLang = "en"
-        )
+        ),
+        "did not converge"
     )
 })
 
-test_that("measurementInvariance tolerates a grouping variable with a single level", {
+test_that("measurementInvariance rejects a grouping variable with a single level, with an informative message", {
 
     d <- edgeGroupItemsSingleLevelData()
     items <- setdiff(names(d), "group")
     factors <- list(list(label = "F1", vars = items))
 
-    expect_no_error(
+    expect_error(
         measurementInvariance(
             data = d, group = "group", factors = factors,
             itemType = "continuous", estimator = "ml", reportLang = "en"
-        )
+        ),
+        "at least 2 levels"
     )
 })
 

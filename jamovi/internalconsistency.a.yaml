@@ -30,6 +30,7 @@ options:
 
   # ── Measurement level ─────────────────────────────────────────────────────
   - name: measureLevel
+    title: Measurement level
     type: List
     options:
       - name: auto
@@ -90,10 +91,12 @@ options:
 
   # ── Bootstrap CIs ─────────────────────────────────────────────────────────
   - name: bootstrapCi
+    title: Bootstrap confidence intervals (95%)
     type: Bool
     default: true
 
   - name: bootstrapSamples
+    title: Bootstrap samples
     type: Integer
     default: 1000
     min: 100

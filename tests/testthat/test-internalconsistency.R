@@ -121,6 +121,48 @@ test_that("internalConsistency tolerates accented and symbol item names", {
     )
 })
 
+# -----------------------------------------------------------------------------
+# internalConsistency lavaan-safe-names regression test.
+# ES: Prueba de regresión de nombres seguros para lavaan en
+# internalConsistency.
+#
+# jamovi's official module review (2026-09-16) found that item names with
+# spaces, hyphens or accented characters break lavaan's model-syntax parser
+# when pasted directly into the tau-equivalence test's formula string. The
+# parse error was swallowed by a tryCatch and reported as "did not converge"
+# -- a graceful-looking N/A that the earlier accented-name edge-case test
+# above could not distinguish from a genuine convergence failure, since it
+# only asserted expect_no_error(). This test instead confirms the
+# tau-equivalence row actually computes a real statistic with these names,
+# not just that nothing crashed.
+#
+# ES: La revisión oficial de módulos de jamovi (2026-09-16) encontró que
+# nombres de ítem con espacios, guiones o caracteres acentuados rompen el
+# analizador de sintaxis de modelos de lavaan al pegarse directamente en la
+# cadena de fórmula de la prueba de tau-equivalencia. El error de análisis
+# quedaba absorbido por un tryCatch y se reportaba como "no convergió" -- un
+# N/D de apariencia correcta que la prueba de caso límite de nombres
+# acentuados de arriba no podía distinguir de una falla de convergencia
+# genuina, ya que solo verificaba expect_no_error(). Esta prueba en cambio
+# confirma que la fila de tau-equivalencia realmente calcula un estadístico
+# real con estos nombres, no solo que nada falló.
+# -----------------------------------------------------------------------------
+
+test_that("internalConsistency's tau-equivalence test computes a real statistic with accented/symbol item names", {
+
+    d <- edgeItemsSpecialNameFactorData()
+
+    res <- internalConsistency(
+        data = d, items = names(d), alpha = TRUE, checkReliabilityAssumptions = TRUE,
+        reportLang = "en"
+    )
+
+    row <- res$reliabilityAssumptionsTable$asDF
+    tau_row <- row[row$assumption == "Tau-equivalence", ]
+    expect_false(is.na(tau_row$statistic))
+    expect_true(tau_row$verdict %in% c("Met", "Violated"))
+})
+
 test_that("internalConsistency tolerates a single-row data set", {
 
     d <- edgeSingleRowItemsData()

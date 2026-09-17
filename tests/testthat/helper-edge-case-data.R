@@ -138,6 +138,44 @@ edgeItemsSpecialNameData <- function(n = 30, seed = 20260909) {
     )
 }
 
+# EN: Same accented/symbol column names as edgeItemsSpecialNameData(), but
+# with a genuine single common factor behind the items (loading = .7 each)
+# instead of mutually independent noise. edgeItemsSpecialNameData() is
+# correct for "does this crash on pathological input" tests, but a CFA on
+# 4 independent random variables has no real structure to recover and
+# readily produces a Heywood case/non-convergence on its own -- a false
+# signal for a test that specifically wants to confirm a *successful* fit
+# with safe (jmvcore::toB64()-encoded) lavaan variable names, not just that
+# nothing crashed. Use this fixture instead whenever the assertion is "the
+# model actually fits/converges with these names", not just "no error".
+# ES: Mismos nombres de columna acentuados/con símbolos que
+# edgeItemsSpecialNameData(), pero con un único factor común genuino detrás
+# de los ítems (carga = .7 cada uno) en vez de ruido mutuamente
+# independiente. edgeItemsSpecialNameData() es correcto para pruebas de
+# "esto falla con entrada patológica", pero un AFC sobre 4 variables
+# aleatorias independientes no tiene ninguna estructura real que recuperar
+# y fácilmente produce un caso Heywood/no convergencia por sí solo -- una
+# señal falsa para una prueba que específicamente quiere confirmar un
+# ajuste *exitoso* con nombres de variable seguros para lavaan
+# (codificados con jmvcore::toB64()), no solo que nada falló. Use este
+# fixture en su lugar siempre que la aserción sea "el modelo realmente
+# ajusta/converge con estos nombres", no solo "sin error".
+edgeItemsSpecialNameFactorData <- function(n = 100, loading = .7, seed = 20260909) {
+
+    set.seed(seed)
+
+    f <- stats::rnorm(n)
+    gen <- function() loading * f + stats::rnorm(n, sd = sqrt(1 - loading^2))
+
+    data.frame(
+        `ítem_uno`     = gen(),
+        `ítem_dós`     = gen(),
+        `pregunta ± 3` = gen(),
+        `reactivo_4`   = gen(),
+        check.names = FALSE
+    )
+}
+
 # -----------------------------------------------------------------------------
 # Single-observation item data set.
 # ES: Conjunto de datos de ítems con una sola observación.
@@ -308,6 +346,23 @@ edgeConstantData <- function(data, columnName, constantValue = 3) {
 edgeGroupItemsSpecialNameData <- function(n = 30, seed = 20260909) {
 
     d <- edgeItemsSpecialNameData(n = n, seed = seed)
+    d$group <- rep(c("A", "B"), length.out = n)
+
+    d
+}
+
+# EN: Grouped counterpart of edgeItemsSpecialNameFactorData() -- see the
+# note there for why a genuine factor structure, not independent noise, is
+# needed to test that a model actually *fits* (as opposed to merely not
+# crashing) with safe lavaan variable names.
+# ES: Contraparte agrupada de edgeItemsSpecialNameFactorData() -- ver la
+# nota ahí sobre por qué se necesita una estructura factorial genuina, no
+# ruido independiente, para probar que un modelo realmente *ajusta* (a
+# diferencia de simplemente no fallar) con nombres de variable seguros
+# para lavaan.
+edgeGroupItemsSpecialNameFactorData <- function(n = 120, loading = .7, seed = 20260909) {
+
+    d <- edgeItemsSpecialNameFactorData(n = n, loading = loading, seed = seed)
     d$group <- rep(c("A", "B"), length.out = n)
 
     d

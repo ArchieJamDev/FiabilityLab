@@ -140,21 +140,51 @@ test_that("interRater tolerates accented and symbol rater names", {
     )
 })
 
-test_that("interRater tolerates a single-row data set", {
+# -----------------------------------------------------------------------------
+# jamovi's official module review (2026-09-16) found this module hiding
+# every result and leaving one Html message on conditions that genuinely
+# block the whole analysis (fewer than 2 raters, not enough complete
+# cases) -- since fixed to call jmvcore::reject(), which throws so jamovi
+# shows its own standard greyed-error presentation. Calling the exported
+# wrapper function directly (as these tests do, outside jamovi Desktop)
+# means that throw surfaces as a real R error -- the three tests below
+# were written before that fix and asserted expect_no_error() for exactly
+# these three conditions; they now assert expect_error() with the expected
+# message instead, confirming the module rejects cleanly with an
+# informative reason rather than either silently doing nothing or crashing
+# with a cryptic message.
+# ES: La revisión oficial de módulos de jamovi (2026-09-16) encontró que
+# este módulo ocultaba todo resultado y dejaba un solo mensaje Html en
+# condiciones que bloquean genuinamente todo el análisis (menos de 2
+# jueces, no hay suficientes casos completos) -- ya arreglado para llamar
+# a jmvcore::reject(), que lanza una excepción para que jamovi muestre su
+# propia presentación estándar de error en gris. Llamar directamente a la
+# función envoltorio exportada (como hacen estas pruebas, fuera de jamovi
+# Desktop) significa que ese lanzamiento se manifiesta como un error real
+# de R -- las tres pruebas de abajo se escribieron antes de ese arreglo y
+# afirmaban expect_no_error() para exactamente estas tres condiciones;
+# ahora afirman expect_error() con el mensaje esperado en su lugar,
+# confirmando que el módulo rechaza limpiamente con una razón informativa
+# en vez de no hacer nada en silencio o fallar con un mensaje críptico.
+# -----------------------------------------------------------------------------
+
+test_that("interRater rejects a single-row data set with an informative message", {
 
     d <- edgeSingleRowRatersData()
 
-    expect_no_error(
-        interRater(data = d, ratings = names(d), dataType = "continuous", reportLang = "en")
+    expect_error(
+        interRater(data = d, ratings = names(d), dataType = "continuous", reportLang = "en"),
+        "minimum 5"
     )
 })
 
-test_that("interRater tolerates a rater column that is entirely NA", {
+test_that("interRater rejects a rater column that is entirely NA (leaves too few complete cases)", {
 
     d <- edgeAllNaData(edgeRatersBaseData(), "rater1")
 
-    expect_no_error(
-        interRater(data = d, ratings = names(d), dataType = "continuous", reportLang = "en")
+    expect_error(
+        interRater(data = d, ratings = names(d), dataType = "continuous", reportLang = "en"),
+        "minimum 5"
     )
 })
 
@@ -167,12 +197,13 @@ test_that("interRater tolerates a zero-variance rater column", {
     )
 })
 
-test_that("interRater tolerates fewer than 2 raters", {
+test_that("interRater rejects fewer than 2 raters with an informative message", {
 
     d <- edgeRatersBaseData(k = 1)
 
-    expect_no_error(
-        interRater(data = d, ratings = names(d), dataType = "continuous", reportLang = "en")
+    expect_error(
+        interRater(data = d, ratings = names(d), dataType = "continuous", reportLang = "en"),
+        "at least 2"
     )
 })
 

@@ -194,19 +194,28 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             opt <- self$options
 
             # ── 1. Validate ──────────────────────────────────────────────────
+            # jamovi's official module review (2026-09-16) found this file
+            # hiding every result and leaving one Html message on conditions
+            # the user can fix -- jamovi already has a presentation for a
+            # failed analysis (a stable, greyed pane with an error message);
+            # that only works if the results stay in place instead of
+            # collapsing/re-expanding as the user assigns variables.
+            # jmvcore::reject() throws so jamovi shows that standard
+            # presentation instead of a custom hide-everything one.
+            # ES: La revisión oficial de módulos de jamovi (2026-09-16)
+            # encontró que este archivo ocultaba todo resultado y dejaba un
+            # solo mensaje Html en condiciones que el usuario puede corregir
+            # -- jamovi ya tiene una presentación para un análisis fallido
+            # (un panel gris estable con un mensaje de error); eso solo
+            # funciona si los resultados quedan en su lugar en vez de
+            # colapsar/reexpandirse mientras el usuario asigna variables.
+            # jmvcore::reject() lanza una excepción para que jamovi muestre
+            # esa presentación estándar en vez de una propia que oculta todo.
             ratings <- opt$ratings
-            if (length(ratings) < 2) {
-                self$results$autoDetectNote$setContent(paste0("<p><i>", tr(
+            if (length(ratings) < 2)
+                jmvcore::reject(tr(
                     "Please select at least 2 rating variables to compute agreement coefficients.",
-                    "Por favor seleccione al menos 2 variables de calificación para calcular los coeficientes de acuerdo."
-                ), "</i></p>"))
-                self$results$mainTable$setVisible(FALSE)
-                self$results$plotComparison$setVisible(FALSE)
-                self$results$discordanceNote$setVisible(FALSE)
-                self$results$plotDiagnostic$setVisible(FALSE)
-                self$results$interpretation$setVisible(FALSE)
-                return()
-            }
+                    "Por favor seleccione al menos 2 variables de calificación para calcular los coeficientes de acuerdo."))
 
             # ── 2. Prepare data ──────────────────────────────────────────────
             df_raw <- self$data[, ratings, drop = FALSE]
@@ -215,18 +224,10 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             n <- nrow(df)
             k <- ncol(df)
 
-            if (n < 5L) {
-                self$results$autoDetectNote$setContent(paste0("<p><b>", tr(
+            if (n < 5L)
+                jmvcore::reject(tr(
                     "Not enough complete cases (minimum 5 required).",
-                    "No hay suficientes casos completos (mínimo 5 requeridos)."
-                ), "</b></p>"))
-                self$results$mainTable$setVisible(FALSE)
-                self$results$plotComparison$setVisible(FALSE)
-                self$results$discordanceNote$setVisible(FALSE)
-                self$results$plotDiagnostic$setVisible(FALSE)
-                self$results$interpretation$setVisible(FALSE)
-                return()
-            }
+                    "No hay suficientes casos completos (mínimo 5 requeridos)."))
 
             # ── 3. Detect measurement level ──────────────────────────────────
             is_char <- vapply(df, function(x) is.character(x) || is.factor(x), logical(1))
@@ -527,24 +528,24 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
 
                 note_html <- paste0(.fl_prose_open(),
                     "<p>", tr(
-                        "The ICC is a variance-partition of the same subject &times; rater ANOVA that its confidence interval is computed from (Shrout &amp; Fleiss, 1979), so it inherits that model's usual assumptions. Unlike Kappa, Gwet's AC1/AC2, Krippendorff's &alpha;, and Kendall's W above (which are rank- or category-based and distribution-free), the ICC's point estimate and especially its F-distribution-based CI are sensitive to non-normal residuals, unequal error variance across raters, and a non-additive (curvilinear) rater relationship.",
-                        "El ICC es una partición de varianza del mismo ANOVA sujeto &times; juez del que se calcula su intervalo de confianza (Shrout &amp; Fleiss, 1979), por lo que hereda los supuestos usuales de ese modelo. A diferencia del Kappa, el AC1/AC2 de Gwet, el &alpha; de Krippendorff y la W de Kendall de arriba (de rango o categoría y libres de distribución), el valor puntual del ICC y sobre todo su IC basado en la distribución F son sensibles a residuos no normales, varianza de error desigual entre jueces, y una relación entre jueces no aditiva (curvilínea)."
+                        "The ICC is a variance-partition of the same subject × rater ANOVA that its confidence interval is computed from (Shrout &amp; Fleiss, 1979), so it inherits that model's usual assumptions. Unlike Kappa, Gwet's AC1/AC2, Krippendorff's α, and Kendall's W above (which are rank- or category-based and distribution-free), the ICC's point estimate and especially its F-distribution-based CI are sensitive to non-normal residuals, unequal error variance across raters, and a non-additive (curvilinear) rater relationship.",
+                        "El ICC es una partición de varianza del mismo ANOVA sujeto × juez del que se calcula su intervalo de confianza (Shrout &amp; Fleiss, 1979), por lo que hereda los supuestos usuales de ese modelo. A diferencia del Kappa, el AC1/AC2 de Gwet, el α de Krippendorff y la W de Kendall de arriba (de rango o categoría y libres de distribución), el valor puntual del ICC y sobre todo su IC basado en la distribución F son sensibles a residuos no normales, varianza de error desigual entre jueces, y una relación entre jueces no aditiva (curvilínea)."
                     ), "</p>",
-                    "<p>", if (sw_bad) paste0("&#9888; <b>", tr("Normality violated", "Normalidad violada"), ":</b> ",
+                    "<p>", if (sw_bad) paste0("⚠ <b>", tr("Normality violated", "Normalidad violada"), ":</b> ",
                         tr("residuals depart from normality (Shapiro-Wilk p &lt; .05). The ICC point estimate is fairly robust to mild non-normality, but its confidence interval is not — treat the reported CI with caution and prefer the bootstrap CIs already computed above for the other coefficients when reporting precision.",
                            "los residuos se desvían de la normalidad (Shapiro-Wilk p &lt; .05). El valor puntual del ICC es razonablemente robusto a desviaciones leves de la normalidad, pero su intervalo de confianza no — trate el IC reportado con cautela y prefiera los IC por bootstrap ya calculados arriba para los otros coeficientes al reportar precisión."))
-                        else paste0("&#10003; ", tr("No evidence against normality of residuals (Shapiro-Wilk p &ge; .05).",
-                                                     "No hay evidencia contra la normalidad de los residuos (Shapiro-Wilk p &ge; .05).")), "</p>",
-                    "<p>", if (lev_bad) paste0("&#9888; <b>", tr("Homoscedasticity violated", "Homocedasticidad violada"), ":</b> ",
+                        else paste0("✓ ", tr("No evidence against normality of residuals (Shapiro-Wilk p ≥ .05).",
+                                                     "No hay evidencia contra la normalidad de los residuos (Shapiro-Wilk p ≥ .05).")), "</p>",
+                    "<p>", if (lev_bad) paste0("⚠ <b>", tr("Homoscedasticity violated", "Homocedasticidad violada"), ":</b> ",
                         tr("error variance differs across raters (Levene p &lt; .05) — at least one rater is far more (or less) internally consistent than the others across the score range, which biases the ICC's standard error and can invalidate its CI. Check the Rater Mean Score diagnostic plot above for which rater stands out.",
                            "la varianza de error difiere entre jueces (Levene p &lt; .05) — al menos un juez es mucho más (o menos) consistente internamente que los demás en el rango de puntajes, lo que sesga el error estándar del ICC y puede invalidar su IC. Revise el gráfico de diagnóstico de Puntaje Medio por Juez arriba para ver qué juez se distingue."))
-                        else paste0("&#10003; ", tr("No evidence against equal error variance across raters (Levene p &ge; .05).",
-                                                     "No hay evidencia contra la igualdad de varianza de error entre jueces (Levene p &ge; .05).")), "</p>",
-                    "<p>", if (tuk_bad) paste0("&#9888; <b>", tr("Linearity/additivity violated", "Linealidad/aditividad violada"), ":</b> ",
-                        tr("Tukey's test detects a subject &times; rater interaction (p &lt; .05): at least one rater's scores curve relative to the others rather than following the same straight-line relationship the ICC model assumes. This is the most severe of the three violations — the ICC will systematically understate true agreement when it happens. Inspect a rater-by-rater scatterplot for a curved (not straight-line) pattern before trusting the ICC value above; Kendall's W, already available in this analysis, is a rank-based alternative that does not assume linearity.",
-                           "la prueba de Tukey detecta una interacción sujeto &times; juez (p &lt; .05): las puntuaciones de al menos un juez se curvan respecto a las de los demás en vez de seguir la misma relación lineal que asume el modelo del ICC. Esta es la más grave de las tres violaciones — el ICC subestimará sistemáticamente el acuerdo real cuando ocurre. Inspeccione un diagrama de dispersión juez contra juez en busca de un patrón curvo (no lineal) antes de confiar en el valor de ICC de arriba; la W de Kendall, ya disponible en este análisis, es una alternativa basada en rangos que no asume linealidad."))
-                        else paste0("&#10003; ", tr("No evidence of a subject &times; rater interaction — the additivity/linearity assumption holds (Tukey p &ge; .05).",
-                                                     "No hay evidencia de interacción sujeto &times; juez — se cumple el supuesto de aditividad/linealidad (Tukey p &ge; .05).")), "</p>",
+                        else paste0("✓ ", tr("No evidence against equal error variance across raters (Levene p ≥ .05).",
+                                                     "No hay evidencia contra la igualdad de varianza de error entre jueces (Levene p ≥ .05).")), "</p>",
+                    "<p>", if (tuk_bad) paste0("⚠ <b>", tr("Linearity/additivity violated", "Linealidad/aditividad violada"), ":</b> ",
+                        tr("Tukey's test detects a subject × rater interaction (p &lt; .05): at least one rater's scores curve relative to the others rather than following the same straight-line relationship the ICC model assumes. This is the most severe of the three violations — the ICC will systematically understate true agreement when it happens. Inspect a rater-by-rater scatterplot for a curved (not straight-line) pattern before trusting the ICC value above; Kendall's W, already available in this analysis, is a rank-based alternative that does not assume linearity.",
+                           "la prueba de Tukey detecta una interacción sujeto × juez (p &lt; .05): las puntuaciones de al menos un juez se curvan respecto a las de los demás en vez de seguir la misma relación lineal que asume el modelo del ICC. Esta es la más grave de las tres violaciones — el ICC subestimará sistemáticamente el acuerdo real cuando ocurre. Inspeccione un diagrama de dispersión juez contra juez en busca de un patrón curvo (no lineal) antes de confiar en el valor de ICC de arriba; la W de Kendall, ya disponible en este análisis, es una alternativa basada en rangos que no asume linealidad."))
+                        else paste0("✓ ", tr("No evidence of a subject × rater interaction — the additivity/linearity assumption holds (Tukey p ≥ .05).",
+                                                     "No hay evidencia de interacción sujeto × juez — se cumple el supuesto de aditividad/linealidad (Tukey p ≥ .05).")), "</p>",
                     "<p><b>", tr("Sample size", "Tamaño de muestra"), ":</b> ",
                     tr(paste0("n = ", n, " subjects rated by k = ", k, " raters — this is "),
                        paste0("n = ", n, " sujetos calificados por k = ", k, " jueces — esto es ")),
@@ -622,14 +623,14 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 gap <- abs(kappa_val - gwet_val)
                 gname <- if (level == "ordinal") "AC2" else "AC1"
                 if (gap > .05) {
-                    discord_html <- paste0("<p>&#9888; <b>", tr("Coefficients disagree", "Los coeficientes no coinciden"), ":</b> ",
+                    discord_html <- paste0("<p>⚠ <b>", tr("Coefficients disagree", "Los coeficientes no coinciden"), ":</b> ",
                         tr(paste0("Kappa (", round(kappa_val, 3), ") and Gwet's ", gname, " (", round(gwet_val, 3),
                                   ") differ by more than .05. This is the classic “Kappa paradox”: Kappa penalizes agreement heavily when one category is much more common than the others, even when raters are genuinely consistent (Gwet, 2014). Trust Gwet's ", gname, " over Kappa here."),
                            paste0("El Kappa (", round(kappa_val, 3), ") y el ", gname, " de Gwet (", round(gwet_val, 3),
                                   ") difieren en más de .05. Esta es la clásica “paradoja del Kappa”: el Kappa penaliza fuertemente el acuerdo cuando una categoría es mucho más común que las demás, aun cuando los jueces son genuinamente consistentes (Gwet, 2014). Confíe en el ", gname, " de Gwet sobre el Kappa aquí.")),
                         "</p>")
                 } else {
-                    discord_html <- paste0("<p>&#10003; ", tr("Kappa and Gwet's coefficient agree closely — no evidence of a prevalence-driven paradox here.",
+                    discord_html <- paste0("<p>✓ ", tr("Kappa and Gwet's coefficient agree closely — no evidence of a prevalence-driven paradox here.",
                                                                "El Kappa y el coeficiente de Gwet coinciden de cerca — no hay evidencia de una paradoja por prevalencia aquí."), "</p>")
                 }
                 # EN: For ordinal data with >2 raters, Kappa is Fleiss'
@@ -651,21 +652,21 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 # esto hace explícita la consecuencia metodológica en vez
                 # de dejar que la etiqueta hable por sí sola.
                 if (level == "ordinal" && k > 2L && !is.na(kappa_val))
-                    discord_html <- paste0(discord_html, "<p>&#9888; ", tr(
-                        "Kappa above is Fleiss' Kappa (unweighted): with more than 2 raters, no weighted-Kappa formula is used, so it does not credit near-misses between adjacent ordinal categories the way the 2-rater case or Gwet's AC2/Krippendorff's ordinal &alpha; above do. Prefer AC2 or Krippendorff's &alpha; as the primary ordinal estimate for this reason.",
-                        "El Kappa de arriba es el Kappa de Fleiss (sin ponderar): con más de 2 jueces, no se usa una fórmula de Kappa ponderado, así que no le da crédito a los casi-aciertos entre categorías ordinales adyacentes como sí lo hacen el caso de 2 jueces o el AC2 de Gwet/&alpha; ordinal de Krippendorff de arriba. Por esto, prefiera el AC2 o el &alpha; de Krippendorff como la estimación ordinal primaria."),
+                    discord_html <- paste0(discord_html, "<p>⚠ ", tr(
+                        "Kappa above is Fleiss' Kappa (unweighted): with more than 2 raters, no weighted-Kappa formula is used, so it does not credit near-misses between adjacent ordinal categories the way the 2-rater case or Gwet's AC2/Krippendorff's ordinal α above do. Prefer AC2 or Krippendorff's α as the primary ordinal estimate for this reason.",
+                        "El Kappa de arriba es el Kappa de Fleiss (sin ponderar): con más de 2 jueces, no se usa una fórmula de Kappa ponderado, así que no le da crédito a los casi-aciertos entre categorías ordinales adyacentes como sí lo hacen el caso de 2 jueces o el AC2 de Gwet/α ordinal de Krippendorff de arriba. Por esto, prefiera el AC2 o el α de Krippendorff como la estimación ordinal primaria."),
                         "</p>")
             } else if (level == "continuous" && !is.na(icc_c_val) && !is.na(icc_a_val)) {
                 gap <- icc_c_val - icc_a_val
                 if (gap > .05) {
-                    discord_html <- paste0("<p>&#9888; <b>", tr("ICC forms disagree", "Las formas de ICC no coinciden"), ":</b> ",
+                    discord_html <- paste0("<p>⚠ <b>", tr("ICC forms disagree", "Las formas de ICC no coinciden"), ":</b> ",
                         tr(paste0("Consistency-type ICC (", round(icc_c_val, 3), ") is notably higher than absolute-agreement-type ICC (",
                                   round(icc_a_val, 3), "). This pattern indicates at least one rater has a systematic mean bias (shifted scores) even though raters rank cases similarly (Shrout &amp; Fleiss, 1979). Report the absolute-agreement form if raters' raw scores are meant to be used interchangeably."),
                            paste0("El ICC tipo consistencia (", round(icc_c_val, 3), ") es notablemente mayor que el ICC tipo acuerdo absoluto (",
                                   round(icc_a_val, 3), "). Este patrón indica que al menos un juez tiene un sesgo sistemático de media (puntajes desplazados) aunque los jueces ordenan los casos de forma similar (Shrout &amp; Fleiss, 1979). Reporte la forma de acuerdo absoluto si los puntajes brutos de los jueces se van a usar de forma intercambiable.")),
                         "</p>")
                 } else {
-                    discord_html <- paste0("<p>&#10003; ", tr("Consistency and absolute-agreement ICC agree closely — no evidence of systematic rater bias.",
+                    discord_html <- paste0("<p>✓ ", tr("Consistency and absolute-agreement ICC agree closely — no evidence of systematic rater bias.",
                                                                "El ICC de consistencia y el de acuerdo absoluto coinciden de cerca — no hay evidencia de sesgo sistemático de jueces."), "</p>")
                 }
             }

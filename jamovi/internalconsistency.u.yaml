@@ -109,7 +109,6 @@ children:
     children:
       - type: CheckBox
         name: bootstrapCi
-        label: Compute bootstrap CIs (95%)
   - type: CollapseBox
     label: Diagnostic Plots
     collapsed: true
