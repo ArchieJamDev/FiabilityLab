@@ -95,7 +95,6 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
 
         .fitcmp_data = NULL,   # data.frame: level, index, value (for the fit-across-levels plot)
 
-        .tr = function(en, es) .fl_tr(en, es, self$options$reportLang),
         # Plot colours derived from jamovi's own theme -- see
         # .fl_plot_colors()' own definition in shared-helpers.R for why
         # (jamovi's official module review, 2026-09-16). .plot_theme() and
@@ -138,15 +137,14 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
         # genuino entre ellos sea visible en vez de resolverse
         # silenciosamente a favor de la restricción.
         .invariance_verdict = function(p_val, dcfi) {
-            tr <- private$.tr
             lrt_ok <- !is.na(p_val); cfi_ok <- !is.na(dcfi)
             lrt_holds <- lrt_ok && p_val >= .05
             cfi_holds <- cfi_ok && dcfi >= -.01
-            if (!lrt_ok && !cfi_ok) return(tr("Unable to determine", "No se pudo determinar"))
-            if (lrt_holds && cfi_holds) return(tr("Supported by both criteria", "Respaldado por ambos criterios"))
-            if (lrt_holds) return(tr("Supported by LRT only", "Respaldado solo por LRT"))
-            if (cfi_holds) return(tr("Supported by ΔCFI only", "Respaldado solo por ΔCFI"))
-            tr("Not supported", "No respaldado")
+            if (!lrt_ok && !cfi_ok) return(.("Unable to determine"))
+            if (lrt_holds && cfi_holds) return(.("Supported by both criteria"))
+            if (lrt_holds) return(.("Supported by LRT only"))
+            if (cfi_holds) return(.("Supported by ΔCFI only"))
+            .("Not supported")
         },
 
         # ── Fit measures that prefer the scaled/robust chi-square/df/p and
@@ -202,7 +200,6 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
         },
 
         .run = function() {
-            tr  <- private$.tr
             opt <- self$options
             res <- self$results
             esc <- private$.esc
@@ -227,15 +224,11 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
             # una propia que oculta todo.
 
             if (!requireNamespace("lavaan", quietly = TRUE))
-                jmvcore::reject(tr(
-                    "This analysis requires the lavaan package, which is not installed here.",
-                    "Este análisis requiere el paquete lavaan, que no está instalado aquí."))
+                jmvcore::reject(.("This analysis requires the lavaan package, which is not installed here."))
 
             group_name <- opt$group
             if (is.null(group_name) || !nzchar(group_name))
-                jmvcore::reject(tr(
-                    "Assign a grouping variable to test invariance across.",
-                    "Asigne una variable de agrupación para comprobar la invariancia a través de ella."))
+                jmvcore::reject(.("Assign a grouping variable to test invariance across."))
 
             factors <- list()
             factors_opt <- opt$factors
@@ -244,14 +237,12 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
                 fitems <- grp$vars
                 if (length(fitems) >= 3L) {
                     fname <- grp$label
-                    if (is.null(fname) || !nzchar(trimws(fname))) fname <- paste(tr("Factor", "Factor"), i)
+                    if (is.null(fname) || !nzchar(trimws(fname))) fname <- paste(.("Factor"), i)
                     factors[[length(factors) + 1L]] <- list(id = paste0("F", i), name = fname, items = fitems)
                 }
             }
             if (length(factors) == 0L)
-                jmvcore::reject(tr(
-                    "Assign at least 3 items to at least one factor to run the invariance sequence.",
-                    "Asigne al menos 3 ítems a al menos un factor para correr la secuencia de invariancia."))
+                jmvcore::reject(.("Assign at least 3 items to at least one factor to run the invariance sequence."))
 
             all_items <- unique(unlist(lapply(factors, function(f) f$items)))
             df_raw <- self$data[, c(all_items, group_name), drop = FALSE]
@@ -288,13 +279,9 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
             n_adv <- nrow(df_adv)
             group_levels <- levels(droplevels(df_adv[[group_name]]))
             if (length(group_levels) < 2L)
-                jmvcore::reject(tr(
-                    "The grouping variable needs at least 2 levels (after removing missing values) to test invariance.",
-                    "La variable de agrupación necesita al menos 2 niveles (tras remover valores faltantes) para probar invariancia."))
+                jmvcore::reject(.("The grouping variable needs at least 2 levels (after removing missing values) to test invariance."))
             if (n_adv < 20L * length(group_levels))
-                jmvcore::reject(tr(
-                    "Not enough complete cases per group to fit a multi-group confirmatory factor model (roughly 20+ per group recommended).",
-                    "No hay suficientes casos completos por grupo para ajustar un modelo factorial confirmatorio multigrupo (se recomiendan aproximadamente 20+ por grupo)."))
+                jmvcore::reject(.("Not enough complete cases per group to fit a multi-group confirmatory factor model (roughly 20+ per group recommended)."))
 
             item_is_ordinal <- identical(opt$itemType, "ordinal") || identical(opt$estimator, "wlsmv") ||
                 (identical(opt$itemType, "auto") && .fl_is_low_cardinality(df_raw[, all_items, drop = FALSE]))
@@ -324,19 +311,17 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
             for (i in seq_along(grp_counts)) gst$setRow(rowNo = i, values = list(level = names(grp_counts)[i], n = as.integer(grp_counts[i])))
 
             levels_seq <- list(
-                list(name = tr("Configural", "Configural"), equal = character(0)),
-                list(name = tr("Metric (weak)", "Métrica (débil)"), equal = "loadings"),
-                list(name = tr("Scalar (strong)", "Escalar (fuerte)"), equal = c("loadings", threshold_or_intercept)),
-                list(name = tr("Strict", "Estricta"), equal = c("loadings", threshold_or_intercept, "residuals")))
+                list(name = .("Configural"), equal = character(0)),
+                list(name = .("Metric (weak)"), equal = "loadings"),
+                list(name = .("Scalar (strong)"), equal = c("loadings", threshold_or_intercept)),
+                list(name = .("Strict"), equal = c("loadings", threshold_or_intercept, "residuals")))
 
             fits <- lapply(levels_seq, function(lvl)
                 private$.fit_cfa_group(model_cf, df_adv, group_name, ordered_items, estimator_eff, lvl$equal))
             ok <- vapply(fits, function(f) !is.null(f) && isTRUE(tryCatch(lavaan::lavInspect(f, "converged"), error = function(e) FALSE)), logical(1))
 
             if (!ok[1])
-                jmvcore::reject(tr(
-                    "The configural (baseline) model did not converge -- try fewer factors, more items per factor, or check the item/group assignments before testing invariance.",
-                    "El modelo configural (base) no convergió -- intente con menos factores, más ítems por factor, o revise las asignaciones de ítems/grupo antes de probar invariancia."))
+                jmvcore::reject(.("The configural (baseline) model did not converge -- try fewer factors, more items per factor, or check the item/group assignments before testing invariance."))
 
             fm_list <- lapply(fits, function(f) if (is.null(f)) NULL else private$.fit_measures_ext(f, estimator_eff))
 
@@ -348,11 +333,11 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
                     inv_rows[[length(inv_rows) + 1L]] <- list(
                         model = levels_seq[[i]]$name, chisq = NA_real_, df = NA_integer_, cfi = NA_real_, rmsea = NA_real_,
                         dchisq = NA_real_, ddf = NA_integer_, pvalue = NA_real_, dcfi = NA_real_,
-                        verdict = tr("Did not converge", "No convergió"))
+                        verdict = .("Did not converge"))
                     next
                 }
                 fm <- fm_list[[i]]
-                dchisq <- NA_real_; ddf <- NA_integer_; p_val <- NA_real_; dcfi <- NA_real_; verdict <- tr("Baseline", "Línea base")
+                dchisq <- NA_real_; ddf <- NA_integer_; p_val <- NA_real_; dcfi <- NA_real_; verdict <- .("Baseline")
                 if (last_ok_idx > 0L) {
                     lrt_out <- tryCatch(lavaan::lavTestLRT(fits[[last_ok_idx]], fits[[i]]), error = function(e) NULL)
                     if (!is.null(lrt_out) && nrow(lrt_out) >= 2L && all(c("Chisq diff", "Df diff", "Pr(>Chisq)") %in% names(lrt_out))) {
@@ -377,10 +362,10 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
             private$.reset_table(it, length(inv_rows))
             for (i in seq_along(inv_rows)) it$setRow(rowNo = i, values = inv_rows[[i]])
 
-            not_supported <- Filter(function(r) identical(r$verdict, tr("Not supported", "No respaldado")), inv_rows)
-            discordant <- Filter(function(r) identical(r$verdict, tr("Supported by LRT only", "Respaldado solo por LRT")) ||
-                                              identical(r$verdict, tr("Supported by ΔCFI only", "Respaldado solo por ΔCFI")), inv_rows)
-            failed_to_converge <- Filter(function(r) identical(r$verdict, tr("Did not converge", "No convergió")), inv_rows)
+            not_supported <- Filter(function(r) identical(r$verdict, .("Not supported")), inv_rows)
+            discordant <- Filter(function(r) identical(r$verdict, .("Supported by LRT only")) ||
+                                              identical(r$verdict, .("Supported by ΔCFI only")), inv_rows)
+            failed_to_converge <- Filter(function(r) identical(r$verdict, .("Did not converge")), inv_rows)
 
             # EN: "Full invariance holds" doesn't by itself say WHICH
             # comparisons that actually licenses, and a partial failure
@@ -401,64 +386,50 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
             # en vez de dejar que "invariancia completa" / "no se sostiene"
             # implique más o menos de lo que los datos realmente respaldan.
             both_ok <- vapply(inv_rows, function(r)
-                identical(r$verdict, tr("Supported by both criteria", "Respaldado por ambos criterios")) ||
-                identical(r$verdict, tr("Baseline", "Línea base")), logical(1))
+                identical(r$verdict, .("Supported by both criteria")) ||
+                identical(r$verdict, .("Baseline")), logical(1))
             max_ok_idx <- 0L
             for (i in seq_along(both_ok)) { if (both_ok[i]) max_ok_idx <- i else break }
             max_level_name <- if (max_ok_idx > 0L) inv_rows[[max_ok_idx]]$model else NULL
 
             usage_desc <- if (is.null(max_level_name))
-                tr("Not even configural invariance is fully confirmed -- this construct's structure is not yet established as comparable across groups at all.",
-                   "Ni siquiera la invariancia configural está plenamente confirmada -- la estructura de este constructo aún no está establecida como comparable entre grupos en absoluto.")
-                else if (identical(max_level_name, tr("Configural", "Configural")))
-                tr("Configural invariance is the highest level fully supported: the factor structure itself is comparable, but no numeric comparison (correlations, regression coefficients, group means) across these groups is yet justified -- this includes composite reliability (Omega/CR, Jak &amp; Jorgensen, 2017): since metric invariance is not confirmed, the loadings Omega/CR is built from may genuinely differ by group, so a single pooled Omega/CR risks averaging over a real difference rather than describing either group correctly. Fitting one pooled model when loadings actually differ by group also forces that between-group difference into the model's error/residual variance, inflating it and deflating Omega/CR in a way that looks like a measurement problem but is really a violated-invariance problem. Suspect that reliability itself may differ by group here, and run Advanced Reliability separately within each group (rather than once on the pooled sample) to check.",
-                   "La invariancia configural es el nivel máximo plenamente respaldado: la estructura factorial en sí es comparable, pero ninguna comparación numérica (correlaciones, coeficientes de regresión, medias de grupo) entre estos grupos está aún justificada -- esto incluye la confiabilidad compuesta (Omega/CR, Jak y Jorgensen, 2017): como la invariancia métrica no está confirmada, las cargas de las que se construye Omega/CR pueden diferir genuinamente por grupo, así que un Omega/CR único agrupado corre el riesgo de promediar sobre una diferencia real en vez de describir correctamente a ninguno de los dos grupos. Ajustar un solo modelo agrupado cuando las cargas en realidad difieren por grupo también fuerza esa diferencia entre grupos hacia la varianza de error/residual del modelo, inflándola y desinflando el Omega/CR de una forma que parece un problema de medición pero en realidad es un problema de invariancia violada. Sospeche que la confiabilidad misma puede diferir por grupo aquí, y ejecute Advanced Reliability por separado dentro de cada grupo (en vez de una sola vez sobre la muestra agrupada) para revisarlo.")
-                else if (identical(max_level_name, tr("Metric (weak)", "Métrica (débil)")))
-                tr("Metric (weak) invariance is the highest level fully supported: correlations/regression coefficients involving the factor can be compared across these groups, and so can composite reliability (Omega/CR from Advanced Reliability) -- it is computed from the same loadings this level confirms are equal. Group means/observed scores should not be compared -- that requires scalar invariance, which is not confirmed here.",
-                   "La invariancia métrica (débil) es el nivel máximo plenamente respaldado: las correlaciones/coeficientes de regresión que involucren al factor pueden compararse entre estos grupos, y también la confiabilidad compuesta (Omega/CR de Advanced Reliability) -- se calcula a partir de las mismas cargas que este nivel confirma que son iguales. Las medias de grupo/puntajes observados no deberían compararse -- eso requiere invariancia escalar, que no está confirmada aquí.")
-                else if (identical(max_level_name, tr("Scalar (strong)", "Escalar (fuerte)")))
-                tr("Scalar (strong) invariance is the highest level fully supported -- this is exactly the level group mean/score comparisons require, so those comparisons are on solid footing, even though strict invariance (a stronger, less commonly needed condition) is not confirmed.",
-                   "La invariancia escalar (fuerte) es el nivel máximo plenamente respaldado -- este es exactamente el nivel que requieren las comparaciones de medias/puntajes de grupo, así que esas comparaciones están en una base sólida, aunque la invariancia estricta (una condición más fuerte, requerida con menos frecuencia) no esté confirmada.")
+                .("Not even configural invariance is fully confirmed -- this construct's structure is not yet established as comparable across groups at all.")
+                else if (identical(max_level_name, .("Configural")))
+                .("Configural invariance is the highest level fully supported: the factor structure itself is comparable, but no numeric comparison (correlations, regression coefficients, group means) across these groups is yet justified -- this includes composite reliability (Omega/CR, Jak &amp; Jorgensen, 2017): since metric invariance is not confirmed, the loadings Omega/CR is built from may genuinely differ by group, so a single pooled Omega/CR risks averaging over a real difference rather than describing either group correctly. Fitting one pooled model when loadings actually differ by group also forces that between-group difference into the model's error/residual variance, inflating it and deflating Omega/CR in a way that looks like a measurement problem but is really a violated-invariance problem. Suspect that reliability itself may differ by group here, and run Advanced Reliability separately within each group (rather than once on the pooled sample) to check.")
+                else if (identical(max_level_name, .("Metric (weak)")))
+                .("Metric (weak) invariance is the highest level fully supported: correlations/regression coefficients involving the factor can be compared across these groups, and so can composite reliability (Omega/CR from Advanced Reliability) -- it is computed from the same loadings this level confirms are equal. Group means/observed scores should not be compared -- that requires scalar invariance, which is not confirmed here.")
+                else if (identical(max_level_name, .("Scalar (strong)")))
+                .("Scalar (strong) invariance is the highest level fully supported -- this is exactly the level group mean/score comparisons require, so those comparisons are on solid footing, even though strict invariance (a stronger, less commonly needed condition) is not confirmed.")
                 else
-                tr("Strict invariance is fully supported through every level tested. Group mean/score comparisons only require the scalar level reached before it, so this is more than sufficient for that purpose.",
-                   "La invariancia estricta está plenamente respaldada en todos los niveles probados. Las comparaciones de medias/puntajes de grupo solo requieren el nivel escalar alcanzado antes de ella, así que esto es más que suficiente para ese propósito.")
+                .("Strict invariance is fully supported through every level tested. Group mean/score comparisons only require the scalar level reached before it, so this is more than sufficient for that purpose.")
 
             estim_desc <- if (item_is_ordinal)
-                tr("Items were treated as ordinal (WLSMV estimator on polychoric/tetrachoric correlations). χ², CFI and RMSEA below are the scaled/robust versions WLSMV recommends, not the plain ones.",
-                   "Los ítems se trataron como ordinales (estimador WLSMV sobre correlaciones policóricas/tetracóricas). El χ², CFI y RMSEA de abajo son las versiones escaladas/robustas que WLSMV recomienda, no las simples.")
+                .("Items were treated as ordinal (WLSMV estimator on polychoric/tetrachoric correlations). χ², CFI and RMSEA below are the scaled/robust versions WLSMV recommends, not the plain ones.")
                 else if (identical(estimator_eff, "MLR"))
-                tr("Items were treated as continuous, fit with MLR (robust to non-normality). χ², CFI and RMSEA below are the scaled/robust versions MLR recommends, not the plain ones.",
-                   "Los ítems se trataron como continuos, ajustados con MLR (robusto a la no normalidad). El χ², CFI y RMSEA de abajo son las versiones escaladas/robustas que MLR recomienda, no las simples.")
-                else tr("Items were treated as continuous, fit with ML.", "Los ítems se trataron como continuos, ajustados con ML.")
+                .("Items were treated as continuous, fit with MLR (robust to non-normality). χ², CFI and RMSEA below are the scaled/robust versions MLR recommends, not the plain ones.")
+                else .("Items were treated as continuous, fit with ML.")
             override_desc <- if (item_is_ordinal && opt$estimator %in% c("ml", "mlr"))
-                paste0(" ", tr(
-                    paste0("You selected ", toupper(opt$estimator), ", but WLSMV was used instead because the items are ordinal."),
-                    paste0("Usted seleccionó ", toupper(opt$estimator), ", pero se usó WLSMV en su lugar porque los ítems son ordinales.")))
+                paste0(" ", jmvcore::format(
+                    .("You selected {estimator}, but WLSMV was used instead because the items are ordinal."),
+                    estimator = toupper(opt$estimator)))
                 else ""
 
             res$invarianceNote$setContent(.fl_prose(
-                "<p>", estim_desc, override_desc, " ", tr(
-                    paste0("Each row after Configural is tested against the row just before it (not against Configural directly), on two criteria: a likelihood-ratio test (LRT; significant at p &lt; .05 means the added restriction costs a real amount of fit) and the change in CFI (ΔCFI &lt; -.01 is Cheung &amp; Rensvold's, 2002, sample-size-robust threshold for the same question). The LRT alone gets hypersensitive to trivial misfit in large samples -- part of why ΔCFI is reported alongside it -- but the two do not always agree: this report shows \"Supported by both criteria\" only when they do, and names which single criterion supports the restriction when they disagree, rather than treating either criterion passing as sufficient on its own."),
-                    paste0("Cada fila después de Configural se prueba contra la fila justo anterior (no contra Configural directamente), con dos criterios: una prueba de razón de verosimilitud (LRT; significativa en p &lt; .05 significa que la restricción agregada cuesta una cantidad real de ajuste) y el cambio en CFI (ΔCFI &lt; -.01 es el umbral robusto al tamaño muestral de Cheung &amp; Rensvold, 2002, para la misma pregunta). El LRT por sí solo se vuelve hipersensible a desajustes triviales en muestras grandes -- parte de por qué se reporta el ΔCFI junto a él -- pero ambos no siempre coinciden: este informe muestra \"Respaldado por ambos criterios\" solo cuando coinciden, y nombra qué criterio único respalda la restricción cuando discrepan, en vez de tratar que cualquiera de los dos se cumpla como suficiente por sí solo.")),
+                "<p>", estim_desc, override_desc, " ", .("Each row after Configural is tested against the row just before it (not against Configural directly), on two criteria: a likelihood-ratio test (LRT; significant at p &lt; .05 means the added restriction costs a real amount of fit) and the change in CFI (ΔCFI &lt; -.01 is Cheung &amp; Rensvold's, 2002, sample-size-robust threshold for the same question). The LRT alone gets hypersensitive to trivial misfit in large samples -- part of why ΔCFI is reported alongside it -- but the two do not always agree: this report shows \"Supported by both criteria\" only when they do, and names which single criterion supports the restriction when they disagree, rather than treating either criterion passing as sufficient on its own."),
                 "</p>",
-                "<p>", tr(
-                    "Configural invariance means the same items load on the same factors in every group, with everything else free -- the minimum requirement for the construct to even be comparable across groups. Metric (weak) invariance -- equal loadings -- is required before comparing regression/correlation coefficients involving the factor across groups, and this includes composite reliability (Omega/CR, from Advanced Reliability): both are computed from the loadings, so a difference in Omega/CR between groups is not interpretable as a real reliability difference unless the loadings it is built from are already confirmed equal here. Scalar (strong) invariance -- also equal intercepts/thresholds -- is required before comparing group means or observed scores; without it, an observed mean difference may reflect item functioning differences, not a real difference on the construct. Strict invariance -- also equal residual variances -- is a stronger, less commonly required condition.",
-                    "La invariancia configural significa que los mismos ítems cargan sobre los mismos factores en cada grupo, con todo lo demás libre -- el requisito mínimo para que el constructo sea siquiera comparable entre grupos. La invariancia métrica (débil) -- cargas iguales -- se requiere antes de comparar coeficientes de regresión/correlación que involucren al factor entre grupos, y esto incluye la confiabilidad compuesta (Omega/CR, de Advanced Reliability): ambas se calculan a partir de las cargas, así que una diferencia en Omega/CR entre grupos no es interpretable como una diferencia real de confiabilidad a menos que las cargas de las que se construye ya estén confirmadas como iguales aquí. La invariancia escalar (fuerte) -- también interceptos/umbrales iguales -- se requiere antes de comparar medias de grupo o puntajes observados; sin ella, una diferencia de medias observada puede reflejar diferencias en el funcionamiento de los ítems, no una diferencia real en el constructo. La invariancia estricta -- también varianzas residuales iguales -- es una condición más fuerte, requerida con menos frecuencia."),
+                "<p>", .("Configural invariance means the same items load on the same factors in every group, with everything else free -- the minimum requirement for the construct to even be comparable across groups. Metric (weak) invariance -- equal loadings -- is required before comparing regression/correlation coefficients involving the factor across groups, and this includes composite reliability (Omega/CR, from Advanced Reliability): both are computed from the loadings, so a difference in Omega/CR between groups is not interpretable as a real reliability difference unless the loadings it is built from are already confirmed equal here. Scalar (strong) invariance -- also equal intercepts/thresholds -- is required before comparing group means or observed scores; without it, an observed mean difference may reflect item functioning differences, not a real difference on the construct. Strict invariance -- also equal residual variances -- is a stronger, less commonly required condition."),
                 "</p>",
-                if (length(failed_to_converge) > 0L) paste0("<p>⚠ ", tr(
-                        "One or more models in the sequence did not converge -- the invariance question cannot be answered past that point with this data/structure.",
-                        "Uno o más modelos de la secuencia no convergieron -- la pregunta de invariancia no puede responderse más allá de ese punto con estos datos/estructura."), "</p>",
+                if (length(failed_to_converge) > 0L) paste0("<p>⚠ ", .("One or more models in the sequence did not converge -- the invariance question cannot be answered past that point with this data/structure."), "</p>",
                         "<p>", usage_desc, "</p>")
-                    else if (length(not_supported) > 0L) paste0("<p>⚠ ", tr(
-                        paste0(not_supported[[1]]$model, " invariance is not supported by either criterion -- do not compare whatever that level of invariance is required for (see above) across ", esc(group_name), " groups without first identifying which specific parameters differ (partial invariance) via semTools::partialInvariance()/partialInvarianceCat()."),
-                        paste0("La invariancia ", not_supported[[1]]$model, " no está respaldada por ningún criterio -- no compare aquello para lo que se requiere ese nivel de invariancia (vea arriba) entre grupos de ", esc(group_name), " sin antes identificar qué parámetros específicos difieren (invariancia parcial) vía semTools::partialInvariance()/partialInvarianceCat().")), "</p>",
+                    else if (length(not_supported) > 0L) paste0("<p>⚠ ", jmvcore::format(
+                        .("{model} invariance is not supported by either criterion -- do not compare whatever that level of invariance is required for (see above) across {group} groups without first identifying which specific parameters differ (partial invariance) via semTools::partialInvariance()/partialInvarianceCat()."),
+                        model = not_supported[[1]]$model, group = esc(group_name)), "</p>",
                         "<p>", usage_desc, "</p>")
-                    else if (length(discordant) > 0L) paste0("<p>⚠ ", tr(
-                        paste0(discordant[[1]]$model, " invariance is supported by only one of the two criteria -- treat this level with real caution rather than as settled. Investigate partial invariance to see whether the discordance traces to specific items before relying on comparisons that require this level."),
-                        paste0("La invariancia ", discordant[[1]]$model, " está respaldada por solo uno de los dos criterios -- trate este nivel con verdadera cautela en vez de darlo por resuelto. Investigue la invariancia parcial para ver si la discordancia se debe a ítems específicos antes de confiar en comparaciones que requieran este nivel.")), "</p>",
+                    else if (length(discordant) > 0L) paste0("<p>⚠ ", jmvcore::format(
+                        .("{model} invariance is supported by only one of the two criteria -- treat this level with real caution rather than as settled. Investigate partial invariance to see whether the discordance traces to specific items before relying on comparisons that require this level."),
+                        model = discordant[[1]]$model), "</p>",
                         "<p>", usage_desc, "</p>")
-                    else paste0("<p>✓ ", tr("Full invariance is supported by both criteria through every level tested.",
-                                                     "La invariancia completa está respaldada por ambos criterios en todos los niveles probados."), "</p>",
+                    else paste0("<p>✓ ", .("Full invariance is supported by both criteria through every level tested."), "</p>",
                         "<p>", usage_desc, "</p>")))
 
             private$.fitcmp_data <- data.frame(
@@ -481,33 +452,26 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
             # en ese segundo camino. setState() es el único canal que
             # sobrevive a esa segunda instancia.
             res$plotInvariance$setState(private$.fitcmp_data)
-            res$plotInvarianceNote$setContent(.fl_prose("<p>", tr(
-                "CFI (0-1, higher is better) at each level of the invariance sequence; a level's bar noticeably shorter than the one before it is the same signal as a significant likelihood-ratio test or a large ΔCFI in the table above, shown graphically.",
-                "CFI (0-1, mayor es mejor) en cada nivel de la secuencia de invariancia; una barra de un nivel notablemente más corta que la anterior es la misma señal que una prueba de razón de verosimilitud significativa o un ΔCFI grande en la tabla de arriba, mostrada gráficamente."), "</p>"))
+            res$plotInvarianceNote$setContent(.fl_prose("<p>", .("CFI (0-1, higher is better) at each level of the invariance sequence; a level's bar noticeably shorter than the one before it is the same signal as a significant likelihood-ratio test or a large ΔCFI in the table above, shown graphically."), "</p>"))
 
             adv_html <- paste0(.fl_prose_open(),
-                "<h4>", tr("What happened", "Qué pasó"), "</h4>",
-                "<p>", tr(
-                    paste0("A ", length(factors), "-factor measurement model was tested for invariance across ", length(group_levels), " levels of ", esc(group_name), " (", paste(esc(group_levels), collapse = ", "), ") on n = ", n_adv, " complete cases."),
-                    paste0("Se probó un modelo de medición de ", length(factors), " factor(es) para invariancia a través de ", length(group_levels), " niveles de ", esc(group_name), " (", paste(esc(group_levels), collapse = ", "), ") sobre n = ", n_adv, " casos completos.")), "</p>",
-                "<h4>", tr("What to do now", "Qué hacer ahora"), "</h4>",
+                "<h4>", .("What happened"), "</h4>",
+                "<p>", jmvcore::format(
+                    .("A {nf}-factor measurement model was tested for invariance across {ng} levels of {group} ({levels}) on n = {n} complete cases."),
+                    nf = length(factors), ng = length(group_levels), group = esc(group_name),
+                    levels = paste(esc(group_levels), collapse = ", "), n = n_adv), "</p>",
+                "<h4>", .("What to do now"), "</h4>",
                 "<ul style='line-height:1;'>",
                 if (length(failed_to_converge) > 0L)
-                    paste0("<li>", tr("Resolve the convergence failure first -- fewer groups/factors, more items per factor, or more cases per group may help.",
-                                      "Resuelva primero la falla de convergencia -- menos grupos/factores, más ítems por factor, o más casos por grupo pueden ayudar."), "</li>")
+                    paste0("<li>", .("Resolve the convergence failure first -- fewer groups/factors, more items per factor, or more cases per group may help."), "</li>")
                 else if (length(not_supported) > 0L)
-                    paste0("<li>", tr("Before comparing group means or scores, investigate partial invariance to find which specific items break the restriction, rather than abandoning the comparison or forcing full invariance.",
-                                      "Antes de comparar medias o puntajes de grupo, investigue la invariancia parcial para encontrar qué ítems específicos rompen la restricción, en vez de abandonar la comparación o forzar la invariancia completa."), "</li>")
+                    paste0("<li>", .("Before comparing group means or scores, investigate partial invariance to find which specific items break the restriction, rather than abandoning the comparison or forcing full invariance."), "</li>")
                 else if (length(discordant) > 0L)
-                    paste0("<li>", tr("At least one level is supported by only one criterion (LRT or ΔCFI, not both) -- treat comparisons requiring that level with caution and consider investigating partial invariance before relying on them.",
-                                      "Al menos un nivel está respaldado por solo un criterio (LRT o ΔCFI, no ambos) -- trate con cautela las comparaciones que requieran ese nivel y considere investigar invariancia parcial antes de confiar en ellas."), "</li>")
+                    paste0("<li>", .("At least one level is supported by only one criterion (LRT or ΔCFI, not both) -- treat comparisons requiring that level with caution and consider investigating partial invariance before relying on them."), "</li>")
                 else
-                    paste0("<li>", tr("Group comparisons on this construct's means/scores are supported by this invariance sequence.",
-                                      "Las comparaciones de grupo sobre las medias/puntajes de este constructo están respaldadas por esta secuencia de invariancia."), "</li>"),
+                    paste0("<li>", .("Group comparisons on this construct's means/scores are supported by this invariance sequence."), "</li>"),
                 "</ul>",
-                .fl_footnote(tr(
-                    "The ΔCFI criterion follows Cheung &amp; Rensvold (2002); the invariance level requirements for mean/score comparisons follow standard SEM practice (e.g. Vandenberg &amp; Lance, 2000).",
-                    "El criterio ΔCFI sigue a Cheung &amp; Rensvold (2002); los requisitos de nivel de invariancia para comparaciones de medias/puntajes siguen la práctica estándar en SEM (p. ej. Vandenberg &amp; Lance, 2000).")),
+                .fl_footnote(.("The ΔCFI criterion follows Cheung &amp; Rensvold (2002); the invariance level requirements for mean/score comparisons follow standard SEM practice (e.g. Vandenberg &amp; Lance, 2000).")),
                 .fl_prose_close())
             res$interpretation$setContent(adv_html)
         },
@@ -522,7 +486,7 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
                 ggplot2::geom_hline(yintercept = .95, linetype = "dashed", colour = cols$secondary, linewidth = .5) +
                 ggplot2::coord_cartesian(ylim = c(0, 1)) +
                 ggplot2::labs(x = NULL, y = "CFI",
-                              title = private$.tr("Fit Across Invariance Levels", "Ajuste a Través de los Niveles de Invariancia")) +
+                              title = .("Fit Across Invariance Levels")) +
                 ggtheme
             print(p)
             TRUE
