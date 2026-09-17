@@ -69,7 +69,6 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
         .diag_data = NULL,   # data.frame backing .plotDiagnostic
         .diag_extra = NULL,  # scalar backing .plotDiagnostic (e.g. grand mean)
 
-        .tr = function(en, es) .fl_tr(en, es, self$options$reportLang),
 
         # Plot colours derived from jamovi's own theme -- see
         # .fl_plot_colors()' own definition in shared-helpers.R for why
@@ -150,14 +149,13 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
         # uses, which describe internal-consistency coefficients, not
         # inter-rater agreement.
         .interp_kappa = function(val) {
-            tr <- private$.tr
-            if (is.na(val) || !is.finite(val)) return(tr("N/A", "N/D"))
-            if (val < 0)     return(tr("Poor",           "Pobre"))
-            if (val <= .20)  return(tr("Slight",          "Leve"))
-            if (val <= .40)  return(tr("Fair",             "Aceptable"))
-            if (val <= .60)  return(tr("Moderate",         "Moderado"))
-            if (val <= .80)  return(tr("Substantial",      "Sustancial"))
-            return(tr("Almost perfect", "Casi perfecto"))
+            if (is.na(val) || !is.finite(val)) return(.("N/A"))
+            if (val < 0)     return(.("Poor"))
+            if (val <= .20)  return(.("Slight"))
+            if (val <= .40)  return(.("Fair"))
+            if (val <= .60)  return(.("Moderate"))
+            if (val <= .80)  return(.("Substantial"))
+            return(.("Almost perfect"))
         },
 
         # ICC / Krippendorff on continuous-ish data: reuse the same general
@@ -165,14 +163,21 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
         # Mallery, 2003) -- already curated in Bibliography, and this is
         # the same underlying question (proportion of variance/agreement),
         # not a chance-corrected categorical statistic.
-        .interp_rel = function(val) .fl_interp_rel(val, private$.tr),
+        .interp_rel = function(val) {
+            if (is.na(val) || !is.finite(val)) return(.("N/A"))
+            if (val >= .95) return(.("Excellent"))
+            if (val >= .90) return(.("Good"))
+            if (val >= .80) return(.("Acceptable"))
+            if (val >= .70) return(.("Questionable"))
+            if (val >= .60) return(.("Poor"))
+            .("Unacceptable")
+        },
 
         .bootstrap = function(df, stat_fn, B = 1000L) .fl_bootstrap(df, stat_fn, B),
 
         .reset_table = function(table, n_rows) .fl_reset_table(table, n_rows),
 
         .run = function() {
-            tr  <- private$.tr
             opt <- self$options
 
             # ── 1. Validate ──────────────────────────────────────────────────
@@ -195,9 +200,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             # esa presentación estándar en vez de una propia que oculta todo.
             ratings <- opt$ratings
             if (length(ratings) < 2)
-                jmvcore::reject(tr(
-                    "Please select at least 2 rating variables to compute agreement coefficients.",
-                    "Por favor seleccione al menos 2 variables de calificación para calcular los coeficientes de acuerdo."))
+                jmvcore::reject(.("Please select at least 2 rating variables to compute agreement coefficients."))
 
             # ── 2. Prepare data ──────────────────────────────────────────────
             df_raw <- self$data[, ratings, drop = FALSE]
@@ -207,9 +210,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             k <- ncol(df)
 
             if (n < 5L)
-                jmvcore::reject(tr(
-                    "Not enough complete cases (minimum 5 required).",
-                    "No hay suficientes casos completos (mínimo 5 requeridos)."))
+                jmvcore::reject(.("Not enough complete cases (minimum 5 required)."))
 
             # ── 3. Detect measurement level ──────────────────────────────────
             is_char <- vapply(df, function(x) is.character(x) || is.factor(x), logical(1))
@@ -231,17 +232,17 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             } else df
 
             level_lbl <- switch(level,
-                nominal    = tr("Nominal", "Nominal"),
-                ordinal    = tr(paste0("Ordinal (", max(n_unique), " categories)"), paste0("Ordinal (", max(n_unique), " categorías)")),
-                continuous = tr("Continuous", "Continuo"))
+                nominal    = .("Nominal"),
+                ordinal    = jmvcore::format(.("Ordinal ({n} categories)"), n = max(n_unique)),
+                continuous = .("Continuous"))
 
             auto_html <- .fl_prose(
                 "<table style='border-collapse:collapse;'>",
-                "<tr><td style='padding:4px 10px;'><b>", tr("Raters", "Jueces"), "</b></td><td>", k, "</td></tr>",
-                "<tr><td style='padding:4px 10px;'><b>", tr("Complete cases", "Casos completos"), "</b></td><td>", n,
-                if (n_miss > 0) paste0(" <span style='color:orange;'>(", n_miss, " ", tr("removed listwise", "eliminados listwise"), ")</span>") else "",
+                "<tr><td style='padding:4px 10px;'><b>", .("Raters"), "</b></td><td>", k, "</td></tr>",
+                "<tr><td style='padding:4px 10px;'><b>", .("Complete cases"), "</b></td><td>", n,
+                if (n_miss > 0) paste0(" <span style='color:orange;'>(", n_miss, " ", .("removed listwise"), ")</span>") else "",
                 "</td></tr>",
-                "<tr><td style='padding:4px 10px;'><b>", tr("Detected level", "Nivel detectado"), "</b></td><td>", level_lbl, "</td></tr>",
+                "<tr><td style='padding:4px 10px;'><b>", .("Detected level"), "</b></td><td>", level_lbl, "</td></tr>",
                 "</table>")
             self$results$autoDetectNote$setContent(auto_html)
 
@@ -305,19 +306,18 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             # ── 5a. Kappa (nominal: Cohen/Fleiss; ordinal: weighted Cohen/Fleiss) ─
             if (opt$kappa && k >= 2L) {
                 if (level == "continuous") {
-                    add_row(tr("Kappa", "Kappa"), NA_real_, tr("Not applicable to continuous data; see ICC below",
-                                                                "No aplica a datos continuos; ver ICC abajo"))
+                    add_row(.("Kappa"), NA_real_, .("Not applicable to continuous data; see ICC below"))
                 } else {
                     weight_arg <- if (level == "ordinal") "squared" else "unweighted"
                     if (k == 2L) {
                         kres <- tryCatch(irr::kappa2(df, weight = weight_arg), error = function(e) NULL)
-                        kname <- if (level == "ordinal") tr("Weighted Cohen's Kappa", "Kappa Ponderado de Cohen")
-                                 else tr("Cohen's Kappa", "Kappa de Cohen")
+                        kname <- if (level == "ordinal") .("Weighted Cohen's Kappa")
+                                 else .("Cohen's Kappa")
                         kfn <- function(d) tryCatch(irr::kappa2(d, weight = weight_arg)$value, error = function(e) NA_real_)
                     } else {
                         kres <- tryCatch(irr::kappam.fleiss(df), error = function(e) NULL)
-                        kname <- if (level == "ordinal") tr("Fleiss' Kappa (unweighted)", "Kappa de Fleiss (sin ponderar)")
-                                 else tr("Fleiss' Kappa", "Kappa de Fleiss")
+                        kname <- if (level == "ordinal") .("Fleiss' Kappa (unweighted)")
+                                 else .("Fleiss' Kappa")
                         kfn <- function(d) tryCatch(irr::kappam.fleiss(d)$value, error = function(e) NA_real_)
                     }
                     if (!is.null(kres)) {
@@ -397,7 +397,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 # al pie real de jamovi (ver paso 6 abajo) en vez de
                 # incluirse en la etiqueta misma.
                 bc_ka <- if (level == "continuous") list(ci = c(NA_real_, NA_real_), n = NA_integer_) else boot_ci(kfn, max_b = 200L)
-                add_row(tr("Krippendorff's α", "α de Krippendorff"), ka_val, interp, bc_ka$ci, NA_real_, bc_ka$n)
+                add_row(.("Krippendorff's α"), ka_val, interp, bc_ka$ci, NA_real_, bc_ka$n)
                 if (level == "continuous") krip_row_idx <- length(rows)
                 krip_val <- ka_val
             }
@@ -408,16 +408,16 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 ia <- tryCatch(irr::icc(df_num, model = "twoway", type = "agreement",   unit = "single"), error = function(e) NULL)
                 if (!is.null(ic)) {
                     icc_c_val <- ic$value
-                    add_row(tr("ICC (consistency)", "ICC (consistencia)"), icc_c_val, private$.interp_rel(icc_c_val),
+                    add_row(.("ICC (consistency)"), icc_c_val, private$.interp_rel(icc_c_val),
                             c(ic$lbound, ic$ubound), ic$p.value)
                 }
                 if (!is.null(ia)) {
                     icc_a_val <- ia$value
-                    add_row(tr("ICC (absolute agreement)", "ICC (acuerdo absoluto)"), icc_a_val, private$.interp_rel(icc_a_val),
+                    add_row(.("ICC (absolute agreement)"), icc_a_val, private$.interp_rel(icc_a_val),
                             c(ia$lbound, ia$ubound), ia$p.value)
                 }
             } else if (opt$icc && level != "continuous") {
-                add_row("ICC", NA_real_, tr("Requires continuous ratings", "Requiere calificaciones continuas"))
+                add_row("ICC", NA_real_, .("Requires continuous ratings"))
             }
 
             # ── 5d-bis. ICC assumptions check (normality, homoscedasticity,
@@ -465,26 +465,26 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 tuk <- private$.tukey_nonadditivity(df_num)
 
                 verdict <- function(p) {
-                    if (is.null(p) || is.na(p)) tr("N/A", "N/D")
-                    else if (p < .05) tr("Violated", "Violado")
-                    else tr("Met", "Cumplido")
+                    if (is.null(p) || is.na(p)) .("N/A")
+                    else if (p < .05) .("Violated")
+                    else .("Met")
                 }
 
                 assum_rows <- list(
-                    list(assumption = tr("Normality of residuals", "Normalidad de residuos"),
+                    list(assumption = .("Normality of residuals"),
                          test = "Shapiro-Wilk",
                          statistic = .clean_na(if (!is.null(sw)) unname(sw$statistic) else NA_real_),
                          df = "",
                          p_value = .clean_na(if (!is.null(sw)) sw$p.value else NA_real_),
                          verdict = verdict(if (!is.null(sw)) sw$p.value else NA_real_)),
-                    list(assumption = tr("Homoscedasticity across raters", "Homocedasticidad entre jueces"),
+                    list(assumption = .("Homoscedasticity across raters"),
                          test = "Levene",
                          statistic = .clean_na(lev$stat),
                          df = if (!is.na(lev$df1)) paste0(lev$df1, ", ", lev$df2) else "",
                          p_value = .clean_na(lev$p),
                          verdict = verdict(lev$p)),
-                    list(assumption = tr("Linearity (subject × rater additivity)", "Linealidad (aditividad sujeto × juez)"),
-                         test = tr("Tukey's non-additivity", "No aditividad de Tukey"),
+                    list(assumption = .("Linearity (subject × rater additivity)"),
+                         test = .("Tukey's non-additivity"),
                          statistic = .clean_na(tuk$stat),
                          df = if (!is.na(tuk$df2)) paste0(tuk$df1, ", ", tuk$df2) else "",
                          p_value = .clean_na(tuk$p),
@@ -495,45 +495,31 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 for (i in seq_along(assum_rows)) iat$setRow(rowNo = i, values = assum_rows[[i]])
 
                 n_flag <- if (n < 30L)
-                    tr("small (n &lt; 30) — expect wide, imprecise ICC confidence intervals",
-                       "pequeña (n &lt; 30) — espere intervalos de confianza del ICC amplios e imprecisos")
+                    .("small (n &lt; 30) — expect wide, imprecise ICC confidence intervals")
                 else if (n < 50L)
-                    tr("borderline — adequate for a preliminary estimate, but more subjects would tighten the CI for publication",
-                       "límite — adecuada para una estimación preliminar, pero más sujetos estrecharían el IC para publicación")
+                    .("borderline — adequate for a preliminary estimate, but more subjects would tighten the CI for publication")
                 else
-                    tr("adequate for a reasonably precise ICC estimate under common guidelines",
-                       "adecuada para una estimación de ICC razonablemente precisa según las guías comunes")
+                    .("adequate for a reasonably precise ICC estimate under common guidelines")
 
                 sw_bad  <- !is.null(sw)  && !is.na(sw$p.value)  && sw$p.value  < .05
                 lev_bad <- !is.na(lev$p) && lev$p < .05
                 tuk_bad <- !is.na(tuk$p) && tuk$p < .05
 
                 note_html <- paste0(.fl_prose_open(),
-                    "<p>", tr(
-                        "The ICC is a variance-partition of the same subject × rater ANOVA that its confidence interval is computed from (Shrout &amp; Fleiss, 1979), so it inherits that model's usual assumptions. Unlike Kappa, Gwet's AC1/AC2, Krippendorff's α, and Kendall's W above (which are rank- or category-based and distribution-free), the ICC's point estimate and especially its F-distribution-based CI are sensitive to non-normal residuals, unequal error variance across raters, and a non-additive (curvilinear) rater relationship.",
-                        "El ICC es una partición de varianza del mismo ANOVA sujeto × juez del que se calcula su intervalo de confianza (Shrout &amp; Fleiss, 1979), por lo que hereda los supuestos usuales de ese modelo. A diferencia del Kappa, el AC1/AC2 de Gwet, el α de Krippendorff y la W de Kendall de arriba (de rango o categoría y libres de distribución), el valor puntual del ICC y sobre todo su IC basado en la distribución F son sensibles a residuos no normales, varianza de error desigual entre jueces, y una relación entre jueces no aditiva (curvilínea)."
-                    ), "</p>",
-                    "<p>", if (sw_bad) paste0("⚠ <b>", tr("Normality violated", "Normalidad violada"), ":</b> ",
-                        tr("residuals depart from normality (Shapiro-Wilk p &lt; .05). The ICC point estimate is fairly robust to mild non-normality, but its confidence interval is not — treat the reported CI with caution and prefer the bootstrap CIs already computed above for the other coefficients when reporting precision.",
-                           "los residuos se desvían de la normalidad (Shapiro-Wilk p &lt; .05). El valor puntual del ICC es razonablemente robusto a desviaciones leves de la normalidad, pero su intervalo de confianza no — trate el IC reportado con cautela y prefiera los IC por bootstrap ya calculados arriba para los otros coeficientes al reportar precisión."))
-                        else paste0("✓ ", tr("No evidence against normality of residuals (Shapiro-Wilk p ≥ .05).",
-                                                     "No hay evidencia contra la normalidad de los residuos (Shapiro-Wilk p ≥ .05).")), "</p>",
-                    "<p>", if (lev_bad) paste0("⚠ <b>", tr("Homoscedasticity violated", "Homocedasticidad violada"), ":</b> ",
-                        tr("error variance differs across raters (Levene p &lt; .05) — at least one rater is far more (or less) internally consistent than the others across the score range, which biases the ICC's standard error and can invalidate its CI. Check the Rater Mean Score diagnostic plot above for which rater stands out.",
-                           "la varianza de error difiere entre jueces (Levene p &lt; .05) — al menos un juez es mucho más (o menos) consistente internamente que los demás en el rango de puntajes, lo que sesga el error estándar del ICC y puede invalidar su IC. Revise el gráfico de diagnóstico de Puntaje Medio por Juez arriba para ver qué juez se distingue."))
-                        else paste0("✓ ", tr("No evidence against equal error variance across raters (Levene p ≥ .05).",
-                                                     "No hay evidencia contra la igualdad de varianza de error entre jueces (Levene p ≥ .05).")), "</p>",
-                    "<p>", if (tuk_bad) paste0("⚠ <b>", tr("Linearity/additivity violated", "Linealidad/aditividad violada"), ":</b> ",
-                        tr("Tukey's test detects a subject × rater interaction (p &lt; .05): at least one rater's scores curve relative to the others rather than following the same straight-line relationship the ICC model assumes. This is the most severe of the three violations — the ICC will systematically understate true agreement when it happens. Inspect a rater-by-rater scatterplot for a curved (not straight-line) pattern before trusting the ICC value above; Kendall's W, already available in this analysis, is a rank-based alternative that does not assume linearity.",
-                           "la prueba de Tukey detecta una interacción sujeto × juez (p &lt; .05): las puntuaciones de al menos un juez se curvan respecto a las de los demás en vez de seguir la misma relación lineal que asume el modelo del ICC. Esta es la más grave de las tres violaciones — el ICC subestimará sistemáticamente el acuerdo real cuando ocurre. Inspeccione un diagrama de dispersión juez contra juez en busca de un patrón curvo (no lineal) antes de confiar en el valor de ICC de arriba; la W de Kendall, ya disponible en este análisis, es una alternativa basada en rangos que no asume linealidad."))
-                        else paste0("✓ ", tr("No evidence of a subject × rater interaction — the additivity/linearity assumption holds (Tukey p ≥ .05).",
-                                                     "No hay evidencia de interacción sujeto × juez — se cumple el supuesto de aditividad/linealidad (Tukey p ≥ .05).")), "</p>",
-                    "<p><b>", tr("Sample size", "Tamaño de muestra"), ":</b> ",
-                    tr(paste0("n = ", n, " subjects rated by k = ", k, " raters — this is "),
-                       paste0("n = ", n, " sujetos calificados por k = ", k, " jueces — esto es ")),
+                    "<p>", .("The ICC is a variance-partition of the same subject × rater ANOVA that its confidence interval is computed from (Shrout &amp; Fleiss, 1979), so it inherits that model's usual assumptions. Unlike Kappa, Gwet's AC1/AC2, Krippendorff's α, and Kendall's W above (which are rank- or category-based and distribution-free), the ICC's point estimate and especially its F-distribution-based CI are sensitive to non-normal residuals, unequal error variance across raters, and a non-additive (curvilinear) rater relationship."), "</p>",
+                    "<p>", if (sw_bad) paste0("⚠ <b>", .("Normality violated"), ":</b> ",
+                        .("residuals depart from normality (Shapiro-Wilk p &lt; .05). The ICC point estimate is fairly robust to mild non-normality, but its confidence interval is not — treat the reported CI with caution and prefer the bootstrap CIs already computed above for the other coefficients when reporting precision."))
+                        else paste0("✓ ", .("No evidence against normality of residuals (Shapiro-Wilk p ≥ .05).")), "</p>",
+                    "<p>", if (lev_bad) paste0("⚠ <b>", .("Homoscedasticity violated"), ":</b> ",
+                        .("error variance differs across raters (Levene p &lt; .05) — at least one rater is far more (or less) internally consistent than the others across the score range, which biases the ICC's standard error and can invalidate its CI. Check the Rater Mean Score diagnostic plot above for which rater stands out."))
+                        else paste0("✓ ", .("No evidence against equal error variance across raters (Levene p ≥ .05).")), "</p>",
+                    "<p>", if (tuk_bad) paste0("⚠ <b>", .("Linearity/additivity violated"), ":</b> ",
+                        .("Tukey's test detects a subject × rater interaction (p &lt; .05): at least one rater's scores curve relative to the others rather than following the same straight-line relationship the ICC model assumes. This is the most severe of the three violations — the ICC will systematically understate true agreement when it happens. Inspect a rater-by-rater scatterplot for a curved (not straight-line) pattern before trusting the ICC value above; Kendall's W, already available in this analysis, is a rank-based alternative that does not assume linearity."))
+                        else paste0("✓ ", .("No evidence of a subject × rater interaction — the additivity/linearity assumption holds (Tukey p ≥ .05).")), "</p>",
+                    "<p><b>", .("Sample size"), ":</b> ",
+                    jmvcore::format(.("n = {n} subjects rated by k = {k} raters — this is "), n = n, k = k),
                     n_flag, ". ",
-                    tr("A larger n is also the best protection against non-normality: with more subjects, F-based inference in the underlying ANOVA becomes more robust to mild departures, though bootstrap CIs remain the safer choice whenever a violation above is flagged (Koo &amp; Li, 2016; Bujang &amp; Baharum, 2017).",
-                       "Un n mayor es también la mejor protección contra la no normalidad: con más sujetos, la inferencia basada en F del ANOVA subyacente se vuelve más robusta a desviaciones leves, aunque los IC por bootstrap siguen siendo la opción más segura cuando se marca una violación arriba (Koo &amp; Li, 2016; Bujang &amp; Baharum, 2017)."),
+                    .("A larger n is also the best protection against non-normality: with more subjects, F-based inference in the underlying ANOVA becomes more robust to mild departures, though bootstrap CIs remain the safer choice whenever a violation above is flagged (Koo &amp; Li, 2016; Bujang &amp; Baharum, 2017)."),
                     "</p>",
                     "</div>")
                 self$results$iccAssumptionsNote$setContent(note_html)
@@ -546,7 +532,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             if (opt$kendallW && k >= 2L && level != "nominal") {
                 kw <- tryCatch(irr::kendall(df_num), error = function(e) NULL)
                 if (!is.null(kw)) {
-                    note <- if (nzchar(kw$error %||% "")) paste0(" (", tr("ties detected", "empates detectados"), ")") else ""
+                    note <- if (nzchar(kw$error %||% "")) paste0(" (", .("ties detected"), ")") else ""
                     # irr::kendall() is cheap per call (~0.03 sec/replicate
                     # measured), unlike Krippendorff's interval method --
                     # the full bootstrapSamples cap (200) is fine here.
@@ -555,7 +541,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                     add_row(paste0("Kendall's W", note), kw$value, private$.interp_rel(kw$value), bc_w$ci, kw$p.value, bc_w$n)
                 }
             } else if (opt$kendallW && level == "nominal") {
-                add_row("Kendall's W", NA_real_, tr("Not applicable to nominal data", "No aplica a datos nominales"))
+                add_row("Kendall's W", NA_real_, .("Not applicable to nominal data"))
             }
 
             # ── 6. Write mainTable ────────────────────────────────────────────
@@ -563,9 +549,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             private$.reset_table(mt, length(rows))
             for (i in seq_along(rows)) mt$setRow(rowNo = i, values = rows[[i]])
             if (!is.null(krip_row_idx))
-                mt$addFootnote(col = "value", rowNo = krip_row_idx, note = tr(
-                    "CI omitted: bootstrapping Krippendorff's α on near-continuous data is too costly to run by default.",
-                    "IC omitido: calcular el IC de α de Krippendorff por bootstrap en datos casi continuos es muy costoso para hacerlo por defecto."))
+                mt$addFootnote(col = "value", rowNo = krip_row_idx, note = .("CI omitted: bootstrapping Krippendorff's α on near-continuous data is too costly to run by default."))
 
             # Data for .plotComparison: only rows with a real value (skip
             # "not applicable" placeholders like the ICC row on nominal data).
@@ -605,15 +589,12 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 gap <- abs(kappa_val - gwet_val)
                 gname <- if (level == "ordinal") "AC2" else "AC1"
                 if (gap > .05) {
-                    discord_html <- paste0("<p>⚠ <b>", tr("Coefficients disagree", "Los coeficientes no coinciden"), ":</b> ",
-                        tr(paste0("Kappa (", round(kappa_val, 3), ") and Gwet's ", gname, " (", round(gwet_val, 3),
-                                  ") differ by more than .05. This is the classic “Kappa paradox”: Kappa penalizes agreement heavily when one category is much more common than the others, even when raters are genuinely consistent (Gwet, 2014). Trust Gwet's ", gname, " over Kappa here."),
-                           paste0("El Kappa (", round(kappa_val, 3), ") y el ", gname, " de Gwet (", round(gwet_val, 3),
-                                  ") difieren en más de .05. Esta es la clásica “paradoja del Kappa”: el Kappa penaliza fuertemente el acuerdo cuando una categoría es mucho más común que las demás, aun cuando los jueces son genuinamente consistentes (Gwet, 2014). Confíe en el ", gname, " de Gwet sobre el Kappa aquí.")),
+                    discord_html <- paste0("<p>⚠ <b>", .("Coefficients disagree"), ":</b> ",
+                        jmvcore::format(.("Kappa ({kappa}) and Gwet's {gname} ({gwet}) differ by more than .05. This is the classic “Kappa paradox”: Kappa penalizes agreement heavily when one category is much more common than the others, even when raters are genuinely consistent (Gwet, 2014). Trust Gwet's {gname} over Kappa here."),
+                                   kappa = round(kappa_val, 3), gwet = round(gwet_val, 3), gname = gname),
                         "</p>")
                 } else {
-                    discord_html <- paste0("<p>✓ ", tr("Kappa and Gwet's coefficient agree closely — no evidence of a prevalence-driven paradox here.",
-                                                               "El Kappa y el coeficiente de Gwet coinciden de cerca — no hay evidencia de una paradoja por prevalencia aquí."), "</p>")
+                    discord_html <- paste0("<p>✓ ", .("Kappa and Gwet's coefficient agree closely — no evidence of a prevalence-driven paradox here."), "</p>")
                 }
                 # EN: For ordinal data with >2 raters, Kappa is Fleiss'
                 # Kappa (irr::kappam.fleiss()), which has no weighting
@@ -634,22 +615,17 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                 # esto hace explícita la consecuencia metodológica en vez
                 # de dejar que la etiqueta hable por sí sola.
                 if (level == "ordinal" && k > 2L && !is.na(kappa_val))
-                    discord_html <- paste0(discord_html, "<p>⚠ ", tr(
-                        "Kappa above is Fleiss' Kappa (unweighted): with more than 2 raters, no weighted-Kappa formula is used, so it does not credit near-misses between adjacent ordinal categories the way the 2-rater case or Gwet's AC2/Krippendorff's ordinal α above do. Prefer AC2 or Krippendorff's α as the primary ordinal estimate for this reason.",
-                        "El Kappa de arriba es el Kappa de Fleiss (sin ponderar): con más de 2 jueces, no se usa una fórmula de Kappa ponderado, así que no le da crédito a los casi-aciertos entre categorías ordinales adyacentes como sí lo hacen el caso de 2 jueces o el AC2 de Gwet/α ordinal de Krippendorff de arriba. Por esto, prefiera el AC2 o el α de Krippendorff como la estimación ordinal primaria."),
+                    discord_html <- paste0(discord_html, "<p>⚠ ", .("Kappa above is Fleiss' Kappa (unweighted): with more than 2 raters, no weighted-Kappa formula is used, so it does not credit near-misses between adjacent ordinal categories the way the 2-rater case or Gwet's AC2/Krippendorff's ordinal α above do. Prefer AC2 or Krippendorff's α as the primary ordinal estimate for this reason."),
                         "</p>")
             } else if (level == "continuous" && !is.na(icc_c_val) && !is.na(icc_a_val)) {
                 gap <- icc_c_val - icc_a_val
                 if (gap > .05) {
-                    discord_html <- paste0("<p>⚠ <b>", tr("ICC forms disagree", "Las formas de ICC no coinciden"), ":</b> ",
-                        tr(paste0("Consistency-type ICC (", round(icc_c_val, 3), ") is notably higher than absolute-agreement-type ICC (",
-                                  round(icc_a_val, 3), "). This pattern indicates at least one rater has a systematic mean bias (shifted scores) even though raters rank cases similarly (Shrout &amp; Fleiss, 1979). Report the absolute-agreement form if raters' raw scores are meant to be used interchangeably."),
-                           paste0("El ICC tipo consistencia (", round(icc_c_val, 3), ") es notablemente mayor que el ICC tipo acuerdo absoluto (",
-                                  round(icc_a_val, 3), "). Este patrón indica que al menos un juez tiene un sesgo sistemático de media (puntajes desplazados) aunque los jueces ordenan los casos de forma similar (Shrout &amp; Fleiss, 1979). Reporte la forma de acuerdo absoluto si los puntajes brutos de los jueces se van a usar de forma intercambiable.")),
+                    discord_html <- paste0("<p>⚠ <b>", .("ICC forms disagree"), ":</b> ",
+                        jmvcore::format(.("Consistency-type ICC ({icc_c}) is notably higher than absolute-agreement-type ICC ({icc_a}). This pattern indicates at least one rater has a systematic mean bias (shifted scores) even though raters rank cases similarly (Shrout &amp; Fleiss, 1979). Report the absolute-agreement form if raters' raw scores are meant to be used interchangeably."),
+                                   icc_c = round(icc_c_val, 3), icc_a = round(icc_a_val, 3)),
                         "</p>")
                 } else {
-                    discord_html <- paste0("<p>✓ ", tr("Consistency and absolute-agreement ICC agree closely — no evidence of systematic rater bias.",
-                                                               "El ICC de consistencia y el de acuerdo absoluto coinciden de cerca — no hay evidencia de sesgo sistemático de jueces."), "</p>")
+                    discord_html <- paste0("<p>✓ ", .("Consistency and absolute-agreement ICC agree closely — no evidence of systematic rater bias."), "</p>")
                 }
             }
             self$results$discordanceNote$setContent(if (nzchar(discord_html)) .fl_prose(discord_html) else discord_html)
@@ -743,122 +719,106 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
 
             # ---- What happened: the mechanics, not just the number ---------
             happened_html <- if (level %in% c("nominal", "ordinal")) paste0(
-                "<p>", tr(
-                    paste0("Three estimators of the same question — how much do raters agree beyond chance? — were computed on the same ", k, " raters and ", n, " cases: ",
-                           if (!is.na(kappa_val)) paste0("Kappa (", round(kappa_val,3), "), ") else "",
-                           if (!is.na(gwet_val))  paste0("Gwet's coefficient (", round(gwet_val,3), "), ") else "",
-                           if (!is.na(krip_val))  paste0("and Krippendorff's α (", round(krip_val,3), ")") else "",
-                           ". They can legitimately disagree because each one defines “agreement expected by chance” differently: Kappa (Cohen, 1960 for 2 raters; Fleiss, 1971 for more than 2) derives it from the observed marginal distribution of each category, which makes it highly sensitive to skewed prevalence; Gwet's AC1/AC2 (Gwet, 2014) was designed specifically to not degrade under that same skew; and Krippendorff's α (Krippendorff, 2018) generalizes the calculation across any measurement level and tolerates missing data."),
-                    paste0("Se calcularon tres estimadores de la misma pregunta —¿qué tanto concuerdan los jueces más allá del azar?— sobre los mismos ", k, " jueces y ", n, " casos: ",
-                           if (!is.na(kappa_val)) paste0("Kappa (", round(kappa_val,3), "), ") else "",
-                           if (!is.na(gwet_val))  paste0("el coeficiente de Gwet (", round(gwet_val,3), "), ") else "",
-                           if (!is.na(krip_val))  paste0("y el α de Krippendorff (", round(krip_val,3), ")") else "",
-                           ". Pueden diferir legítimamente porque cada uno define de forma distinta el “acuerdo esperado por azar”: el Kappa (Cohen, 1960 para 2 jueces; Fleiss, 1971 para más de 2) lo deriva de la distribución marginal observada de cada categoría, lo cual lo hace muy sensible a la prevalencia sesgada; el AC1/AC2 de Gwet (Gwet, 2014) fue diseñado específicamente para no degradarse ante esa misma prevalencia sesgada; y el α de Krippendorff (Krippendorff, 2018) generaliza el cálculo a cualquier nivel de medida y tolera datos faltantes.")
+                "<p>", jmvcore::format(
+                    .("Three estimators of the same question — how much do raters agree beyond chance? — were computed on the same {k} raters and {n} cases: {vals}. They can legitimately disagree because each one defines “agreement expected by chance” differently: Kappa (Cohen, 1960 for 2 raters; Fleiss, 1971 for more than 2) derives it from the observed marginal distribution of each category, which makes it highly sensitive to skewed prevalence; Gwet's AC1/AC2 (Gwet, 2014) was designed specifically to not degrade under that same skew; and Krippendorff's α (Krippendorff, 2018) generalizes the calculation across any measurement level and tolerates missing data."),
+                    k = k, n = n,
+                    vals = paste0(
+                        if (!is.na(kappa_val)) jmvcore::format(.("Kappa ({v}), "), v = round(kappa_val,3)) else "",
+                        if (!is.na(gwet_val))  jmvcore::format(.("Gwet's coefficient ({v}), "), v = round(gwet_val,3)) else "",
+                        if (!is.na(krip_val))  jmvcore::format(.("and Krippendorff's α ({v})"), v = round(krip_val,3)) else "")
                 ), "</p>",
-                if (has_discordance) paste0("<p>", tr(
-                    paste0("In this case the gap between Kappa and Gwet's coefficient (", round(abs(kappa_val-gwet_val),3), ") is large enough that the choice of formula changes the headline conclusion — see the discordance diagnosis above the tables."),
-                    paste0("En este caso la brecha entre el Kappa y el coeficiente de Gwet (", round(abs(kappa_val-gwet_val),3), ") es suficientemente grande como para que la elección de fórmula cambie la conclusión principal — ver el diagnóstico de discordancia sobre las tablas.")
-                ), "</p>") else paste0("<p>", tr(
-                    "The estimators agree closely here, so the choice of formula does not change the substantive conclusion.",
-                    "Los estimadores coinciden de cerca aquí, así que la elección de fórmula no cambia la conclusión sustantiva."
-                ), "</p>")
+                if (has_discordance) paste0("<p>", jmvcore::format(
+                    .("In this case the gap between Kappa and Gwet's coefficient ({gap}) is large enough that the choice of formula changes the headline conclusion — see the discordance diagnosis above the tables."),
+                    gap = round(abs(kappa_val-gwet_val),3)
+                ), "</p>") else paste0("<p>", .("The estimators agree closely here, so the choice of formula does not change the substantive conclusion."), "</p>")
             ) else paste0(
-                "<p>", tr(
-                    paste0("Reliability was assessed via two ICC forms and Krippendorff's interval α on the same ", k, " raters and ", n, " cases. ICC (consistency) asks whether raters RANK cases similarly, tolerating a rater who is systematically higher or lower than the others; ICC (absolute agreement) additionally requires their raw VALUES to be interchangeable (Shrout &amp; Fleiss, 1979)."),
-                    paste0("La confiabilidad se evaluó mediante dos formas de ICC y el α de intervalo de Krippendorff sobre los mismos ", k, " jueces y ", n, " casos. El ICC (consistencia) pregunta si los jueces ORDENAN los casos de forma similar, tolerando un juez sistemáticamente más alto o más bajo que los demás; el ICC (acuerdo absoluto) exige además que sus VALORES brutos sean intercambiables (Shrout &amp; Fleiss, 1979).")
+                "<p>", jmvcore::format(
+                    .("Reliability was assessed via two ICC forms and Krippendorff's interval α on the same {k} raters and {n} cases. ICC (consistency) asks whether raters RANK cases similarly, tolerating a rater who is systematically higher or lower than the others; ICC (absolute agreement) additionally requires their raw VALUES to be interchangeable (Shrout &amp; Fleiss, 1979)."),
+                    k = k, n = n
                 ), "</p>",
-                if (has_discordance) paste0("<p>", tr(
-                    paste0("Here the gap between the two ICC forms (", round(abs(icc_c_val-icc_a_val),3), ") is large enough to matter — see the discordance diagnosis above the tables."),
-                    paste0("Aquí la brecha entre las dos formas de ICC (", round(abs(icc_c_val-icc_a_val),3), ") es suficientemente grande como para importar — ver el diagnóstico de discordancia sobre las tablas.")
-                ), "</p>") else paste0("<p>", tr(
-                    "Both ICC forms agree closely here, so there is no evidence that rater interchangeability is a concern.",
-                    "Ambas formas de ICC coinciden de cerca aquí, así que no hay evidencia de que la intercambiabilidad de jueces sea un problema."
-                ), "</p>")
+                if (has_discordance) paste0("<p>", jmvcore::format(
+                    .("Here the gap between the two ICC forms ({gap}) is large enough to matter — see the discordance diagnosis above the tables."),
+                    gap = round(abs(icc_c_val-icc_a_val),3)
+                ), "</p>") else paste0("<p>", .("Both ICC forms agree closely here, so there is no evidence that rater interchangeability is a concern."), "</p>")
             )
 
             # ---- Why: grounded in THIS data's pattern, not design metadata --
             why_html <- if (level %in% c("nominal", "ordinal")) paste0(
-                "<p>", tr(
-                    paste0("Category “", top_cat, "” accounts for ", top_pct, "% of every rating issued across all ", k, " raters — a markedly uneven distribution. This is exactly the condition under which Kappa becomes conservative: when nearly every case falls in one category, the “chance agreement” Kappa subtracts is already high, leaving little room for Kappa to register genuine agreement even when raters are truly consistent (Gwet, 2014). AC1/AC2 and Krippendorff's α are not penalized this way."),
-                    paste0("La categoría “", top_cat, "” concentra el ", top_pct, "% de todas las calificaciones emitidas entre los ", k, " jueces — una distribución marcadamente desigual. Esta es exactamente la condición bajo la cual el Kappa se vuelve conservador: cuando casi todos los casos caen en una sola categoría, el “acuerdo por azar” que el Kappa resta ya es alto de por sí, dejando poco margen para que el Kappa registre acuerdo genuino aun cuando los jueces sean realmente consistentes (Gwet, 2014). El AC1/AC2 y el α de Krippendorff no se penalizan de esta forma.")
+                "<p>", jmvcore::format(
+                    .("Category “{cat}” accounts for {pct}% of every rating issued across all {k} raters — a markedly uneven distribution. This is exactly the condition under which Kappa becomes conservative: when nearly every case falls in one category, the “chance agreement” Kappa subtracts is already high, leaving little room for Kappa to register genuine agreement even when raters are truly consistent (Gwet, 2014). AC1/AC2 and Krippendorff's α are not penalized this way."),
+                    cat = top_cat, pct = top_pct, k = k
                 ), "</p>",
-                if (has_outlier_rater) paste0("<p>", tr(
-                    paste0("Rater “", worst_rater, "” also stands out: their average pairwise agreement with the other raters is ", worst_pct, "%, versus ", others_pct, "% among the remaining rater pairs — a ", rater_gap, "-point gap. This points to that specific rater applying a different criterion, rather than a problem with the measurement design itself."),
-                    paste0("El juez “", worst_rater, "” también se distingue: su acuerdo promedio por pares con los demás jueces es ", worst_pct, "%, frente a ", others_pct, "% entre el resto de pares de jueces — una brecha de ", rater_gap, " puntos porcentuales. Esto apunta a que ese juez en particular está aplicando un criterio distinto, más que a un problema del diseño de medición en sí.")
-                ), "</p>") else paste0("<p>", tr(
-                    "No single rater stands out from the rest — pairwise agreement is fairly even across all rater pairs, so the pattern found here reflects the measurement design (category prevalence) rather than one rater's individual behavior.",
-                    "Ningún juez se distingue del resto — el acuerdo por pares es bastante parejo entre todos los pares de jueces, así que el patrón encontrado aquí refleja el diseño de medición (prevalencia de categoría) más que el comportamiento individual de un juez."
-                ), "</p>")
+                if (has_outlier_rater) paste0("<p>", jmvcore::format(
+                    .("Rater “{rater}” also stands out: their average pairwise agreement with the other raters is {worst}%, versus {others}% among the remaining rater pairs — a {gap}-point gap. This points to that specific rater applying a different criterion, rather than a problem with the measurement design itself."),
+                    rater = worst_rater, worst = worst_pct, others = others_pct, gap = rater_gap
+                ), "</p>") else paste0("<p>", .("No single rater stands out from the rest — pairwise agreement is fairly even across all rater pairs, so the pattern found here reflects the measurement design (category prevalence) rather than one rater's individual behavior."), "</p>")
             ) else paste0(
-                "<p>", tr(
-                    paste0("Rater “", biased_rater, "” averages ", round(rater_means[worst_i],1), " points against an overall mean of ", round(grand_mean,1), " — a ", if(bias_gap>0) "+" else "", bias_gap, "-point systematic shift. This is exactly what produces a gap between the two ICC forms: raters agree on WHO scores higher or lower (preserving rank, hence high consistency-type ICC), but not on the exact MAGNITUDE of the score (hurting absolute-agreement-type ICC) (Shrout &amp; Fleiss, 1979)."),
-                    paste0("El juez “", biased_rater, "” promedia ", round(rater_means[worst_i],1), " puntos frente a una media general de ", round(grand_mean,1), " — un desplazamiento sistemático de ", if(bias_gap>0) "+" else "", bias_gap, " puntos. Esto es exactamente lo que produce la brecha entre las dos formas de ICC: los jueces concuerdan en QUIÉN puntúa más alto o más bajo (preservando el orden, de ahí el ICC tipo consistencia alto), pero no en la MAGNITUD exacta del puntaje (perjudicando el ICC tipo acuerdo absoluto) (Shrout &amp; Fleiss, 1979).")
+                "<p>", jmvcore::format(
+                    .("Rater “{rater}” averages {mean} points against an overall mean of {grand} — a {sign}{gap}-point systematic shift. This is exactly what produces a gap between the two ICC forms: raters agree on WHO scores higher or lower (preserving rank, hence high consistency-type ICC), but not on the exact MAGNITUDE of the score (hurting absolute-agreement-type ICC) (Shrout &amp; Fleiss, 1979)."),
+                    rater = biased_rater, mean = round(rater_means[worst_i],1), grand = round(grand_mean,1),
+                    sign = if (bias_gap>0) "+" else "", gap = bias_gap
                 ), "</p>")
 
             # ---- What it means: decision-relevant, not a "see above" pointer -
             implies_html <- if (level %in% c("nominal", "ordinal")) paste0(
-                "<p>", tr(
-                    paste0("A value of ", round(primary_val,3), " (", primary_lbl, ") on the Landis &amp; Koch (1977) scale means that, corrected for chance, rater agreement is ",
-                           if (band_is_weak) "not yet strong enough to treat a single rater's classification — or even the consensus across raters — as trustworthy for consequential decisions (e.g. diagnosis, selection); a non-trivial share of individual classifications likely do not reflect a shared criterion."
-                           else "strong enough to support using the raters' consensus classification (e.g. the modal category across raters) as a dependent variable with reasonable confidence."),
-                    paste0("Un valor de ", round(primary_val,3), " (", primary_lbl, ") en la escala de Landis &amp; Koch (1977) significa que, corregido por azar, el acuerdo entre jueces es ",
-                           if (band_is_weak) "todavía insuficiente para tratar la clasificación de un solo juez —o incluso el consenso entre jueces— como confiable para decisiones consecuentes (p. ej. diagnóstico, selección); una proporción no trivial de las clasificaciones individuales probablemente no refleja un criterio compartido."
-                           else "suficientemente fuerte como para respaldar el uso de la clasificación consensuada de los jueces (p. ej. la categoría modal entre jueces) como variable dependiente con confianza razonable.")
+                "<p>", jmvcore::format(
+                    .("A value of {val} ({lbl}) on the Landis &amp; Koch (1977) scale means that, corrected for chance, rater agreement is {verdict}"),
+                    val = round(primary_val,3), lbl = primary_lbl,
+                    verdict = if (band_is_weak)
+                        .("not yet strong enough to treat a single rater's classification — or even the consensus across raters — as trustworthy for consequential decisions (e.g. diagnosis, selection); a non-trivial share of individual classifications likely do not reflect a shared criterion.")
+                        else .("strong enough to support using the raters' consensus classification (e.g. the modal category across raters) as a dependent variable with reasonable confidence.")
                 ), "</p>",
-                if (has_discordance) paste0("<p>", tr(
-                    "The Kappa/Gwet discordance is not a mere technicality: reporting only Kappa here would lead a reader to conclude the agreement is weaker than the rating pattern actually supports, given the observed category skew.",
-                    "La discordancia Kappa/Gwet no es un simple tecnicismo: reportar solo el Kappa aquí llevaría a un lector a concluir que el acuerdo es más débil de lo que el patrón de calificaciones realmente respalda, dado el sesgo de categoría observado."
-                ), "</p>") else ""
+                if (has_discordance) paste0("<p>", .("The Kappa/Gwet discordance is not a mere technicality: reporting only Kappa here would lead a reader to conclude the agreement is weaker than the rating pattern actually supports, given the observed category skew."), "</p>") else ""
             ) else paste0(
-                "<p>", tr(
-                    paste0("An absolute-agreement ICC of ", round(icc_a_val,3), " means raters' raw scores can", if (!is.na(icc_a_val) && icc_a_val >= .75) "" else "not yet", " be used interchangeably (e.g. averaged into a single composite score) with reasonable confidence; the higher consistency-type ICC (", round(icc_c_val,3), ") means their RANKING of cases is more trustworthy than their absolute scale."),
-                    paste0("Un ICC de acuerdo absoluto de ", round(icc_a_val,3), " significa que los puntajes brutos de los jueces ", if (!is.na(icc_a_val) && icc_a_val >= .75) "sí pueden" else "todavía no pueden", " usarse de forma intercambiable (p. ej. promediados en un puntaje compuesto único) con confianza razonable; el ICC tipo consistencia más alto (", round(icc_c_val,3), ") indica que su ORDENAMIENTO de los casos es más confiable que su escala absoluta.")
+                "<p>", jmvcore::format(
+                    if (!is.na(icc_a_val) && icc_a_val >= .75)
+                        .("An absolute-agreement ICC of {icc_a} means raters' raw scores can be used interchangeably (e.g. averaged into a single composite score) with reasonable confidence; the higher consistency-type ICC ({icc_c}) means their RANKING of cases is more trustworthy than their absolute scale.")
+                        else .("An absolute-agreement ICC of {icc_a} means raters' raw scores cannot yet be used interchangeably (e.g. averaged into a single composite score) with reasonable confidence; the higher consistency-type ICC ({icc_c}) means their RANKING of cases is more trustworthy than their absolute scale."),
+                    icc_a = round(icc_a_val,3), icc_c = round(icc_c_val,3)
                 ), "</p>")
 
             # ---- What to do now: concrete, data-driven methodological steps -
             action_items <- character(0)
             if (has_discordance && level %in% c("nominal","ordinal"))
-                action_items <- c(action_items, tr("Report Gwet's coefficient (or Krippendorff's α) as the primary estimate, not Kappa — Kappa's value here is an artifact of category prevalence, not weaker rater agreement.",
-                                                    "Reporte el coeficiente de Gwet (o el α de Krippendorff) como estimación primaria, no el Kappa — el valor del Kappa aquí es un artefacto de la prevalencia de categoría, no un acuerdo entre jueces más débil."))
+                action_items <- c(action_items, .("Report Gwet's coefficient (or Krippendorff's α) as the primary estimate, not Kappa — Kappa's value here is an artifact of category prevalence, not weaker rater agreement."))
             if (has_discordance && level == "continuous")
-                action_items <- c(action_items, tr("Report ICC (absolute agreement) rather than ICC (consistency) if raters' raw scores must be interchangeable; if only relative ranking matters, the consistency form is the right one to report instead.",
-                                                    "Reporte ICC (acuerdo absoluto) en vez de ICC (consistencia) si los puntajes brutos de los jueces deben ser intercambiables; si solo importa el orden relativo, la forma de consistencia es la correcta para reportar."))
+                action_items <- c(action_items, .("Report ICC (absolute agreement) rather than ICC (consistency) if raters' raw scores must be interchangeable; if only relative ranking matters, the consistency form is the right one to report instead."))
             if (level %in% c("nominal","ordinal") && !is.na(top_pct) && (top_pct > 60 || has_discordance))
-                action_items <- c(action_items, tr(paste0("The category system is heavily imbalanced (", top_pct, "% in one category). If more data will be collected, deliberately oversample the minority categories; if the categories themselves are the issue, consider whether they need to be redefined or collapsed."),
-                                                    paste0("El sistema de categorías está muy desbalanceado (", top_pct, "% en una sola categoría). Si se recolectarán más datos, sobremuestree deliberadamente las categorías minoritarias; si las categorías en sí son el problema, considere si necesitan redefinirse o colapsarse.")))
+                action_items <- c(action_items, jmvcore::format(
+                    .("The category system is heavily imbalanced ({pct}% in one category). If more data will be collected, deliberately oversample the minority categories; if the categories themselves are the issue, consider whether they need to be redefined or collapsed."),
+                    pct = top_pct))
             if (has_outlier_rater)
-                action_items <- c(action_items, tr(paste0("Rater “", worst_rater, "” disagrees with the group more than the others do. Review that rater's criteria against the category definitions, consider a calibration/training session with shared examples, or add an adjudication step for cases where that rater's classification is the deciding vote."),
-                                                    paste0("El juez “", worst_rater, "” discrepa del grupo más que los demás. Revise el criterio de ese juez frente a las definiciones de categoría, considere una sesión de calibración/entrenamiento con ejemplos compartidos, o agregue un paso de arbitraje para los casos en que la clasificación de ese juez sea el voto decisivo.")))
+                action_items <- c(action_items, jmvcore::format(
+                    .("Rater “{rater}” disagrees with the group more than the others do. Review that rater's criteria against the category definitions, consider a calibration/training session with shared examples, or add an adjudication step for cases where that rater's classification is the deciding vote."),
+                    rater = worst_rater))
             if (has_biased_rater)
-                action_items <- c(action_items, tr(paste0("Rater “", biased_rater, "” has a systematic mean shift (", if(bias_gap>0) "+" else "", bias_gap, " points). Consider a calibration session with shared anchor cases, or mean-center that rater's scores before combining them with the others."),
-                                                    paste0("El juez “", biased_rater, "” tiene un desplazamiento sistemático de media (", if(bias_gap>0) "+" else "", bias_gap, " puntos). Considere una sesión de calibración con casos ancla compartidos, o centre la media de ese juez antes de combinar sus puntajes con los demás.")))
+                action_items <- c(action_items, jmvcore::format(
+                    .("Rater “{rater}” has a systematic mean shift ({sign}{gap} points). Consider a calibration session with shared anchor cases, or mean-center that rater's scores before combining them with the others."),
+                    rater = biased_rater, sign = if(bias_gap>0) "+" else "", gap = bias_gap))
             if (band_is_weak)
-                action_items <- c(action_items, tr("Overall agreement is Fair or worse: before using these ratings for any consequential decision, run a rater-training session with shared examples and explicit category anchors, then re-rate a fresh sample to confirm agreement improves.",
-                                                    "El acuerdo general es Aceptable o peor: antes de usar estas calificaciones para cualquier decisión consecuente, realice una sesión de entrenamiento de jueces con ejemplos compartidos y anclas de categoría explícitas, y vuelva a calificar una muestra nueva para confirmar que el acuerdo mejora."))
+                action_items <- c(action_items, .("Overall agreement is Fair or worse: before using these ratings for any consequential decision, run a rater-training session with shared examples and explicit category anchors, then re-rate a fresh sample to confirm agreement improves."))
             if (level == "ordinal" && k > 2L && opt$kappa)
-                action_items <- c(action_items, tr("Weighted multi-rater Kappa is not available here for >2 raters; Krippendorff's ordinal α already accounts for the ordinal scale with any number of raters.",
-                                                    "El Kappa ponderado multi-juez no está disponible aquí para >2 jueces; el α ordinal de Krippendorff ya considera la escala ordinal con cualquier número de jueces."))
+                action_items <- c(action_items, .("Weighted multi-rater Kappa is not available here for >2 raters; Krippendorff's ordinal α already accounts for the ordinal scale with any number of raters."))
             if (n < 30L)
-                action_items <- c(action_items, tr(paste0("n = ", n, " is a small sample for agreement statistics; treat the confidence intervals above as wide."),
-                                                    paste0("n = ", n, " es una muestra pequeña para estadísticos de acuerdo; trate los intervalos de confianza de arriba como amplios.")))
+                action_items <- c(action_items, jmvcore::format(
+                    .("n = {n} is a small sample for agreement statistics; treat the confidence intervals above as wide."),
+                    n = n))
             if (length(action_items) == 0L)
-                action_items <- c(tr("No specific corrective action indicated — the primary estimate can be reported as-is.",
-                                      "No se indica ninguna acción correctiva específica — la estimación primaria puede reportarse tal cual."))
+                action_items <- c(.("No specific corrective action indicated — the primary estimate can be reported as-is."))
 
             action_html <- paste0("<ul style='line-height:1;'>", paste0("<li>", action_items, "</li>", collapse = ""), "</ul>")
 
             bands_html <- if (level %in% c("nominal", "ordinal")) paste0(
                 "<table style='border-collapse:collapse;'>",
-                "<tr><th style='padding:3px 8px;border:1px solid #ccc;'>", tr("Value", "Valor"), "</th><th style='padding:3px 8px;border:1px solid #ccc;'>", tr("Interpretation", "Interpretación"), "</th></tr>",
-                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>&lt; 0</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Poor", "Pobre"), "</td></tr>",
-                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>0.00 – 0.20</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Slight", "Leve"), "</td></tr>",
-                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>0.21 – 0.40</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Fair", "Aceptable"), "</td></tr>",
-                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>0.41 – 0.60</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Moderate", "Moderado"), "</td></tr>",
-                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>0.61 – 0.80</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Substantial", "Sustancial"), "</td></tr>",
-                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>0.81 – 1.00</td><td style='padding:3px 8px;border:1px solid #ccc;'>", tr("Almost perfect", "Casi perfecto"), "</td></tr>",
+                "<tr><th style='padding:3px 8px;border:1px solid #ccc;'>", .("Value"), "</th><th style='padding:3px 8px;border:1px solid #ccc;'>", .("Interpretation"), "</th></tr>",
+                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>&lt; 0</td><td style='padding:3px 8px;border:1px solid #ccc;'>", .("Poor"), "</td></tr>",
+                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>0.00 – 0.20</td><td style='padding:3px 8px;border:1px solid #ccc;'>", .("Slight"), "</td></tr>",
+                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>0.21 – 0.40</td><td style='padding:3px 8px;border:1px solid #ccc;'>", .("Fair"), "</td></tr>",
+                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>0.41 – 0.60</td><td style='padding:3px 8px;border:1px solid #ccc;'>", .("Moderate"), "</td></tr>",
+                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>0.61 – 0.80</td><td style='padding:3px 8px;border:1px solid #ccc;'>", .("Substantial"), "</td></tr>",
+                "<tr><td style='padding:3px 8px;border:1px solid #ccc;'>0.81 – 1.00</td><td style='padding:3px 8px;border:1px solid #ccc;'>", .("Almost perfect"), "</td></tr>",
                 "</table>",
-                "<p style='font-size:0.85em;color:#666;'>", tr("Landis &amp; Koch (1977) bands, applied to chance-corrected categorical agreement (Kappa, Gwet, Krippendorff on nominal/ordinal data).",
-                                                              "Bandas de Landis &amp; Koch (1977), aplicadas al acuerdo categórico corregido por azar (Kappa, Gwet, Krippendorff en datos nominales/ordinales)."), "</p>"
+                "<p style='font-size:0.85em;color:#666;'>", .("Landis &amp; Koch (1977) bands, applied to chance-corrected categorical agreement (Kappa, Gwet, Krippendorff on nominal/ordinal data)."), "</p>"
             ) else ""
 
             # .fl_prose_open()/.fl_prose_close() (shared-helpers.R) wrap this
@@ -878,21 +838,19 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             # su propio tamaño/espaciado.
             rec_html <- paste0(
                 .fl_prose_open(),
-                "<h4>", tr("What happened", "Qué pasó"), "</h4>",
+                "<h4>", .("What happened"), "</h4>",
                 happened_html,
-                "<h4>", tr("Why", "Por qué"), "</h4>",
+                "<h4>", .("Why"), "</h4>",
                 why_html,
-                "<h4>", tr("What it means", "Qué implica"), "</h4>",
+                "<h4>", .("What it means"), "</h4>",
                 implies_html,
                 if (nzchar(bands_html)) paste0(
-                    "<p style='margin-top:0.8em;font-weight:700;'>", tr("Interpretation Benchmarks", "Criterios de interpretación"), "</p>",
+                    "<p style='margin-top:0.8em;font-weight:700;'>", .("Interpretation Benchmarks"), "</p>",
                     bands_html
                 ) else "",
-                "<h4>", tr("What to do now", "Qué hacer ahora"), "</h4>",
+                "<h4>", .("What to do now"), "</h4>",
                 action_html,
-                "<p style='font-size:0.85em;color:#666;'>", tr(
-                    "See Fiability Library → Inter-Rater Agreement for full definitions and assumptions, and Bibliography → Inter-Rater Reliability for references.",
-                    "Vea Biblioteca de Confiabilidad → Acuerdo entre Jueces para definiciones y supuestos completos, y Bibliografía → Confiabilidad entre Jueces para las referencias."),
+                "<p style='font-size:0.85em;color:#666;'>", .("See Fiability Library → Inter-Rater Agreement for full definitions and assumptions, and Bibliography → Inter-Rater Reliability for references."),
                 "</p>",
                 "</div>"
             )
@@ -921,8 +879,8 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                                        width = .15, orientation = "y", colour = cols$primary, linewidth = .6) +
                 ggplot2::geom_point(size = 3.2, colour = cols$primary) +
                 ggplot2::coord_cartesian(xlim = c(lo, hi)) +
-                ggplot2::labs(x = private$.tr("Value (95% CI)", "Valor (IC 95%)"), y = NULL,
-                              title = private$.tr("Coefficient Comparison", "Comparación de Coeficientes")) +
+                ggplot2::labs(x = .("Value (95% CI)"), y = NULL,
+                              title = .("Coefficient Comparison")) +
                 ggtheme
             print(p)
             TRUE
@@ -936,14 +894,13 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             st <- image$state
             if (is.null(st) || is.null(st$data) || nrow(st$data) == 0L) return(FALSE)
             d <- st$data
-            tr <- private$.tr
             cols <- private$.plot_colors(theme)
             if (identical(st$type, "prevalence")) {
                 d$category <- factor(d$category, levels = rev(d$category))
                 p <- ggplot2::ggplot(d, ggplot2::aes(x = pct, y = category)) +
                     ggplot2::geom_bar(stat = "identity", fill = cols$primary, alpha = .85, width = .6) +
-                    ggplot2::labs(x = tr("% of all ratings", "% de todas las calificaciones"), y = NULL,
-                                  title = tr("Category Prevalence", "Prevalencia de Categoría")) +
+                    ggplot2::labs(x = .("% of all ratings"), y = NULL,
+                                  title = .("Category Prevalence")) +
                     ggtheme
             } else if (identical(st$type, "rater_mean")) {
                 grand_mean <- st$extra
@@ -951,9 +908,8 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
                     ggplot2::geom_bar(stat = "identity", fill = cols$primary, alpha = .85, width = .6) +
                     ggplot2::geom_hline(yintercept = grand_mean, linetype = "dashed",
                                         colour = cols$secondary, linewidth = .6) +
-                    ggplot2::labs(x = NULL, y = tr("Mean score", "Puntaje medio"),
-                                  title = tr("Rater Mean Score (dashed = grand mean)",
-                                             "Puntaje Medio por Juez (línea punteada = media general)")) +
+                    ggplot2::labs(x = NULL, y = .("Mean score"),
+                                  title = .("Rater Mean Score (dashed = grand mean)")) +
                     ggtheme
             } else return(FALSE)
             print(p)
