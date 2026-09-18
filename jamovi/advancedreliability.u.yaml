@@ -47,7 +47,7 @@ children:
       identified. Factor names are used as-is in tables and text.
   - type: CheckBox
     name: secondOrder
-    label: Fit a second-order (hierarchical) general factor
+    label: Second-order (hierarchical) general factor
   - type: CollapseBox
     label: Estimation
     collapsed: true
@@ -68,11 +68,11 @@ children:
     children:
       - type: CheckBox
         name: showParallelAnalysis
-        label: Show exploratory dimensionality (parallel analysis)
+        label: Exploratory dimensionality (parallel analysis)
   - type: CollapseBox
     label: Diagnostic Plot
     collapsed: true
     children:
       - type: CheckBox
         name: showPlots
-        label: Show reliability comparison plot
+        label: Reliability comparison plot

@@ -46,7 +46,7 @@ children:
     children:
       - type: CheckBox
         name: checkIccAssumptions
-        label: Check ICC assumptions (normality, homoscedasticity, linearity)
+        label: ICC assumptions (normality, homoscedasticity, linearity)
         enable: (icc)
   - type: CollapseBox
     label: Bootstrap Confidence Intervals

@@ -70,4 +70,4 @@ children:
     children:
       - type: CheckBox
         name: showPlots
-        label: Show fit-by-level plot
+        label: Fit-by-level plot

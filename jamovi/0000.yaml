@@ -16,40 +16,42 @@ icon: assets/fiabilitylab-icon.png
 analyses:
   - name: fiabilityLibrary
     title: Fiability Library
-    menuSubgroup: library
+    menuSubgroup: Library
     ns: fiabilitylab
     category: analyses
     menuGroup: FiabilityLab
     menuTitle: Fiability Library
   - name: bibliography
     title: Bibliography
-    menuSubgroup: library
+    menuSubgroup: Library
     ns: fiabilitylab
     category: analyses
     menuGroup: FiabilityLab
     menuTitle: Bibliography
   - name: internalConsistency
     title: Internal Consistency
-    menuSubgroup: analysis
+    menuSubgroup: Analysis
     ns: fiabilitylab
     category: analyses
     menuGroup: FiabilityLab
     menuTitle: Internal Consistency
   - name: interRater
     title: Inter-Rater Agreement
-    menuSubgroup: analysis
+    menuSubgroup: Analysis
     ns: fiabilitylab
     category: analyses
     menuGroup: FiabilityLab
     menuTitle: Inter-Rater Agreement
   - title: Advanced Reliability (SEM)
     name: advancedReliability
+    menuSubgroup: Analysis
     ns: fiabilitylab
     category: analyses
     menuGroup: FiabilityLab
     menuTitle: Advanced Reliability (SEM)
   - title: Measurement Invariance
     name: measurementInvariance
+    menuSubgroup: Analysis
     ns: fiabilitylab
     category: analyses
     menuGroup: FiabilityLab

@@ -73,14 +73,14 @@ children:
     children:
       - type: CheckBox
         name: checkDimensionality
-        label: Check dimensionality via parallel analysis
+        label: Dimensionality (parallel analysis)
   - type: CollapseBox
     label: Reliability Assumptions
     collapsed: true
     children:
       - type: CheckBox
         name: checkReliabilityAssumptions
-        label: Check Alpha's assumptions (tau-equivalence, unidimensionality, normality)
+        label: Alpha's assumptions (tau-equivalence, unidimensionality, normality)
         enable: (alpha)
   - type: CollapseBox
     label: Bootstrap Confidence Intervals
@@ -98,7 +98,7 @@ children:
     children:
       - type: CheckBox
         name: showPlots
-        label: Show plots
+        label: Plots
       - type: CheckBox
         name: plotItemDist
         label: Item score distributions
