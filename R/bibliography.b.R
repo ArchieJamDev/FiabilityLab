@@ -26,6 +26,11 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
   "bibliographyClass",
   inherit = bibliographyBase,
   private = list(
+    # Report-text translation dispatch -- see shared-helpers.R's own
+    # note on .fl_tr() for why this stays separate from jamovi's native
+    # .() catalog (which still drives every YAML-derived title/label).
+    .tr = function(en, es) .fl_tr(en, es, self$options$reportLang),
+
     .run = function() {
       topic <- self$options$topic
 
@@ -223,11 +228,11 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
         "Psychological Bulletin" = list(scopus = TRUE, wos = TRUE, other = "", quartile = "Q1"),
         "Journal of Modern Applied Statistical Methods" = list(
           scopus = TRUE, wos = FALSE,
-          other = .("PsycINFO, EMBASE, ScienceDirect"),
-          quartile = .("no current SJR/JCR quartile found")),
+          other = private$.tr("PsycINFO, EMBASE, ScienceDirect", "PsycINFO, EMBASE, ScienceDirect"),
+          quartile = private$.tr("no current SJR/JCR quartile found", "sin cuartil SJR/JCR vigente encontrado")),
         "Journal of Chiropractic Medicine" = list(scopus = TRUE, wos = FALSE, other = "", quartile = "Q2 (SJR)"),
         "Archives of Orofacial Sciences" = list(scopus = TRUE, wos = FALSE, other = "",
-          quartile = .("Q3-Q4 (SJR, varies by subject category)")),
+          quartile = private$.tr("Q3-Q4 (SJR, varies by subject category)", "Q3-Q4 (SJR, var\u00EDa seg\u00FAn categor\u00EDa tem\u00E1tica)")),
         "Journal of Marketing Research" = list(scopus = TRUE, wos = TRUE, other = "", quartile = "Q1"),
         "Journal of the Academy of Marketing Science" = list(scopus = TRUE, wos = TRUE, other = "", quartile = "Q1"),
         "Structural Equation Modeling" = list(scopus = TRUE, wos = TRUE, other = "", quartile = "Q1"),
@@ -245,11 +250,11 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
 
       ref_type_label <- function(rt) {
         switch(rt,
-               seminal = .("Original/seminal"),
-               methodological = .("Methodological"),
-               review = .("Review/comparison"),
-               application = .("Application"),
-               book = .("Reference book"),
+               seminal = private$.tr("Original/seminal", "Original/seminal"),
+               methodological = private$.tr("Methodological", "Metodol\u00F3gica"),
+               review = private$.tr("Review/comparison", "Revisi\u00F3n/comparaci\u00F3n"),
+               application = private$.tr("Application", "Aplicaci\u00F3n"),
+               book = private$.tr("Reference book", "Libro de referencia"),
                rt)
       }
 
@@ -260,13 +265,13 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
 
       get_journal_biblio <- function(journal_name) {
         hit <- journal_biblio[[journal_name]]
-        if (is.null(hit)) list(scopus = NA, wos = NA, other = "", quartile = .("pending"))
+        if (is.null(hit)) list(scopus = NA, wos = NA, other = "", quartile = private$.tr("pending", "pendiente"))
         else hit
       }
 
       yesno <- function(x) {
-        if (is.na(x)) return(.("pending"))
-        if (isTRUE(x)) .("Yes") else "No"
+        if (is.na(x)) return(private$.tr("pending", "pendiente"))
+        if (isTRUE(x)) private$.tr("Yes", "S\u00ED") else "No"
       }
 
       build_citations_table <- function() {
@@ -281,7 +286,7 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
 
         rows_html <- vapply(article_refs, function(r) {
           cite <- get_citation(r$authors[[1]][1], r$year)
-          cites_val  <- if (!is.null(cite$citations)) cite$citations else .("Pending")
+          cites_val  <- if (!is.null(cite$citations)) cite$citations else private$.tr("Pending", "Pendiente")
           source_val <- if (nzchar(cite$source)) cite$source else "—"
           other_val  <- if (nzchar(cite$other)) cite$other else "—"
           paste0("<tr>",
@@ -293,28 +298,28 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
                  "</tr>")
         }, character(1))
 
-        intro_txt <- paste0("<p>", .("The citation count for each reference is the higher of the two values returned by OpenAlex and Crossref's own “is-referenced-by-count” for that DOI (both queried directly, not estimated); the lower value is kept in the “Other sources” column. Values correspond to a snapshot taken in September 2026 and change continuously. Books are not included in this table; only journal-published articles are listed here."), "</p>")
+        intro_txt <- paste0("<p>", private$.tr("The citation count for each reference is the higher of the two values returned by OpenAlex and Crossref's own \u201Cis-referenced-by-count\u201D for that DOI (both queried directly, not estimated); the lower value is kept in the \u201COther sources\u201D column. Values correspond to a snapshot taken in September 2026 and change continuously. Books are not included in this table; only journal-published articles are listed here.", "El n\u00FAmero de citas de cada referencia es el mayor entre los dos valores retornados por OpenAlex y el \u201Cis-referenced-by-count\u201D propio de Crossref para ese DOI (ambos consultados directamente, no estimados); el valor menor se conserva en la columna \u201COtras fuentes\u201D. Los valores corresponden a una instant\u00E1nea tomada en septiembre de 2026 y cambian continuamente. Los libros no se incluyen en esta tabla; solo se listan aqu\u00ED art\u00EDculos publicados en revistas."), "</p>")
 
         paste0(
           '<div style="max-width: 700px; width: 100%; line-height: 1; margin-top: 24px; text-align: justify;">',
           '<div style="margin-bottom: 2px;"><h3 style="margin: 0;">',
-          .("Bibliometric Profile and Impact of the Literature Used"),
+          private$.tr("Bibliometric Profile and Impact of the Literature Used", "Perfil Bibliom\u00E9trico e Impacto de la Literatura Utilizada"),
           '</h3><div style="font-size: 0.75em; font-style: italic; line-height: 1; margin-top: 2px;">',
-          .("(periodicals only)"), '</div></div>',
-          '<h4 style="margin-top: 16px;">', .("Article-Level Citation Metrics"), '</h4>',
+          private$.tr("(periodicals only)", "(solo publicaciones peri\u00F3dicas)"), '</div></div>',
+          '<h4 style="margin-top: 16px;">', private$.tr("Article-Level Citation Metrics", "M\u00E9tricas de Citaci\u00F3n a Nivel de Art\u00EDculo"), '</h4>',
           intro_txt,
           '<div style="page-break-inside: avoid; break-inside: avoid;">',
           '<table style="border-collapse: collapse; width: 100%; margin-bottom: 4px;">',
-          '<tr><td style="border: none; padding: 0; line-height: 1;"><b>', .("Table 1"), '</b></td></tr>',
-          '<tr><td style="border: none; padding: 0; font-style: italic; line-height: 1;">', .("Citations"), '</td></tr>',
+          '<tr><td style="border: none; padding: 0; line-height: 1;"><b>', private$.tr("Table 1", "Tabla 1"), '</b></td></tr>',
+          '<tr><td style="border: none; padding: 0; font-style: italic; line-height: 1;">', private$.tr("Citations", "Citaciones"), '</td></tr>',
           '</table>',
           '<table style="border-collapse: collapse; width: 100%; font-size: 0.85em; border-top: 2px solid #000; border-bottom: 2px solid #000;">',
           "<thead><tr>",
-          "<th ", th_l, ">", .("Reference"), "</th>",
-          "<th ", th_c, ">", .("Citations"), "</th>",
-          "<th ", th_c, ">", .("Source"), "</th>",
-          "<th ", th_c, ">", .("Other sources"), "</th>",
-          "<th ", th_c, ">", .("Reference type"), "</th>",
+          "<th ", th_l, ">", private$.tr("Reference", "Referencia"), "</th>",
+          "<th ", th_c, ">", private$.tr("Citations", "Citaciones"), "</th>",
+          "<th ", th_c, ">", private$.tr("Source", "Fuente"), "</th>",
+          "<th ", th_c, ">", private$.tr("Other sources", "Otras fuentes"), "</th>",
+          "<th ", th_c, ">", private$.tr("Reference type", "Tipo de referencia"), "</th>",
           "</tr></thead>",
           "<tbody>", paste(rows_html, collapse = ""), "</tbody>",
           "</table></div></div>"
@@ -340,28 +345,28 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
                  "</tr>")
         }, character(1))
 
-        intro_txt <- paste0("<p>", .("This table describes, for each journal in which at least one of FiabilityLab's references was published, its presence in the main bibliographic indexing databases (Scopus, Web of Science) and, where applicable, other relevant indexes and the journal's quartile. These indicators reflect the editorial quality and dissemination reach of the publication, not the quality of the individual cited article. Each journal appears only once, even if several articles published in it were cited."), "</p>")
+        intro_txt <- paste0("<p>", private$.tr("This table describes, for each journal in which at least one of FiabilityLab's references was published, its presence in the main bibliographic indexing databases (Scopus, Web of Science) and, where applicable, other relevant indexes and the journal's quartile. These indicators reflect the editorial quality and dissemination reach of the publication, not the quality of the individual cited article. Each journal appears only once, even if several articles published in it were cited.", "Esta tabla describe, para cada revista en la que se public\u00F3 al menos una de las referencias de FiabilityLab, su presencia en las principales bases de indexaci\u00F3n bibliogr\u00E1fica (Scopus, Web of Science) y, cuando aplica, otras indexaciones relevantes y el cuartil de la revista. Estos indicadores reflejan la calidad editorial y el alcance de divulgaci\u00F3n de la publicaci\u00F3n, no la calidad del art\u00EDculo individual citado. Cada revista aparece una sola vez, aunque se hayan citado varios art\u00EDculos publicados en ella."), "</p>")
 
         paste0(
           '<div style="max-width: 700px; width: 100%; line-height: 1; margin-top: 24px; text-align: justify;">',
-          '<h4 style="margin-top: 0;">', .("Journal-Level Quality and Dissemination Metrics"), '</h4>',
+          '<h4 style="margin-top: 0;">', private$.tr("Journal-Level Quality and Dissemination Metrics", "M\u00E9tricas de Calidad y Divulgaci\u00F3n a Nivel de Revista"), '</h4>',
           intro_txt,
           '<div style="page-break-inside: avoid; break-inside: avoid;">',
           '<table style="border-collapse: collapse; width: 100%; margin-bottom: 4px;">',
-          '<tr><td style="border: none; padding: 0; line-height: 1;"><b>', .("Table 2"), '</b></td></tr>',
-          '<tr><td style="border: none; padding: 0; font-style: italic; line-height: 1;">', .("Bibliometric Summary"), '</td></tr>',
+          '<tr><td style="border: none; padding: 0; line-height: 1;"><b>', private$.tr("Table 2", "Tabla 2"), '</b></td></tr>',
+          '<tr><td style="border: none; padding: 0; font-style: italic; line-height: 1;">', private$.tr("Bibliometric Summary", "Resumen Bibliom\u00E9trico"), '</td></tr>',
           '</table>',
           '<table style="border-collapse: collapse; width: 100%; font-size: 0.85em; border-top: 2px solid #000; border-bottom: 2px solid #000;">',
           "<thead><tr>",
-          "<th ", th_c, ">", .("Journal"), "</th>",
+          "<th ", th_c, ">", private$.tr("Journal", "Revista"), "</th>",
           "<th ", th_c, ">Scopus</th>",
-          "<th ", th_c, ">", .("Web of Science"), "</th>",
-          "<th ", th_c, ">", .("Other relevant indexes"), "</th>",
-          "<th ", th_c, ">", .("Quartile"), "</th>",
+          "<th ", th_c, ">", private$.tr("Web of Science", "Web of Science"), "</th>",
+          "<th ", th_c, ">", private$.tr("Other relevant indexes", "Otras indexaciones relevantes"), "</th>",
+          "<th ", th_c, ">", private$.tr("Quartile", "Cuartil"), "</th>",
           "</tr></thead>",
           "<tbody>", paste(rows_html, collapse = ""), "</tbody>",
           "</table></div>",
-          "<p style='font-size: 0.8em; font-style: italic; margin-top: 8px;'>", .("Note. Journal-level data (Scopus, Web of Science, quartile, other indexes) were verified per journal, not per individual article, since they belong to the publication, not the article. Each article's reference type is shown in Table 1 (Citations), not here. Books are not included, since the indicators in this table are specific to periodicals."), "</p>",
+          "<p style='font-size: 0.8em; font-style: italic; margin-top: 8px;'>", private$.tr("Note. Journal-level data (Scopus, Web of Science, quartile, other indexes) were verified per journal, not per individual article, since they belong to the publication, not the article. Each article's reference type is shown in Table 1 (Citations), not here. Books are not included, since the indicators in this table are specific to periodicals.", "Nota. Los datos a nivel de revista (Scopus, Web of Science, cuartil, otras indexaciones) se verificaron por revista, no por art\u00EDculo individual, ya que pertenecen a la publicaci\u00F3n, no al art\u00EDculo. El tipo de referencia de cada art\u00EDculo se muestra en la Tabla 1 (Citaciones), no aqu\u00ED. Los libros no se incluyen, ya que los indicadores de esta tabla son espec\u00EDficos de publicaciones peri\u00F3dicas."), "</p>",
           "</div>"
         )
       }
@@ -437,37 +442,37 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
 
       page_style <- 'style="max-width: 700px; line-height: 1; text-align: justify;"'
 
-      title_txt <- .("Methodological Bibliography")
+      title_txt <- private$.tr("Methodological Bibliography", "Bibliograf\u00EDa Metodol\u00F3gica")
 
       intro <- paste0(
         '<div ', page_style, '>',
         "<h3>", title_txt, "</h3>",
-        "<p>", .("This section collects the methodological references that support the decisions, criteria, and interpretations in FiabilityLab. Each reference was individually verified (authors, journal or publisher, volume, pages, and DOI or direct link) before being included; FiabilityLab does not auto-generate citations or accept unverified references."), "</p>",
-        "<p>", .("Reference style: "), "<b>", style_label, "</b>.</p>",
+        "<p>", private$.tr("This section collects the methodological references that support the decisions, criteria, and interpretations in FiabilityLab. Each reference was individually verified (authors, journal or publisher, volume, pages, and DOI or direct link) before being included; FiabilityLab does not auto-generate citations or accept unverified references.", "Esta secci\u00F3n re\u00FAne las referencias metodol\u00F3gicas que respaldan las decisiones, criterios e interpretaciones de FiabilityLab. Cada referencia fue verificada individualmente (autores, revista o editorial, volumen, p\u00E1ginas y DOI o enlace directo) antes de incluirse; FiabilityLab no genera citas autom\u00E1ticamente ni acepta referencias sin verificar."), "</p>",
+        "<p>", private$.tr("Reference style: ", "Estilo de referencia: "), "<b>", style_label, "</b>.</p>",
         "</div>"
       )
 
       topic_label <- switch(topic,
-        all     = .("All References"),
-        ctt     = .("Classical Test Theory"),
-        irr     = .("Inter-Rater Reliability"),
-        gtheory = .("Generalizability Theory"),
-        irt     = .("Item Response Theory"),
+        all     = private$.tr("All References", "Todas las Referencias"),
+        ctt     = private$.tr("Classical Test Theory", "Teor\u00EDa Cl\u00E1sica de los Tests"),
+        irr     = private$.tr("Inter-Rater Reliability", "Confiabilidad entre Jueces"),
+        gtheory = private$.tr("Generalizability Theory", "Teor\u00EDa de la Generalizabilidad"),
+        irt     = private$.tr("Item Response Theory", "Teor\u00EDa de Respuesta al \u00CDtem"),
         topic
       )
 
       if (length(selected) == 0) {
         refs <- paste0(
           '<div ', page_style, '>',
-          "<p><b>", .("Selected topic: "), esc(topic_label), "</b></p>",
-          "<p>", .("There are no curated references for this topic yet. References are added progressively as each FiabilityLab module is developed (see the Documento Maestro's Library/Bibliography admission contract)."), "</p>",
+          "<p><b>", private$.tr("Selected topic: ", "Tema seleccionado: "), esc(topic_label), "</b></p>",
+          "<p>", private$.tr("There are no curated references for this topic yet. References are added progressively as each FiabilityLab module is developed (see the Documento Maestro's Library/Bibliography admission contract).", "Todav\u00EDa no hay referencias curadas para este tema. Las referencias se agregan progresivamente a medida que se desarrolla cada m\u00F3dulo de FiabilityLab (ver el contrato de admisi\u00F3n Library/Bibliography del Documento Maestro)."), "</p>",
           "</div>"
         )
       } else {
         ref_lines <- vapply(selected, format_ref, character(1))
         refs <- paste0(
           '<div ', page_style, '>',
-          "<p><b>", .("Selected topic: "), esc(topic_label), "</b></p>",
+          "<p><b>", private$.tr("Selected topic: ", "Tema seleccionado: "), esc(topic_label), "</b></p>",
           paste(ref_lines, collapse = ""),
           "</div>"
         )
@@ -475,7 +480,7 @@ bibliographyClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Clas
 
       notes <- paste0(
         '<div ', page_style, '>',
-        "<p>", .("The bibliography presented here brings together articles and books by the original authors, prioritizing classic references and those that have received the greatest recognition and use in current research. It does not aim to be exhaustive, but rather to offer a precise selection of the sources most relevant to the reliability designs considered in FiabilityLab. It is advisable to periodically compare these references against the most recent scientific literature, since new studies may be published that support, challenge, or expand the methods included here."), "</p>",
+        "<p>", private$.tr("The bibliography presented here brings together articles and books by the original authors, prioritizing classic references and those that have received the greatest recognition and use in current research. It does not aim to be exhaustive, but rather to offer a precise selection of the sources most relevant to the reliability designs considered in FiabilityLab. It is advisable to periodically compare these references against the most recent scientific literature, since new studies may be published that support, challenge, or expand the methods included here.", "La bibliograf\u00EDa aqu\u00ED presentada re\u00FAne art\u00EDculos y libros de los autores originales, priorizando las referencias cl\u00E1sicas y aquellas que han recibido mayor reconocimiento y uso en la investigaci\u00F3n actual. No pretende ser exhaustiva, sino ofrecer una selecci\u00F3n precisa de las fuentes m\u00E1s relevantes para los dise\u00F1os de confiabilidad considerados en FiabilityLab. Es recomendable contrastar peri\u00F3dicamente estas referencias con la literatura cient\u00EDfica m\u00E1s reciente, ya que pueden publicarse nuevos estudios que respalden, cuestionen o ampl\u00EDen los m\u00E9todos aqu\u00ED incluidos."), "</p>",
         "</div>"
       )
 

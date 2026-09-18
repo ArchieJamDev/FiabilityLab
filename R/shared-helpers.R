@@ -120,6 +120,54 @@
 # era idéntico letra por letra en interRater e internalConsistency. Esta
 # versión pura toma el valor de la opción ya leído para que el `.tr` de cada
 # clase quede en una sola línea.
+#
+# EN: jamovi's own native .() translation catalog (jamovi/i18n/) drives
+# every string that jamovi's compiler auto-extracts from .a.yaml/.u.yaml/
+# .r.yaml (titles, checkbox labels, column headers) -- those switch
+# instantly when jamovi's own UI language preference changes, since that
+# lookup lives in jamovi's client-side layer, independent of the R engine
+# process. But jmvcore::Options$translate() (what .() calls) builds its
+# translator ONCE per Options instance and never invalidates it, and
+# jamovi's R engine process reads its own effective language once (via
+# Sys.getenv("LANGUAGE")/locale) when the engine process starts -- so any
+# text WE generate dynamically in R (the actual report prose, table
+# interpretation labels, reject() messages) stays frozen in whatever
+# language was active when that engine process started, and switching
+# jamovi's language preference does not retroactively change it without
+# fully restarting jamovi (confirmed empirically: deleting and re-adding
+# the same analysis within the same running jamovi session is NOT
+# enough). This is why report *text* keeps its own reportLang option and
+# tr(en, es) dispatch (instant, per-analysis, no restart needed) even
+# though YAML-derived UI strings use jamovi's native catalog.
+# ES: El catálogo nativo de traducción `.()` de jamovi (jamovi/i18n/)
+# controla cada cadena que el compilador de jamovi extrae automáticamente
+# de .a.yaml/.u.yaml/.r.yaml (títulos, labels de checkbox, encabezados de
+# columna) -- esas cambian al instante cuando cambia la preferencia de
+# idioma de la UI de jamovi, porque esa consulta vive en la capa del
+# cliente, independiente del proceso del motor R. Pero
+# jmvcore::Options$translate() (lo que llama `.()`) construye su
+# traductor UNA sola vez por instancia de Options y nunca lo invalida, y
+# el proceso del motor R de jamovi lee su propio idioma efectivo una sola
+# vez (vía Sys.getenv("LANGUAGE")/locale) al arrancar el proceso -- así
+# que cualquier texto que NOSOTROS generamos dinámicamente en R (la
+# prosa real del informe, las etiquetas de interpretación de tabla, los
+# mensajes de reject()) queda congelado en el idioma que estaba activo
+# cuando arrancó ese proceso del motor, y cambiar la preferencia de
+# idioma de jamovi no lo actualiza retroactivamente sin reiniciar jamovi
+# por completo (confirmado empíricamente: eliminar y volver a agregar el
+# mismo análisis dentro de la misma sesión de jamovi NO alcanza). Por eso
+# el *texto* del informe conserva su propia opción reportLang y su
+# despacho tr(en, es) (instantáneo, por análisis, sin reiniciar nada)
+# aunque las cadenas de UI derivadas del YAML sí usan el catálogo nativo.
+.fl_normalize_lang <- function(lang) {
+    if (is.null(lang)) return("en")
+    lang <- tolower(as.character(lang))
+    if (lang %in% c("es", "esp", "spanish", "español")) return("es")
+    "en"
+}
+
+.fl_tr <- function(en, es, report_lang) if (identical(.fl_normalize_lang(report_lang), "es")) es else en
+
 # ── jamovi Table helpers ─────────────────────────────────────────────────────
 .fl_reset_table <- function(table, n_rows) {
     table$deleteRows()

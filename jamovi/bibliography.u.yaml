@@ -22,4 +22,15 @@ children:
         name: sem
       - title: Measurement Invariance
         name: invariance
+  - type: CollapseBox
+    label: Report Language
+    collapsed: false
+    children:
+      - type: ComboBox
+        name: reportLang
+        options:
+          - title: English
+            name: en
+          - title: Español
+            name: es
 ...

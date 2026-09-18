@@ -49,6 +49,12 @@ children:
     name: secondOrder
     label: Second-order (hierarchical) general factor
   - type: CollapseBox
+    label: Report Language
+    collapsed: false
+    children:
+      - type: ComboBox
+        name: reportLang
+  - type: CollapseBox
     label: Estimation
     collapsed: true
     children:

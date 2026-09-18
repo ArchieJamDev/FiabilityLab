@@ -15,7 +15,8 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             checkIccAssumptions = FALSE,
             kendallW = FALSE,
             bootstrapCi = FALSE,
-            bootstrapSamples = 1000, ...) {
+            bootstrapSamples = 1000,
+            reportLang = "en", ...) {
 
             super$initialize(
                 package="fiabilitylab",
@@ -69,6 +70,13 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 default=1000,
                 min=100,
                 max=10000)
+            private$..reportLang <- jmvcore::OptionList$new(
+                "reportLang",
+                reportLang,
+                options=list(
+                    "en",
+                    "es"),
+                default="en")
 
             self$.addOption(private$..ratings)
             self$.addOption(private$..dataType)
@@ -80,6 +88,7 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$.addOption(private$..kendallW)
             self$.addOption(private$..bootstrapCi)
             self$.addOption(private$..bootstrapSamples)
+            self$.addOption(private$..reportLang)
         }),
     active = list(
         ratings = function() private$..ratings$value,
@@ -91,7 +100,8 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         checkIccAssumptions = function() private$..checkIccAssumptions$value,
         kendallW = function() private$..kendallW$value,
         bootstrapCi = function() private$..bootstrapCi$value,
-        bootstrapSamples = function() private$..bootstrapSamples$value),
+        bootstrapSamples = function() private$..bootstrapSamples$value,
+        reportLang = function() private$..reportLang$value),
     private = list(
         ..ratings = NA,
         ..dataType = NA,
@@ -102,7 +112,8 @@ interRaterOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         ..checkIccAssumptions = NA,
         ..kendallW = NA,
         ..bootstrapCi = NA,
-        ..bootstrapSamples = NA)
+        ..bootstrapSamples = NA,
+        ..reportLang = NA)
 )
 
 interRaterResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
@@ -263,6 +274,7 @@ interRaterBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #' @param kendallW .
 #' @param bootstrapCi .
 #' @param bootstrapSamples .
+#' @param reportLang .
 #' @return A results object containing:
 #' \tabular{llllll}{
 #'   \code{results$autoDetectNote} \tab \tab \tab \tab \tab a html \cr
@@ -293,7 +305,8 @@ interRater <- function(
     checkIccAssumptions = FALSE,
     kendallW = FALSE,
     bootstrapCi = FALSE,
-    bootstrapSamples = 1000) {
+    bootstrapSamples = 1000,
+    reportLang = "en") {
 
     if ( ! requireNamespace("jmvcore", quietly=TRUE))
         stop("interRater requires jmvcore to be installed (restart may be required)")
@@ -315,7 +328,8 @@ interRater <- function(
         checkIccAssumptions = checkIccAssumptions,
         kendallW = kendallW,
         bootstrapCi = bootstrapCi,
-        bootstrapSamples = bootstrapSamples)
+        bootstrapSamples = bootstrapSamples,
+        reportLang = reportLang)
 
     analysis <- interRaterClass$new(
         options = options,

@@ -6,7 +6,8 @@ fiabilityLibraryOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
     inherit = jmvcore::Options,
     public = list(
         initialize = function(
-            category = "all", ...) {
+            category = "all",
+            reportLang = "en", ...) {
 
             super$initialize(
                 package="fiabilitylab",
@@ -26,13 +27,23 @@ fiabilityLibraryOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
                     "foundations",
                     "errors"),
                 default="all")
+            private$..reportLang <- jmvcore::OptionList$new(
+                "reportLang",
+                reportLang,
+                options=list(
+                    "en",
+                    "es"),
+                default="en")
 
             self$.addOption(private$..category)
+            self$.addOption(private$..reportLang)
         }),
     active = list(
-        category = function() private$..category$value),
+        category = function() private$..category$value,
+        reportLang = function() private$..reportLang$value),
     private = list(
-        ..category = NA)
+        ..category = NA,
+        ..reportLang = NA)
 )
 
 fiabilityLibraryResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
@@ -107,6 +118,7 @@ fiabilityLibraryBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Cla
 #'
 #' 
 #' @param category .
+#' @param reportLang .
 #' @return A results object containing:
 #' \tabular{llllll}{
 #'   \code{results$intro} \tab \tab \tab \tab \tab a html \cr
@@ -120,14 +132,16 @@ fiabilityLibraryBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Cla
 #'
 #' @export
 fiabilityLibrary <- function(
-    category = "all") {
+    category = "all",
+    reportLang = "en") {
 
     if ( ! requireNamespace("jmvcore", quietly=TRUE))
         stop("fiabilityLibrary requires jmvcore to be installed (restart may be required)")
 
 
     options <- fiabilityLibraryOptions$new(
-        category = category)
+        category = category,
+        reportLang = reportLang)
 
     analysis <- fiabilityLibraryClass$new(
         options = options,

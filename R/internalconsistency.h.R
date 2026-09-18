@@ -26,7 +26,8 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
             showPlots = FALSE,
             plotItemDist = TRUE,
             plotItemTotal = TRUE,
-            plotScree = FALSE, ...) {
+            plotScree = FALSE,
+            reportLang = "en", ...) {
 
             super$initialize(
                 package="fiabilitylab",
@@ -128,6 +129,13 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
                 "plotScree",
                 plotScree,
                 default=FALSE)
+            private$..reportLang <- jmvcore::OptionList$new(
+                "reportLang",
+                reportLang,
+                options=list(
+                    "en",
+                    "es"),
+                default="en")
 
             self$.addOption(private$..items)
             self$.addOption(private$..measureLevel)
@@ -150,6 +158,7 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
             self$.addOption(private$..plotItemDist)
             self$.addOption(private$..plotItemTotal)
             self$.addOption(private$..plotScree)
+            self$.addOption(private$..reportLang)
         }),
     active = list(
         items = function() private$..items$value,
@@ -172,7 +181,8 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
         showPlots = function() private$..showPlots$value,
         plotItemDist = function() private$..plotItemDist$value,
         plotItemTotal = function() private$..plotItemTotal$value,
-        plotScree = function() private$..plotScree$value),
+        plotScree = function() private$..plotScree$value,
+        reportLang = function() private$..reportLang$value),
     private = list(
         ..items = NA,
         ..measureLevel = NA,
@@ -194,7 +204,8 @@ internalConsistencyOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
         ..showPlots = NA,
         ..plotItemDist = NA,
         ..plotItemTotal = NA,
-        ..plotScree = NA)
+        ..plotScree = NA,
+        ..reportLang = NA)
 )
 
 internalConsistencyResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
@@ -521,6 +532,7 @@ internalConsistencyBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6
 #' @param plotItemDist .
 #' @param plotItemTotal .
 #' @param plotScree .
+#' @param reportLang .
 #' @return A results object containing:
 #' \tabular{llllll}{
 #'   \code{results$autoDetectNote} \tab \tab \tab \tab \tab a html \cr
@@ -569,7 +581,8 @@ internalConsistency <- function(
     showPlots = FALSE,
     plotItemDist = TRUE,
     plotItemTotal = TRUE,
-    plotScree = FALSE) {
+    plotScree = FALSE,
+    reportLang = "en") {
 
     if ( ! requireNamespace("jmvcore", quietly=TRUE))
         stop("internalConsistency requires jmvcore to be installed (restart may be required)")
@@ -602,7 +615,8 @@ internalConsistency <- function(
         showPlots = showPlots,
         plotItemDist = plotItemDist,
         plotItemTotal = plotItemTotal,
-        plotScree = plotScree)
+        plotScree = plotScree,
+        reportLang = reportLang)
 
     analysis <- internalConsistencyClass$new(
         options = options,

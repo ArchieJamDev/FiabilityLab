@@ -34,6 +34,12 @@ children:
         name: kendallW
         label: Kendall's W
   - type: CollapseBox
+    label: Report Language
+    collapsed: false
+    children:
+      - type: ComboBox
+        name: reportLang
+  - type: CollapseBox
     label: Data Type
     collapsed: true
     children:

@@ -52,6 +52,12 @@ children:
             name: kr21
             label: KR-21
   - type: CollapseBox
+    label: Report Language
+    collapsed: false
+    children:
+      - type: ComboBox
+        name: reportLang
+  - type: CollapseBox
     label: Measurement Level
     collapsed: true
     children:

@@ -60,4 +60,12 @@ options:
     min: 100
     max: 10000
 
+  - name: reportLang
+    type: List
+    options:
+      - name: en
+        title: English
+      - name: es
+        title: Español
+    default: en
 ...
