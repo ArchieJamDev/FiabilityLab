@@ -400,6 +400,10 @@ msgstr ""
 msgid "Almost perfect"
 msgstr ""
 
+#: internalConsistency/ui[5]/checkReliabilityAssumptions.label
+msgid "Alpha's assumptions (tau-equivalence, unidimensionality, normality)"
+msgstr ""
+
 #: R/interrater.b.R
 msgid ""
 "An absolute-agreement ICC of {icc_a} means raters' raw scores can be used "
@@ -428,7 +432,9 @@ msgstr ""
 
 #: package/analyses/internalConsistency.menuSubgroup
 #: package/analyses/interRater.menuSubgroup
-msgid "analysis"
+#: package/analyses/advancedReliability.menuSubgroup
+#: package/analyses/measurementInvariance.menuSubgroup
+msgid "Analysis"
 msgstr ""
 
 #: R/interrater.b.R
@@ -507,7 +513,7 @@ msgstr ""
 msgid "Auto-detect"
 msgstr ""
 
-#: internalConsistency/ui[1][1].label
+#: internalConsistency/options/measureLevel.description.ui
 msgid ""
 "Auto-detect inspects each item's unique values. Override when needed (e.g., "
 "0/1 coded Likert vs. true dichotomous)."
@@ -615,7 +621,7 @@ msgid "Boot SE"
 msgstr ""
 
 #: internalConsistency/ui[6].label
-#: interRater/ui[8].label
+#: interRater/ui[4].label
 msgid "Bootstrap Confidence Intervals"
 msgstr ""
 
@@ -728,18 +734,6 @@ msgstr ""
 msgid "Chance-corrected agreement, more than 2 raters"
 msgstr ""
 
-#: internalConsistency/ui[5]/checkReliabilityAssumptions.label
-msgid "Check Alpha's assumptions (tau-equivalence, unidimensionality, normality)"
-msgstr ""
-
-#: internalConsistency/ui[4]/checkDimensionality.label
-msgid "Check dimensionality via parallel analysis"
-msgstr ""
-
-#: interRater/ui/checkIccAssumptions.label
-msgid "Check ICC assumptions (normality, homoscedasticity, linearity)"
-msgstr ""
-
 #: R/fiabilitylibrary.b.R
 msgid ""
 "Choosing the wrong of the 6 ICC forms changes the conclusion (Shrout &amp; "
@@ -797,13 +791,17 @@ msgstr ""
 msgid "Coefficient Discordance"
 msgstr ""
 
+#: interRater/ui[1].label
+msgid "Coefficients"
+msgstr ""
+
 #: R/internalconsistency.b.R
 #: R/interrater.b.R
 msgid "Coefficients disagree"
 msgstr ""
 
 #: R/fiabilitylibrary.b.R
-#: interRater/ui/kappa.label
+#: interRater/ui[1]/kappa.label
 msgid "Cohen's / Fleiss' Kappa"
 msgstr ""
 
@@ -1022,7 +1020,7 @@ msgid ""
 "than CR/ω to a single weak indicator."
 msgstr ""
 
-#: internalConsistency/ui[2][0]/alpha.label
+#: internalConsistency/ui[1][0]/alpha.label
 msgid "Cronbach's Alpha"
 msgstr ""
 
@@ -1062,7 +1060,8 @@ msgstr ""
 msgid "Data Summary"
 msgstr ""
 
-#: interRater/ui/dataType.label
+#: interRater/ui[2].label
+#: interRater/ui[2]/dataType.label
 msgid "Data Type"
 msgstr ""
 
@@ -1092,7 +1091,7 @@ msgstr ""
 msgid "Diagnostic Plots"
 msgstr ""
 
-#: internalConsistency/ui[2][1].label
+#: internalConsistency/ui[1][1].label
 msgid "Dichotomous (0/1 items)"
 msgstr ""
 
@@ -1115,6 +1114,10 @@ msgstr ""
 
 #: internalConsistency/ui[4].label
 msgid "Dimensionality"
+msgstr ""
+
+#: internalConsistency/ui[4]/checkDimensionality.label
+msgid "Dimensionality (parallel analysis)"
 msgstr ""
 
 #: internalConsistency/results/dimensionalityNote.title
@@ -1237,6 +1240,10 @@ msgstr ""
 
 #: R/fiabilitylibrary.b.R
 msgid "Exploratory Dimensionality (Parallel Analysis)"
+msgstr ""
+
+#: advancedReliability/ui[4]/showParallelAnalysis.label
+msgid "Exploratory dimensionality (parallel analysis)"
 msgstr ""
 
 #: advancedReliability/results/parallelAnalysisTable.title
@@ -1364,10 +1371,6 @@ msgstr ""
 msgid "Fit"
 msgstr ""
 
-#: advancedReliability/ui/secondOrder.label
-msgid "Fit a second-order (hierarchical) general factor"
-msgstr ""
-
 #: R/measurementinvariance.b.R
 #: measurementInvariance/results/plotInvariance.title
 msgid "Fit Across Invariance Levels"
@@ -1375,6 +1378,10 @@ msgstr ""
 
 #: measurementInvariance/results/plotInvarianceNote.title
 msgid "Fit Across Invariance Levels — What It Means"
+msgstr ""
+
+#: measurementInvariance/ui[3]/showPlots.label
+msgid "Fit-by-level plot"
 msgstr ""
 
 #: R/advancedreliability.b.R
@@ -1476,7 +1483,7 @@ msgstr ""
 msgid "Good"
 msgstr ""
 
-#: internalConsistency/ui[2][0]/glb.label
+#: internalConsistency/ui[1][0]/glb.label
 msgid "Greatest Lower Bound (GLB)"
 msgstr ""
 
@@ -1502,11 +1509,11 @@ msgstr ""
 msgid "Guttman λ2 / λ6"
 msgstr ""
 
-#: internalConsistency/ui[2][0]/guttman.label
+#: internalConsistency/ui[1][0]/guttman.label
 msgid "Guttman's Lambda (λ2–λ6)"
 msgstr ""
 
-#: interRater/ui/gwet.label
+#: interRater/ui[1]/gwet.label
 msgid "Gwet's AC1 / AC2"
 msgstr ""
 
@@ -1569,8 +1576,16 @@ msgstr ""
 msgid "ICC (consistency)"
 msgstr ""
 
+#: interRater/ui[3].label
+msgid "ICC Assumptions"
+msgstr ""
+
 #: interRater/results/iccAssumptionsNote.title
 msgid "ICC Assumptions — What It Means"
+msgstr ""
+
+#: interRater/ui[3]/checkIccAssumptions.label
+msgid "ICC assumptions (normality, homoscedasticity, linearity)"
 msgstr ""
 
 #: interRater/results/iccAssumptionsTable.title
@@ -1585,7 +1600,7 @@ msgstr ""
 msgid "ICC's Assumptions"
 msgstr ""
 
-#: internalConsistency/ui[4][1].label
+#: internalConsistency/options/checkDimensionality.description.ui
 msgid ""
 "If multiple dimensions are detected, consider computing Alpha/Omega per "
 "subscale and reporting Omega Hierarchical overall."
@@ -1662,7 +1677,7 @@ msgstr ""
 msgid "Interpreting Kappa without checking prevalence"
 msgstr ""
 
-#: interRater/ui/icc.label
+#: interRater/ui[1]/icc.label
 msgid "Intraclass Correlation (ICC)"
 msgstr ""
 
@@ -1816,7 +1831,7 @@ msgid ""
 msgstr ""
 
 #: R/fiabilitylibrary.b.R
-#: interRater/ui/kendallW.label
+#: interRater/ui[1]/kendallW.label
 msgid "Kendall's W"
 msgstr ""
 
@@ -1828,7 +1843,7 @@ msgstr ""
 msgid "Knowledge/aptitude tests scored right/wrong"
 msgstr ""
 
-#: internalConsistency/ui[2][1]/kr20.label
+#: internalConsistency/ui[1][1]/kr20.label
 msgid "KR-20 (Kuder-Richardson)"
 msgstr ""
 
@@ -1841,7 +1856,7 @@ msgid ""
 "difficulties actually vary."
 msgstr ""
 
-#: internalConsistency/ui[2][1]/kr21.label
+#: internalConsistency/ui[1][1]/kr21.label
 msgid "KR-21"
 msgstr ""
 
@@ -1851,7 +1866,7 @@ msgid ""
 "difficulties vary (Kuder &amp; Richardson, 1937)"
 msgstr ""
 
-#: interRater/ui/krippendorff.label
+#: interRater/ui[1]/krippendorff.label
 msgid "Krippendorff's Alpha"
 msgstr ""
 
@@ -1884,7 +1899,7 @@ msgstr ""
 
 #: package/analyses/fiabilityLibrary.menuSubgroup
 #: package/analyses/bibliography.menuSubgroup
-msgid "library"
+msgid "Library"
 msgstr ""
 
 #: R/fiabilitylibrary.b.R
@@ -1923,7 +1938,7 @@ msgstr ""
 msgid "Max. response options"
 msgstr ""
 
-#: internalConsistency/ui[2][0]/omega.label
+#: internalConsistency/ui[1][0]/omega.label
 msgid "McDonald's Omega (total)"
 msgstr ""
 
@@ -1987,7 +2002,7 @@ msgstr ""
 msgid "Measurement level"
 msgstr ""
 
-#: internalConsistency/ui[1].label
+#: internalConsistency/ui[2].label
 msgid "Measurement Level"
 msgstr ""
 
@@ -2331,6 +2346,20 @@ msgid "Not applicable to nominal data"
 msgstr ""
 
 #: R/internalconsistency.b.R
+msgid ""
+"Not applicable to polytomous/ordinal items -- KR-20 requires genuinely "
+"dichotomous (0/1) items; set Measurement level to Dichotomous if this scale "
+"is binary."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid ""
+"Not applicable to polytomous/ordinal items -- KR-21 requires genuinely "
+"dichotomous (0/1) items; set Measurement level to Dichotomous if this scale "
+"is binary."
+msgstr ""
+
+#: R/internalconsistency.b.R
 #: R/interrater.b.R
 msgid "Not enough complete cases (minimum 5 required)."
 msgstr ""
@@ -2401,7 +2430,7 @@ msgstr ""
 msgid "OK"
 msgstr ""
 
-#: internalConsistency/ui[2][0]/omegaHierarchical.label
+#: internalConsistency/ui[1][0]/omegaHierarchical.label
 msgid "Omega Hierarchical (multidimensional)"
 msgstr ""
 
@@ -2431,6 +2460,11 @@ msgid ""
 "revising or replacing items in the low-AVE factor(s) above."
 msgstr ""
 
+#: internalConsistency/options/kr20.description.ui
+#: internalConsistency/options/kr21.description.ui
+msgid "Only applicable to genuinely dichotomous (0/1) items."
+msgstr ""
+
 #: R/fiabilitylibrary.b.R
 msgid "Only applies to ranking data, not raw ratings"
 msgstr ""
@@ -2449,7 +2483,7 @@ msgstr ""
 msgid "Ordinal ({n} categories)"
 msgstr ""
 
-#: internalConsistency/ui[2][0]/ordinalAlpha.label
+#: internalConsistency/ui[1][0]/ordinalAlpha.label
 msgid "Ordinal Alpha (polychoric)"
 msgstr ""
 
@@ -2578,11 +2612,15 @@ msgstr ""
 msgid "Please select at least 2 rating variables to compute agreement coefficients."
 msgstr ""
 
+#: internalConsistency/ui[7]/showPlots.label
+msgid "Plots"
+msgstr ""
+
 #: R/internalconsistency.b.R
 msgid "Polytomous ({n} response options)"
 msgstr ""
 
-#: internalConsistency/ui[2][0].label
+#: internalConsistency/ui[1][0].label
 msgid "Polytomous (Likert / rating scales)"
 msgstr ""
 
@@ -2769,6 +2807,10 @@ msgstr ""
 msgid "Reliability Comparison — What It Means"
 msgstr ""
 
+#: advancedReliability/ui[5]/showPlots.label
+msgid "Reliability comparison plot"
+msgstr ""
+
 #: R/fiabilitylibrary.b.R
 msgid "Reliability Due to G"
 msgstr ""
@@ -2787,7 +2829,7 @@ msgid ""
 "Bernstein, 1994)"
 msgstr ""
 
-#: internalConsistency/ui[2].label
+#: internalConsistency/ui[1].label
 msgid "Reliability Statistics"
 msgstr ""
 
@@ -2955,6 +2997,10 @@ msgstr ""
 msgid "Second-order (general factor)"
 msgstr ""
 
+#: advancedReliability/ui/secondOrder.label
+msgid "Second-order (hierarchical) general factor"
+msgstr ""
+
 #: R/advancedreliability.b.R
 msgid "Second-order fits worse"
 msgstr ""
@@ -3012,20 +3058,7 @@ msgid "Shapiro-Wilk (items failing)"
 msgstr ""
 
 #: advancedReliability/options/showParallelAnalysis.title
-#: advancedReliability/ui[4]/showParallelAnalysis.label
 msgid "Show exploratory dimensionality (parallel analysis)"
-msgstr ""
-
-#: measurementInvariance/ui[3]/showPlots.label
-msgid "Show fit-by-level plot"
-msgstr ""
-
-#: internalConsistency/ui[7]/showPlots.label
-msgid "Show plots"
-msgstr ""
-
-#: advancedReliability/ui[5]/showPlots.label
-msgid "Show reliability comparison plot"
 msgstr ""
 
 #: R/advancedreliability.b.R
@@ -3090,7 +3123,7 @@ msgstr ""
 
 #: R/fiabilitylibrary.b.R
 #: R/internalconsistency.b.R
-#: internalConsistency/ui[2][0]/splitHalf.label
+#: internalConsistency/ui[1][0]/splitHalf.label
 msgid "Split-half (Spearman-Brown)"
 msgstr ""
 
@@ -3183,7 +3216,7 @@ msgstr ""
 msgid "Tau-equivalence"
 msgstr ""
 
-#: internalConsistency/ui[5][1].label
+#: internalConsistency/options/checkReliabilityAssumptions.description.ui
 msgid ""
 "Tau-equivalence is tested via a CFA likelihood-ratio test (requires the "
 "lavaan package); unidimensionality and normality reuse the Dimensionality "

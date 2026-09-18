@@ -190,6 +190,9 @@
             "Almost perfect": [
                 "Casi perfecto"
             ],
+            "Alpha's assumptions (tau-equivalence, unidimensionality, normality)": [
+                "Supuestos del Alfa (tau-equivalencia, unidimensionalidad, normalidad)"
+            ],
             "An absolute-agreement ICC of {icc_a} means raters' raw scores can be used interchangeably (e.g. averaged into a single composite score) with reasonable confidence; the higher consistency-type ICC ({icc_c}) means their RANKING of cases is more trustworthy than their absolute scale.": [
                 "Un ICC de acuerdo absoluto de {icc_a} significa que los puntajes brutos de los jueces sí pueden usarse de forma intercambiable (p. ej. promediados en un puntaje compuesto único) con confianza razonable; el ICC tipo consistencia más alto ({icc_c}) indica que su ORDENAMIENTO de los casos es más confiable que su escala absoluta."
             ],
@@ -199,8 +202,8 @@
             "An alternative construct-reliability coefficient, H = &Sigma;(λ²/(1&minus;λ²)) / [1 + &Sigma;(λ²/(1&minus;λ²))], computed from the same standardized loadings as CR/ω (Hancock &amp; Mueller, 2001). H is monotonically related to each item's own loading in a way CR/ω is not, making it somewhat less sensitive to adding or removing a single weak indicator — reported alongside CR/ω, not as a replacement for it.": [
                 "Un coeficiente de confiabilidad de constructo alternativo, H = &Sigma;(λ²/(1&minus;λ²)) / [1 + &Sigma;(λ²/(1&minus;λ²))], calculado a partir de las mismas cargas estandarizadas que el CR/ω (Hancock &amp; Mueller, 2001). El H se relaciona monótonamente con la carga de cada ítem de una forma en que el CR/ω no lo hace, haciéndolo algo menos sensible a agregar o quitar un único indicador débil — se reporta junto al CR/ω, no como su reemplazo."
             ],
-            "analysis": [
-                ""
+            "Analysis": [
+                "Análisis"
             ],
             "and Krippendorff's α ({v})": [
                 "y el α de Krippendorff ({v})"
@@ -346,15 +349,6 @@
             "Chance-corrected agreement, more than 2 raters": [
                 "Acuerdo corregido por azar, más de 2 jueces"
             ],
-            "Check Alpha's assumptions (tau-equivalence, unidimensionality, normality)": [
-                ""
-            ],
-            "Check dimensionality via parallel analysis": [
-                ""
-            ],
-            "Check ICC assumptions (normality, homoscedasticity, linearity)": [
-                ""
-            ],
             "Choosing the wrong of the 6 ICC forms changes the conclusion (Shrout &amp; Fleiss, 1979)": [
                 "Elegir la forma incorrecta entre las 6 de ICC cambia la conclusión (Shrout &amp; Fleiss, 1979)"
             ],
@@ -384,6 +378,9 @@
             ],
             "Coefficient Discordance": [
                 ""
+            ],
+            "Coefficients": [
+                "Coeficientes"
             ],
             "Coefficients disagree": [
                 "Los coeficientes no coinciden"
@@ -541,6 +538,9 @@
             "Dimensionality": [
                 ""
             ],
+            "Dimensionality (parallel analysis)": [
+                "Dimensionalidad (análisis paralelo)"
+            ],
             "Dimensionality Check": [
                 ""
             ],
@@ -604,6 +604,9 @@
             "Exploratory Dimensionality (Parallel Analysis)": [
                 "Dimensionalidad Exploratoria (Análisis Paralelo)"
             ],
+            "Exploratory dimensionality (parallel analysis)": [
+                "Dimensionalidad exploratoria (análisis paralelo)"
+            ],
             "Exploratory Dimensionality: Parallel Analysis": [
                 ""
             ],
@@ -664,14 +667,14 @@
             "Fit": [
                 ""
             ],
-            "Fit a second-order (hierarchical) general factor": [
-                ""
-            ],
             "Fit Across Invariance Levels": [
                 "Ajuste a Través de los Niveles de Invariancia"
             ],
             "Fit Across Invariance Levels — What It Means": [
                 ""
+            ],
+            "Fit-by-level plot": [
+                "Gráfico de ajuste por nivel"
             ],
             "Fits comparably": [
                 "Ajusta de forma comparable"
@@ -778,8 +781,14 @@
             "ICC (consistency)": [
                 "ICC (consistencia)"
             ],
+            "ICC Assumptions": [
+                "Supuestos del ICC"
+            ],
             "ICC Assumptions — What It Means": [
                 ""
+            ],
+            "ICC assumptions (normality, homoscedasticity, linearity)": [
+                "Supuestos del ICC (normalidad, homocedasticidad, linealidad)"
             ],
             "ICC Assumptions Check": [
                 ""
@@ -955,8 +964,8 @@
             "Less intuitive interpretation scale than Kappa (Krippendorff, 2018)": [
                 "Escala de interpretación menos intuitiva que el Kappa (Krippendorff, 2018)"
             ],
-            "library": [
-                ""
+            "Library": [
+                "Biblioteca"
             ],
             "Likert/continuous items; quick default estimate": [
                 "Ítems Likert/continuos; estimación por defecto rápida"
@@ -1231,6 +1240,12 @@
             "Not applicable to nominal data": [
                 "No aplica a datos nominales"
             ],
+            "Not applicable to polytomous/ordinal items -- KR-20 requires genuinely dichotomous (0/1) items; set Measurement level to Dichotomous if this scale is binary.": [
+                "No aplicable a ítems politómicos/ordinales -- KR-20 requiere ítems genuinamente dicotómicos (0/1); ajuste el Nivel de Medida a Dicotómico si esta escala es binaria."
+            ],
+            "Not applicable to polytomous/ordinal items -- KR-21 requires genuinely dichotomous (0/1) items; set Measurement level to Dichotomous if this scale is binary.": [
+                "No aplicable a ítems politómicos/ordinales -- KR-21 requiere ítems genuinamente dicotómicos (0/1); ajuste el Nivel de Medida a Dicotómico si esta escala es binaria."
+            ],
             "Not enough complete cases (minimum 5 required).": [
                 "No hay suficientes casos completos (mínimo 5 requeridos)."
             ],
@@ -1281,6 +1296,9 @@
             ],
             "Only after ruling out a theoretically defensible respecification: consider revising or replacing items in the low-AVE factor(s) above.": [
                 "Solo tras descartar una reespecificación teóricamente defendible: considere revisar o reemplazar ítems en el/los factor(es) con AVE bajo de arriba."
+            ],
+            "Only applicable to genuinely dichotomous (0/1) items.": [
+                "Solo aplicable a ítems genuinamente dicotómicos (0/1)."
             ],
             "Only applies to ranking data, not raw ratings": [
                 "Solo aplica a datos de ranking, no a calificaciones brutas"
@@ -1368,6 +1386,9 @@
             ],
             "Please select at least 2 rating variables to compute agreement coefficients.": [
                 "Por favor seleccione al menos 2 variables de calificación para calcular los coeficientes de acuerdo."
+            ],
+            "Plots": [
+                "Gráficos"
             ],
             "Polytomous ({n} response options)": [
                 "Politómico ({n} opciones de respuesta)"
@@ -1489,6 +1510,9 @@
             "Reliability Comparison — What It Means": [
                 ""
             ],
+            "Reliability comparison plot": [
+                "Gráfico comparativo de confiabilidad"
+            ],
             "Reliability Due to G": [
                 "Confiabilidad Debida a G"
             ],
@@ -1600,6 +1624,9 @@
             "Second-order (general factor)": [
                 "Segundo orden (factor general)"
             ],
+            "Second-order (hierarchical) general factor": [
+                "Factor general de segundo orden (jerárquico)"
+            ],
             "Second-order fits worse": [
                 "Segundo orden ajusta peor"
             ],
@@ -1634,15 +1661,6 @@
                 "Shapiro-Wilk (ítems que fallan)"
             ],
             "Show exploratory dimensionality (parallel analysis)": [
-                ""
-            ],
-            "Show fit-by-level plot": [
-                ""
-            ],
-            "Show plots": [
-                ""
-            ],
-            "Show reliability comparison plot": [
                 ""
             ],
             "Significant: imposing a single general factor over the ": [
