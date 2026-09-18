@@ -681,51 +681,61 @@ cita en Bibliography.
 
 # 12. Internationalization
 
-FiabilityLab follows a bilingual philosophy, built entirely on jamovi's own
-native translation mechanism rather than a custom one.
+FiabilityLab follows a bilingual philosophy, split across two genuinely
+different mechanisms -- a deliberate hybrid, not an inconsistency.
 
-Source code
+## UI/YAML-derived text: jamovi's native catalog
 
-English, with Spanish comments immediately below (per CODE_STYLE.md)
+Every string jamovi's compiler auto-extracts from `.a.yaml`/`.u.yaml`/
+`.r.yaml` (option titles, checkbox labels, table column headers,
+`0000.yaml` menu text) needs no explicit markup at all -- it flows
+automatically into `jamovi/i18n/catalog.pot` (master English list, via
+`jmvtools::i18nCreate("catalog")`/`jmvtools::i18nUpdate("*")`) and
+`jamovi/i18n/es.po` (Spanish translations, populated by hand). This layer
+switches language **instantly** when jamovi's own global UI language
+preference changes, because that lookup lives in jamovi's client-side
+layer, independent of the R engine process.
 
-User-facing report text
+## Report text: a per-analysis `reportLang` option
 
-Every static string wrapped in `.()` (jamovi's translation-catalog lookup);
-dynamic/interpolated text built with `jmvcore::format(.("template {x}"),
-x = value)` so the template string itself stays a stable catalog key
-
-↓
-
-`jamovi/i18n/catalog.pot` — master list of every English string, extracted
-automatically from source via `jmvtools::i18nCreate("catalog")`
-
-↓
-
-`jamovi/i18n/es.po` — the Spanish translation of each catalog entry,
-generated via `jmvtools::i18nCreate("es")` and populated by hand (or
-`jmvtools::i18nUpdate("es")` after adding new `.()` strings)
-
-↓
-
-Report language follows jamovi's own global UI language setting --
-there is no per-analysis language option. (Before v1.5.0, each analysis
-carried its own `reportLang` option, dispatching through a private
-`tr(en, es)`/`.tr()` closure; this was replaced module-wide in response
-to jamovi's 2026-09-16 module review, since a custom mechanism duplicated
-what jamovi already provides and did not respect jamovi's own language
-setting.)
-
-Future translations (a third language, for example) only require adding
-another `.po` file and populating it -- no source-code changes.
+Every analysis exposes its own `reportLang` option (English/Español),
+dispatched through a private `.tr(en, es)` method (`.fl_tr()` in
+shared-helpers.R) for every string generated dynamically in R -- report
+prose, table interpretation labels (`.interp_rel()`/`.interp_kappa()`),
+plot titles/axes, and `jmvcore::reject()` error messages. This is
+deliberately **not** jamovi's native `.()` mechanism, even though v1.5.0
+briefly migrated it there in response to jamovi's 2026-09-16 module
+review finding #6. That migration was reverted after real-world use
+exposed a serious cost: `jmvcore::Options$translate()` (what `.()`
+calls) builds its translator once per Options instance and never
+invalidates it, and jamovi's R engine process reads its effective
+language once when the process starts -- so switching jamovi's global
+language preference does not retroactively re-translate an
+already-run analysis, and not even deleting and re-adding the same
+analysis within the same running jamovi session is enough; a full
+jamovi restart is required. A `reportLang` dropdown on a specific
+analysis, by contrast, is an ordinary option -- flipping it triggers a
+normal instant re-run, exactly like changing any other option, with no
+restart needed. **Rule of thumb going forward**: if a string is a
+literal in a `.yaml` file, let jamovi's native catalog handle it; if a
+string is built or chosen inside `.b.R`'s `.run()` (or any private
+method it calls), route it through `private$.tr(en, es)`.
 
 -------------------------------------------------------------------------------
 
 # Internacionalización
 
-La arquitectura está preparada para incorporar nuevos idiomas: basta con
-agregar otro archivo `.po` en `jamovi/i18n/` y poblarlo -- no requiere
-modificar el código fuente. El idioma del reporte sigue la configuración
-global de idioma de jamovi, no una opción por análisis.
+Dos mecanismos deliberadamente distintos, no una inconsistencia. El texto
+que viene literal de los archivos `.yaml` (títulos, checkboxes, columnas
+de tabla) usa el catálogo nativo de jamovi (`jamovi/i18n/`) y cambia de
+idioma al instante con la preferencia global de jamovi. El texto que
+generamos dinámicamente en R (la prosa del informe, las etiquetas de
+interpretación, los mensajes de error) usa la opción `reportLang` propia
+de cada análisis (`private$.tr(en, es)`), porque el catálogo nativo de
+jamovi congela su traductor una sola vez por instancia y no se actualiza
+sin reiniciar jamovi por completo -- confirmado empíricamente durante
+v1.5.0, lo que motivó revertir la migración completa que se había hecho
+inicialmente en respuesta a la revisión de jamovi del 2026-09-16.
 
 -------------------------------------------------------------------------------
 

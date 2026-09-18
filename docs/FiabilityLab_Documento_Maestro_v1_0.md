@@ -210,10 +210,16 @@ de jamovi (2026-09-16):**
 - El manejo de errores pasó de ocultar resultados en silencio
   (`setVisible(FALSE)` en todo) a `jmvcore::reject()`, que muestra el
   panel de error estable y gris propio de jamovi.
-- El mecanismo de idioma (antes una opción `reportLang` por análisis con
-  llamadas `tr(en, es)` propias) se migró al catálogo de traducción
-  nativo de jamovi (`.()`, `jamovi/i18n/`) — el idioma del reporte ahora
-  sigue la configuración global de idioma de jamovi.
+- El mecanismo de idioma quedó dividido deliberadamente en dos: el texto
+  que viene literal de los `.yaml` (títulos, checkboxes, columnas) usa
+  el catálogo nativo de jamovi (`.()`, `jamovi/i18n/`) y cambia de idioma
+  al instante con la preferencia global de jamovi; el texto que se genera
+  dinámicamente en R (la prosa del informe) conserva su propia opción
+  `reportLang` por análisis (`private$.tr(en, es)`). Se intentó migrar
+  también el texto del informe al catálogo nativo, pero se revirtió tras
+  confirmar que el catálogo de jamovi congela el idioma una sola vez por
+  instancia y no se actualiza sin reiniciar jamovi por completo — un
+  costo real de UX que el selector propio no tenía.
 - Los gráficos migraron de una opción `plotStyle` propia al sistema nativo
   de temas/paletas de jamovi (`ggtheme`/`theme`).
 - Corregido un error en Advanced Reliability donde la confiabilidad-debida-a-G

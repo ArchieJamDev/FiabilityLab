@@ -20,12 +20,18 @@ Measurement Invariance, Fiability Library, Bibliography) affected.
   mis-parses.
 - Replaced literal HTML entities in report text with their Unicode
   characters.
-- Migrated every analysis's language mechanism from a custom
-  `reportLang` option/`tr(en, es)` calls to jamovi's native `.()`
-  translation catalog (`jamovi/i18n/catalog.pot`, `jamovi/i18n/es.po`) --
-  report language now follows jamovi's own global UI language setting
-  instead of a per-analysis dropdown. Fiability Library and Bibliography
-  remain separate analyses.
+- Migrated every YAML-derived UI string (option titles, checkbox labels,
+  table column headers) to jamovi's native `.()` translation catalog
+  (`jamovi/i18n/catalog.pot`, `jamovi/i18n/es.po`), which switches
+  language instantly with jamovi's own global UI language setting. Report
+  *text* (the dynamically-generated prose, table interpretation labels,
+  and error messages) keeps its own per-analysis `reportLang` option and
+  `tr(en, es)` dispatch -- an initial attempt to migrate that too was
+  reverted after confirming jamovi's native catalog freezes its
+  translator once per analysis instance and does not pick up a language
+  change without a full jamovi restart, unlike the instant, per-analysis
+  `reportLang` dropdown. Fiability Library and Bibliography remain
+  separate analyses.
 - Migrated all plots from a custom `plotStyle` option to jamovi's native
   theme/palette system (`ggtheme`/`theme`, from `self$options$theme` and
   `self$options$palette`).
