@@ -365,7 +365,6 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             normality_applicable <- opt$normality && level != "dichotomous" && !is_ordinal_scale
             if (normality_applicable) {
                 norm_tab <- self$results$normalityTable
-                private$.reset_table(norm_tab, k)
                 for (j in seq_len(k)) {
                     x  <- df[[j]]
                     sk <- if (length(x) >= 3) {
@@ -388,8 +387,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                            else if (p_val < .05) .("Non-normal")
                            else .("Normal")
                     if (!is.na(p_val) && p_val < .05) nonnormal_count <- nonnormal_count + 1L
-                    norm_tab$setRow(rowNo = j, values = list(
-                        item     = names(df)[j],
+                    norm_tab$setRow(rowKey = names(df)[j], values = list(
                         W        = W_val,
                         p        = p_val,
                         sig      = private$.sig(p_val),
@@ -445,15 +443,13 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
 
                 if (opt$itemAnalysis) {
                     it_tab <- self$results$itemTable
-                    private$.reset_table(it_tab, k)
                     for (j in seq_len(k)) {
                         x  <- df[[j]]
                         sk <- if (length(x) >= 3) {
                             m <- mean(x); s <- sd(x); n_x <- length(x)
                             sum(((x - m)/s)^3) / n_x
                         } else NA_real_
-                        it_tab$setRow(rowNo = j, values = list(
-                            item       = names(df)[j],
+                        it_tab$setRow(rowKey = names(df)[j], values = list(
                             mean       = mean(x, na.rm = TRUE),
                             sd         = sd(x, na.rm = TRUE),
                             skewness   = sk,

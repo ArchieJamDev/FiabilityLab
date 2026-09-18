@@ -107,11 +107,12 @@ items:
     type: Table
     title: Item Normality (Shapiro-Wilk)
     visible: (normality)
-    rows: 0
+    rows: (items)
     columns:
       - name: item
         title: Item
         type: text
+        content: ($key)
       - name: W
         title: W
         type: number
@@ -144,11 +145,12 @@ items:
     type: Table
     title: Item Analysis
     visible: (itemAnalysis)
-    rows: 0
+    rows: (items)
     columns:
       - name: item
         title: Item
         type: text
+        content: ($key)
       - name: mean
         title: Mean
         type: number

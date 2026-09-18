@@ -343,12 +343,13 @@ internalConsistencyResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
                 name="normalityTable",
                 title="Item Normality (Shapiro-Wilk)",
                 visible="(normality)",
-                rows=0,
+                rows="(items)",
                 columns=list(
                     list(
                         `name`="item", 
                         `title`="Item", 
-                        `type`="text"),
+                        `type`="text", 
+                        `content`="($key)"),
                     list(
                         `name`="W", 
                         `title`="W", 
@@ -387,12 +388,13 @@ internalConsistencyResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6:
                 name="itemTable",
                 title="Item Analysis",
                 visible="(itemAnalysis)",
-                rows=0,
+                rows="(items)",
                 columns=list(
                     list(
                         `name`="item", 
                         `title`="Item", 
-                        `type`="text"),
+                        `type`="text", 
+                        `content`="($key)"),
                     list(
                         `name`="mean", 
                         `title`="Mean", 
