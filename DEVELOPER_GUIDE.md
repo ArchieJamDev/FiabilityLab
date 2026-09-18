@@ -188,14 +188,28 @@ agreement.
 Use the common Lab order:
 
 ```text
-Variables -> design and measurement level -> estimators -> diagnostics
--> uncertainty -> plots -> interpretation -> references
+Variables -> core estimators/coefficients -> design and measurement level
+-> diagnostics -> uncertainty -> plots -> interpretation -> references
 ```
 
+Core estimators/coefficients sit directly under the variable box, uncollapsed,
+since they are what most users came for. Measurement level/data type, item
+analysis, dimensionality, assumption checks, bootstrap and diagnostic plots
+are each their own collapsed section below -- opt-in refinements, not the
+first thing a user must configure. (Before v1.5.0, Internal Consistency and
+Inter-Rater Agreement led with Measurement Level/nested option groups; this
+was reordered in response to jamovi's 2026-09-16 module review.)
+
 Controls must have explicit defaults, bilingual labels and predictable enabling
-rules. Avoid presenting an option that is not implemented. Warnings should be
-specific, actionable and visible near the affected result. Tables must have stable
-column names, documented formats and no unexplained empty rows.
+rules. Avoid presenting an option that is not implemented. A control whose
+guidance runs longer than a single line belongs in `description.ui`/
+`description.R` (shown as a hover tooltip and in `?function` help), not as a
+paragraph-length `Label` block in `.u.yaml` -- that clutters the panel that
+should stay scannable at a glance. Warnings should be specific, actionable and
+visible near the affected result. Tables must have stable column names,
+documented formats and no unexplained empty rows. An option that produces
+no result under certain data (e.g. KR-20 on polytomous items) must say so
+explicitly in the output, never omit the row silently.
 
 ## 9. Generación de informes / Report generation
 

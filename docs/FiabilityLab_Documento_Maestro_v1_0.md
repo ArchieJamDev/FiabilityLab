@@ -1,4 +1,4 @@
-# FiabilityLab – Documento Maestro v1.0
+# FiabilityLab – Documento Maestro (v1.5.0)
 ## Integración Library + Bibliografía + Estructura del Proyecto
 
 ---
@@ -178,18 +178,48 @@ solo a confiar en el número que produce el software.
 
 ## 7. Versión del sistema
 
-**v1.0 — estado actual (2026-09):**
-- Internal Consistency: implementado.
-- Inter-Rater Agreement: implementado.
+**v1.5.0 — estado actual (2026-09-17), tras la revisión oficial de módulos
+de jamovi (2026-09-16):**
+- Internal Consistency: implementado. Panel de opciones reorganizado
+  (Coeficientes directamente bajo la caja de variables; Nivel de Medida,
+  Análisis de Ítems, Dimensionalidad, Supuestos de Confiabilidad y
+  Bootstrap ahora son secciones colapsadas y opcionales). KR-20/21 ahora
+  apagados por defecto y explican su no-aplicabilidad en vez de omitir la
+  fila en silencio.
+- Inter-Rater Agreement: implementado. Coeficientes agrupados en su propia
+  sección "Coefficients", igual que Internal Consistency; Supuestos de ICC
+  y Bootstrap ahora opt-in.
 - Advanced Reliability (SEM): implementado, como análisis de menú propio
   (`advancedReliability`), no como pestaña dentro de Internal Consistency.
 - Measurement Invariance: implementado, como análisis de menú propio
   (`measurementInvariance`).
 - Fiability Library / Bibliography: esqueleto mínimo, en expansión activa
-  siguiendo el contrato de admisión.
+  siguiendo el contrato de admisión; se mantienen como análisis separados
+  (no se fusionaron con la documentación externa ni con un archivo de
+  referencias único).
 - Temporal Stability: planificado, no iniciado (Fase 2).
 - Classification Consistency, Generalizability Theory: exploratorios, sin
   fecha comprometida (Fase 4).
+
+**Cambios de la revisión de jamovi (2026-09-16 → v1.5.0), aplicados a los
+6 análisis:**
+- 4 gráficos que se exportaban en blanco (leían campos `private$` que
+  jamovi no restaura en la instancia usada para exportar) ahora usan
+  `setState()`/`image$state`, el único canal que sí sobrevive a la
+  exportación.
+- El manejo de errores pasó de ocultar resultados en silencio
+  (`setVisible(FALSE)` en todo) a `jmvcore::reject()`, que muestra el
+  panel de error estable y gris propio de jamovi.
+- El mecanismo de idioma (antes una opción `reportLang` por análisis con
+  llamadas `tr(en, es)` propias) se migró al catálogo de traducción
+  nativo de jamovi (`.()`, `jamovi/i18n/`) — el idioma del reporte ahora
+  sigue la configuración global de idioma de jamovi.
+- Los gráficos migraron de una opción `plotStyle` propia al sistema nativo
+  de temas/paletas de jamovi (`ggtheme`/`theme`).
+- Corregido un error en Advanced Reliability donde la confiabilidad-debida-a-G
+  (`rel_g`) mostraba `NA` en todo modelo multi-factor.
+- Nombres de variable con espacios, acentos o símbolos ahora se codifican
+  de forma segura antes de construir sintaxis de modelo `lavaan`.
 
 Cada nueva fase debe actualizar este documento y `ARCHITECTURE.md` como
 parte de su definición de "hecho" — no al final, sino antes de escribir el

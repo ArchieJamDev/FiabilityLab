@@ -348,7 +348,8 @@ Defines
 • visibility
 
 • interface organization, including collapsible option sections within a
-  single analysis (e.g., Internal Consistency's Plot Style box) and, when
+  single analysis (e.g., Internal Consistency's Reliability Statistics
+  section, with secondary sections collapsed by default) and, when
   a feature's own options grow too large for that (e.g., defining a
   dynamic, unlimited number of named factors for confirmatory analysis), a
   separate menu analysis instead (Advanced Reliability (SEM), split out
@@ -680,39 +681,51 @@ cita en Bibliography.
 
 # 12. Internationalization
 
-FiabilityLab follows a bilingual philosophy.
+FiabilityLab follows a bilingual philosophy, built entirely on jamovi's own
+native translation mechanism rather than a custom one.
 
 Source code
 
-English
+English, with Spanish comments immediately below (per CODE_STYLE.md)
+
+User-facing report text
+
+Every static string wrapped in `.()` (jamovi's translation-catalog lookup);
+dynamic/interpolated text built with `jmvcore::format(.("template {x}"),
+x = value)` so the template string itself stays a stable catalog key
 
 ↓
 
-Spanish comments
-
-User interface
-
-Language files
+`jamovi/i18n/catalog.pot` — master list of every English string, extracted
+automatically from source via `jmvtools::i18nCreate("catalog")`
 
 ↓
 
-Translations
-
-Reports
-
-Localized text
+`jamovi/i18n/es.po` — the Spanish translation of each catalog entry,
+generated via `jmvtools::i18nCreate("es")` and populated by hand (or
+`jmvtools::i18nUpdate("es")` after adding new `.()` strings)
 
 ↓
 
-User language
+Report language follows jamovi's own global UI language setting --
+there is no per-analysis language option. (Before v1.5.0, each analysis
+carried its own `reportLang` option, dispatching through a private
+`tr(en, es)`/`.tr()` closure; this was replaced module-wide in response
+to jamovi's 2026-09-16 module review, since a custom mechanism duplicated
+what jamovi already provides and did not respect jamovi's own language
+setting.)
 
-Future translations should not require architectural modifications.
+Future translations (a third language, for example) only require adding
+another `.po` file and populating it -- no source-code changes.
 
 -------------------------------------------------------------------------------
 
 # Internacionalización
 
-La arquitectura está preparada para incorporar nuevos idiomas.
+La arquitectura está preparada para incorporar nuevos idiomas: basta con
+agregar otro archivo `.po` en `jamovi/i18n/` y poblarlo -- no requiere
+modificar el código fuente. El idioma del reporte sigue la configuración
+global de idioma de jamovi, no una opción por análisis.
 
 -------------------------------------------------------------------------------
 
