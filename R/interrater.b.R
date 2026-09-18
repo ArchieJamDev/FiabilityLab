@@ -917,5 +917,3 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
         }
     )
 )
-
-`%||%` <- function(a, b) if (is.null(a) || !nzchar(a)) b else a
