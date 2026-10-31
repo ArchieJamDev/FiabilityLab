@@ -1,8 +1,9 @@
 <p align="center">
-  <img src="jamovi/assets/fiabilitylab-icon.png" width="120" alt="FiabilityLab logo">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/logo/fiabilitylab-logo-dark.svg">
+    <img src="docs/logo/fiabilitylab-logo.svg" alt="FiabilityLab" width="560">
+  </picture>
 </p>
-
-# FiabilityLab
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![GitHub release](https://img.shields.io/github/v/release/ArchieJamDev/FiabilityLab)](https://github.com/ArchieJamDev/FiabilityLab/releases)

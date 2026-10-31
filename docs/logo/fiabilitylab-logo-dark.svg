@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 230" width="940" height="230" role="img" aria-label="FiabilityLab">
+  <title>FiabilityLab</title>
+  <g transform="translate(0 -6) scale(0.95)">
+    <circle cx="128" cy="132" r="92" fill="none" stroke="#8A94A6" stroke-width="2.5" stroke-dasharray="6 5" opacity="0.8"/>
+    <circle cx="128" cy="132" r="64" fill="none" stroke="#8A94A6" stroke-width="2.5" stroke-dasharray="6 5" opacity="0.8"/>
+    <line x1="128.0" y1="68.0" x2="183.4" y2="100.0" stroke="#0072B2" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
+    <line x1="183.4" y1="100.0" x2="183.4" y2="164.0" stroke="#E69F00" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
+    <line x1="183.4" y1="164.0" x2="128.0" y2="196.0" stroke="#009E73" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
+    <line x1="128.0" y1="196.0" x2="72.6" y2="164.0" stroke="#0072B2" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
+    <line x1="72.6" y1="164.0" x2="72.6" y2="100.0" stroke="#E69F00" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
+    <line x1="72.6" y1="100.0" x2="128.0" y2="68.0" stroke="#009E73" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
+    <line x1="128" y1="132" x2="128.0" y2="68.0" stroke="#0072B2" stroke-width="5" stroke-linecap="round" opacity="0.85"/>
+    <line x1="128" y1="132" x2="183.4" y2="100.0" stroke="#E69F00" stroke-width="5" stroke-linecap="round" opacity="0.85"/>
+    <line x1="128" y1="132" x2="183.4" y2="164.0" stroke="#009E73" stroke-width="5" stroke-linecap="round" opacity="0.85"/>
+    <line x1="128" y1="132" x2="128.0" y2="196.0" stroke="#0072B2" stroke-width="5" stroke-linecap="round" opacity="0.85"/>
+    <line x1="128" y1="132" x2="72.6" y2="164.0" stroke="#E69F00" stroke-width="5" stroke-linecap="round" opacity="0.85"/>
+    <line x1="128" y1="132" x2="72.6" y2="100.0" stroke="#009E73" stroke-width="5" stroke-linecap="round" opacity="0.85"/>
+    <circle cx="128.0" cy="68.0" r="12.0" fill="#0072B2" stroke="#0D1117" stroke-width="3.5"/>
+    <circle cx="183.4" cy="100.0" r="12.0" fill="#E69F00" stroke="#0D1117" stroke-width="3.5"/>
+    <circle cx="183.4" cy="164.0" r="12.0" fill="#009E73" stroke="#0D1117" stroke-width="3.5"/>
+    <circle cx="128.0" cy="196.0" r="12.0" fill="#0072B2" stroke="#0D1117" stroke-width="3.5"/>
+    <circle cx="72.6" cy="164.0" r="12.0" fill="#E69F00" stroke="#0D1117" stroke-width="3.5"/>
+    <circle cx="72.6" cy="100.0" r="12.0" fill="#009E73" stroke="#0D1117" stroke-width="3.5"/>
+    <circle cx="128.0" cy="132.0" r="20.0" fill="#7FB2E5" stroke="#0D1117" stroke-width="3.5"/>
+  </g>
+  <text x="250" y="128" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="94" font-weight="700" fill="#F2F5FA" letter-spacing="-1"><tspan fill="#3CC9A0">Fiability</tspan>Lab</text>
+  <text x="254" y="172" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="25" fill="#AEB9CC" letter-spacing="0.5">Reliability, agreement and invariance for jamovi</text>
+</svg>
