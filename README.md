@@ -74,7 +74,13 @@ FiabilityLab is educational scientific software, not a coefficient calculator, b
 
 ## Installation
 
-FiabilityLab has not yet been released (no GitHub Release or jamovi Library submission yet). For now, build it from source:
+FiabilityLab is not yet in the official jamovi Library. Until then, install it from a release file:
+
+1. Download the latest `FiabilityLab_x.y.z.jmo` from [Releases](https://github.com/ArchieJamDev/FiabilityLab/releases).
+2. In jamovi, open the **⋮** menu (top right) → **Modules** → **Install from file**, and choose the `.jmo` file.
+3. The **FiabilityLab** menu appears in the Analyses ribbon.
+
+Or build it from source:
 
 ```bash
 git clone https://github.com/ArchieJamDev/FiabilityLab.git
