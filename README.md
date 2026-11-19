@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/logo/fiabilitylab-logo-dark.svg">
-    <img src="docs/logo/fiabilitylab-logo.svg" alt="FiabilityLab" width="560">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/logo/fiabilitylab-logo-dark.svg?v=2">
+    <img src="docs/logo/fiabilitylab-logo.svg?v=2" alt="FiabilityLab" width="560">
   </picture>
 </p>
 
