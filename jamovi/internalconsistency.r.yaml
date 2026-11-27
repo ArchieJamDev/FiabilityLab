@@ -16,6 +16,25 @@ items:
     type: Table
     title: Reliability Coefficients
     rows: 0
+    clearWith:
+      - items
+      - measureLevel
+      - alpha
+      - ordinalAlpha
+      - omega
+      - omegaHierarchical
+      - glb
+      - splitHalf
+      - guttman
+      - kr20
+      - kr21
+      - itemAnalysis
+      - normality
+      - bootstrapCi
+      - bootstrapSamples
+      - checkDimensionality
+      - checkReliabilityAssumptions
+      - reportLang
     columns:
       - name: coefficient
         title: Coefficient
@@ -47,6 +66,25 @@ items:
     title: Bootstrap Confidence Intervals (95%)
     visible: (bootstrapCi)
     rows: 0
+    clearWith:
+      - items
+      - measureLevel
+      - alpha
+      - ordinalAlpha
+      - omega
+      - omegaHierarchical
+      - glb
+      - splitHalf
+      - guttman
+      - kr20
+      - kr21
+      - itemAnalysis
+      - normality
+      - bootstrapCi
+      - bootstrapSamples
+      - checkDimensionality
+      - checkReliabilityAssumptions
+      - reportLang
     columns:
       - name: coefficient
         title: Coefficient
@@ -76,6 +114,25 @@ items:
     title: Reliability Assumptions Check
     visible: (alpha && checkReliabilityAssumptions)
     rows: 0
+    clearWith:
+      - items
+      - measureLevel
+      - alpha
+      - ordinalAlpha
+      - omega
+      - omegaHierarchical
+      - glb
+      - splitHalf
+      - guttman
+      - kr20
+      - kr21
+      - itemAnalysis
+      - normality
+      - bootstrapCi
+      - bootstrapSamples
+      - checkDimensionality
+      - checkReliabilityAssumptions
+      - reportLang
     columns:
       - name: assumption
         title: Assumption
@@ -108,6 +165,25 @@ items:
     title: Item Normality (Shapiro-Wilk)
     visible: (normality)
     rows: (items)
+    clearWith:
+      - items
+      - measureLevel
+      - alpha
+      - ordinalAlpha
+      - omega
+      - omegaHierarchical
+      - glb
+      - splitHalf
+      - guttman
+      - kr20
+      - kr21
+      - itemAnalysis
+      - normality
+      - bootstrapCi
+      - bootstrapSamples
+      - checkDimensionality
+      - checkReliabilityAssumptions
+      - reportLang
     columns:
       - name: item
         title: Item
@@ -146,6 +222,25 @@ items:
     title: Item Analysis
     visible: (itemAnalysis)
     rows: (items)
+    clearWith:
+      - items
+      - measureLevel
+      - alpha
+      - ordinalAlpha
+      - omega
+      - omegaHierarchical
+      - glb
+      - splitHalf
+      - guttman
+      - kr20
+      - kr21
+      - itemAnalysis
+      - normality
+      - bootstrapCi
+      - bootstrapSamples
+      - checkDimensionality
+      - checkReliabilityAssumptions
+      - reportLang
     columns:
       - name: item
         title: Item

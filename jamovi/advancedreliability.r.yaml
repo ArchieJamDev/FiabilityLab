@@ -9,6 +9,14 @@ items:
     title: 'Exploratory Dimensionality: Parallel Analysis'
     visible: (showParallelAnalysis)
     rows: 0
+    clearWith:
+      - secondOrder
+      - itemType
+      - estimator
+      - missingData
+      - factors
+      - showParallelAnalysis
+      - reportLang
     columns:
       - name: suggested
         title: Factors Suggested
@@ -42,6 +50,14 @@ items:
     type: Table
     title: Confirmatory Factor Model Fit
     rows: 0
+    clearWith:
+      - secondOrder
+      - itemType
+      - estimator
+      - missingData
+      - factors
+      - showParallelAnalysis
+      - reportLang
     columns:
       - name: model
         title: Model
@@ -108,6 +124,14 @@ items:
     type: Table
     title: Solution Admissibility
     rows: 0
+    clearWith:
+      - secondOrder
+      - itemType
+      - estimator
+      - missingData
+      - factors
+      - showParallelAnalysis
+      - reportLang
     columns:
       - name: model
         title: Model
@@ -147,6 +171,14 @@ items:
     title: 'Model Comparison: Second-Order vs. Correlated Factors (Likelihood-Ratio Test)'
     visible: (secondOrder)
     rows: 0
+    clearWith:
+      - secondOrder
+      - itemType
+      - estimator
+      - missingData
+      - factors
+      - showParallelAnalysis
+      - reportLang
     columns:
       - name: comparison
         title: Comparison
@@ -188,6 +220,14 @@ items:
     type: Table
     title: Reliability by Factor
     rows: 0
+    clearWith:
+      - secondOrder
+      - itemType
+      - estimator
+      - missingData
+      - factors
+      - showParallelAnalysis
+      - reportLang
     columns:
       - name: factor
         title: Factor
@@ -250,6 +290,14 @@ items:
     type: Table
     title: Discriminant Validity (HTMT)
     rows: 0
+    clearWith:
+      - secondOrder
+      - itemType
+      - estimator
+      - missingData
+      - factors
+      - showParallelAnalysis
+      - reportLang
     columns:
       - name: factor_a
         title: Factor A
@@ -278,6 +326,14 @@ items:
     type: Table
     title: Modification Indices (interpret through theory, not automatically)
     rows: 0
+    clearWith:
+      - secondOrder
+      - itemType
+      - estimator
+      - missingData
+      - factors
+      - showParallelAnalysis
+      - reportLang
     columns:
       - name: suggestion
         title: Suggested parameter
