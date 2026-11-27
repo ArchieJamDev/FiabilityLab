@@ -5,11 +5,14 @@
   </picture>
 </p>
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
-[![GitHub release](https://img.shields.io/github/v/release/ArchieJamDev/FiabilityLab)](https://github.com/ArchieJamDev/FiabilityLab/releases)
-[![CI](https://github.com/ArchieJamDev/FiabilityLab/actions/workflows/jamovi-check.yml/badge.svg)](https://github.com/ArchieJamDev/FiabilityLab/actions/workflows/jamovi-check.yml)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22682200.svg)](https://doi.org/10.5281/zenodo.22682200)
-![FiabilityLab views](https://komarev.com/ghpvc/?username=ArchieJamDev-FiabilityLab&style=flat-square&color=181717&label=FiabilityLab+Views)
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3"></a>
+  <a href="https://github.com/ArchieJamDev/FiabilityLab/releases"><img src="https://img.shields.io/github/v/release/ArchieJamDev/FiabilityLab?label=release&color=4A86E0" alt="Release"></a>
+  <a href="https://doi.org/10.5281/zenodo.22682200"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.22682200.svg" alt="DOI (all versions, resolves to the latest)"></a>
+  <img src="https://img.shields.io/badge/jamovi-%E2%89%A5%201.0.8-4A86E0" alt="jamovi ≥ 1.0.8">
+  <a href="https://github.com/ArchieJamDev/FiabilityLab/actions/workflows/jamovi-check.yml"><img src="https://github.com/ArchieJamDev/FiabilityLab/actions/workflows/jamovi-check.yml/badge.svg" alt="CI"></a>
+  <img src="https://komarev.com/ghpvc/?username=ArchieJamDev-FiabilityLab&label=views&color=lightgrey&style=flat" alt="Views">
+</p>
 
 > **A jamovi module for measurement reliability, inter-rater agreement, and measurement invariance, paired with methodological guidance.**
 

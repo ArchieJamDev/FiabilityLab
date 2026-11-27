@@ -1,4 +1,4 @@
-name: Validar Módulo jamovi
+name: Validate jamovi module
 
 on:
   push:
