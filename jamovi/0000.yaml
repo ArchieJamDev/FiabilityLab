@@ -56,19 +56,6 @@ analyses:
     category: analyses
     menuGroup: FiabilityLab
     menuTitle: Measurement Invariance
-menu:
-  - title: Fiability Lab
-    menu:
-      - title: Library
-        menu:
-          - analysis: fiabilityLibrary
-          - analysis: bibliography
-      - title: Analysis
-        menu:
-          - analysis: internalConsistency
-          - analysis: interRater
-          - analysis: advancedReliability
-          - analysis: measurementInvariance
 datasets:
   - name: FiabilityLab Test Dataset (n=450)
     path: fiabilitylab_test_data.csv
