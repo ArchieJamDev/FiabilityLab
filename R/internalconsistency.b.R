@@ -292,7 +292,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
             is_ordinal_scale <- level == "polytomous" && .fl_is_low_cardinality(df)
 
             # ── 4. Auto-detect note ───────────────────────────────────────────
-            detect_icon <- if (level == "dichotomous") "&#9679;" else "&#9632;"
+            detect_icon <- if (level == "dichotomous") "\u25CF" else "\u25A0"
             level_lbl   <- if (level == "dichotomous")
                 private$.tr("Dichotomous (0/1)", "Dicot\u00F3mico (0/1)")
             else
