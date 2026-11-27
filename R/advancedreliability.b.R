@@ -258,7 +258,6 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
             # factores uno por uno. jmvcore::reject() lanza una excepción
             # para que jamovi muestre esa presentación estándar en vez de
             # una propia que oculta todo.
-                jmvcore::reject(private$.tr("This analysis requires the lavaan and semTools packages, which are not both installed here.", "Este an\u00E1lisis requiere los paquetes lavaan y semTools, que no est\u00E1n ambos instalados aqu\u00ED."))
 
             # ── Collect factor definitions from the dynamic "Add New
             # Factor" list (safe internal ids for lavaan syntax; user-
