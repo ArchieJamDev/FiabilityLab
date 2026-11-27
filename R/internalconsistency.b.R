@@ -135,8 +135,6 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
         # medida (el mismo arreglo ya aplicado a la propia prueba de
         # normalidad de este módulo, y al AFC de Advanced Reliability).
         .tau_equivalence_test = function(df, item_is_ordinal = FALSE) {
-            if (!requireNamespace("lavaan", quietly = TRUE))
-                return(list(stat = NA_real_, df = NA_integer_, p = NA_real_, available = FALSE))
             # jamovi's official module review (2026-09-16) found that item
             # names with spaces, hyphens or accented characters break
             # lavaan's model-syntax parser when pasted directly into a
@@ -753,7 +751,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                          statistic = .fl_clean_na(tau$stat),
                          df = if (!is.na(tau$df)) as.character(tau$df) else "",
                          p_value = .fl_clean_na(tau$p),
-                         verdict = if (!tau$available) private$.tr("lavaan not installed", "lavaan no instalado") else verdict(tau$p)),
+                         verdict = verdict(tau$p)),
                     list(assumption = private$.tr("Unidimensionality", "Unidimensionalidad"),
                          test = private$.tr("Parallel analysis (factors suggested)", "An\u00E1lisis paralelo (factores sugeridos)"),
                          statistic = .fl_clean_na(as.numeric(n_fact_assump)),
@@ -780,8 +778,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                     else ""
                 note_html <- paste0(.fl_prose_open(),
                     "<p>", tau_estim_p, private$.tr("Cronbach's \u03B1 is the most commonly reported reliability coefficient and also the most assumption-laden: it equals the true reliability only when items are tau-equivalent (equal true-score loadings on a single common factor) (Cronbach, 1951; Zumbo, Gadermann &amp; Zeisser, 2007). Unlike McDonald's \u03C9, GLB, or the Guttman \u03BB family above (none of which require tau-equivalence), \u03B1 is biased -- usually downward -- whenever this assumption fails.", "El Alfa de Cronbach es el coeficiente de confiabilidad m\u00E1s reportado y tambi\u00E9n el m\u00E1s cargado de supuestos: equivale a la confiabilidad verdadera solo cuando los \u00EDtems son tau-equivalentes (iguales cargas de puntaje verdadero sobre un \u00FAnico factor com\u00FAn) (Cronbach, 1951; Zumbo, Gadermann &amp; Zeisser, 2007). A diferencia del Omega de McDonald, el GLB o la familia \u03BB de Guttman de arriba (ninguno de los cuales requiere tau-equivalencia), el \u03B1 est\u00E1 sesgado -- usualmente a la baja -- cuando este supuesto falla."), "</p>",
-                    if (!tau$available) paste0("<p>⚠ ", private$.tr("The tau-equivalence test requires the lavaan package, which is not installed here -- install it for a direct statistical test; in the meantime, the discordance panel above (\u03B1 vs. \u03C9) is an indirect signal of the same thing.", "La prueba de tau-equivalencia requiere el paquete lavaan, que no est\u00E1 instalado aqu\u00ED -- inst\u00E1lelo para obtener una prueba estad\u00EDstica directa; mientras tanto, el panel de discordancia de arriba (\u03B1 vs. \u03C9) es una se\u00F1al indirecta de lo mismo."), "</p>")
-                    else if (is.na(tau$p)) paste0("<p>⚠ ", private$.tr("The tau-equivalence models did not converge on this data -- no formal verdict available; rely on the discordance panel above instead.", "Los modelos de tau-equivalencia no convergieron con estos datos -- no hay veredicto formal disponible; use el panel de discordancia de arriba en su lugar."), "</p>")
+                    if (is.na(tau$p)) paste0("<p>⚠ ", private$.tr("The tau-equivalence models did not converge on this data -- no formal verdict available; rely on the discordance panel above instead.", "Los modelos de tau-equivalencia no convergieron con estos datos -- no hay veredicto formal disponible; use el panel de discordancia de arriba en su lugar."), "</p>")
                     else if (tau_bad) paste0("<p>⚠ <b>", private$.tr("Tau-equivalence violated", "Tau-equivalencia violada"), ":</b> ",
                         private$.tr("a congeneric model (free item loadings) fits significantly better than a tau-equivalent model (equal loadings) (p &lt; .05). Items load unequally on the underlying factor, so \u03B1 is likely biased here -- report McDonald's \u03C9 instead, which does not require this assumption.", "un modelo congen\u00E9rico (cargas de \u00EDtem libres) ajusta significativamente mejor que un modelo tau-equivalente (cargas iguales) (p &lt; .05). Los \u00EDtems cargan de forma desigual sobre el factor subyacente, as\u00ED que el \u03B1 probablemente est\u00E9 sesgado aqu\u00ED -- reporte el Omega de McDonald en su lugar, que no requiere este supuesto."), "</p>")
                     else paste0("<p>✓ ", private$.tr("No evidence against tau-equivalence -- the congeneric and tau-equivalent models fit comparably well, so \u03B1's assumption looks reasonable here.", "No hay evidencia contra la tau-equivalencia -- los modelos congen\u00E9rico y tau-equivalente ajustan de forma comparable, as\u00ED que el supuesto del \u03B1 parece razonable aqu\u00ED."), "</p>"),
@@ -1121,7 +1118,7 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                     ggplot2::theme(plot.title = ggplot2::element_text(size = 9, face = "bold"),
                                    axis.text  = ggplot2::element_text(size = 8))
             })
-            if (requireNamespace("gridExtra", quietly = TRUE)) {
+            
                 # EN: arrangeGrob() returns a gtable, not a ggplot -- print()
                 # on it just prints its structure as text (this was a real
                 # bug: the item-distribution plot rendered as a blank panel
@@ -1136,9 +1133,6 @@ internalConsistencyClass <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R
                 # dibujar un gtable/grob en el dispositivo gráfico activo.
                 p <- gridExtra::arrangeGrob(grobs = plots, ncol = nc)
                 grid::grid.draw(p)
-            } else {
-                print(plots[[1]])
-            }
             TRUE
         },
 

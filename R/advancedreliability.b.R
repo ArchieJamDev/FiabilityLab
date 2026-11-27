@@ -338,7 +338,7 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
             # analysis is exploratory and sample-dependent too). Only run
             # when psych is available and the option is on; failures here
             # never block the confirmatory analysis below. ─────────────────
-            if (isTRUE(opt$showParallelAnalysis) && requireNamespace("psych", quietly = TRUE)) {
+            if (isTRUE(opt$showParallelAnalysis)) {
                 pa <- tryCatch({
                     cor_type <- if (item_is_ordinal) "poly" else "cor"
                     invisible(capture.output(out <- psych::fa.parallel(df_adv, fa = "fa", plot = FALSE, cor = cor_type)))
