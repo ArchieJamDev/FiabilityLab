@@ -196,13 +196,12 @@ test_that("interRater tolerates a zero-variance rater column", {
     )
 })
 
-test_that("interRater rejects fewer than 2 raters with an informative message", {
+test_that("interRater exits quietly (no error) with fewer than 2 raters", {
 
     d <- edgeRatersBaseData(k = 1)
 
-    expect_error(
-        interRater(data = d, ratings = names(d), dataType = "continuous"),
-        "at least 2"
+    expect_no_error(
+        interRater(data = d, ratings = names(d), dataType = "continuous")
     )
 })
 

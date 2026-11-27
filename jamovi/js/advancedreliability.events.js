@@ -42,10 +42,6 @@ const updateFactorLabels = function(ui) {
 
 const events = {
 
-    update: function(ui) {
-        updateFactorLabels(ui);
-    },
-
     onEvent_listItemAdded: function(ui) {
         updateFactorLabels(ui);
     },

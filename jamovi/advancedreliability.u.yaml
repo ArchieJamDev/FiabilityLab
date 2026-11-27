@@ -40,11 +40,6 @@ children:
                   isTarget: true
                   height: auto
                   ghostText: drag variables here
-  - type: Label
-    label: >-
-      Assign items to at least one factor above (3+ items per factor). A
-      second-order general factor needs at least 3 first-order factors to be
-      identified. Factor names are used as-is in tables and text.
   - type: CheckBox
     name: secondOrder
     label: Second-order (hierarchical) general factor

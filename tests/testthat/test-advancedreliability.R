@@ -176,15 +176,12 @@ test_that("advancedReliability rejects a zero-variance item column (CFA cannot c
     )
 })
 
-test_that("advancedReliability rejects fewer than 3 items across all factors with an informative message", {
+test_that("advancedReliability exits quietly (no error) with fewer than 3 items across all factors", {
 
     d <- edgeItemsBaseData(n_items = 2)
     factors <- list(list(label = "F1", vars = names(d)))
 
-    expect_error(
-        advancedReliability(data = d, factors = factors),
-        "at least 3 items"
-    )
+    expect_no_error(advancedReliability(data = d, factors = factors))
 })
 
 # -----------------------------------------------------------------------------

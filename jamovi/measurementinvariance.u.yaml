@@ -48,12 +48,6 @@ children:
                   isTarget: true
                   height: auto
                   ghostText: drag variables here
-  - type: Label
-    label: >-
-      Assign items to at least one factor above (3+ items per factor), and a
-      grouping variable to test invariance across. Tests whether the same
-      measurement model holds across groups (e.g. sex, country, time point)
-      before comparing group means or scores on it.
   - type: CollapseBox
     label: Report Language
     collapsed: false

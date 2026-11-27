@@ -7,30 +7,10 @@ children:
   - type: ComboBox
     name: topic
     label: Topic
-    options:
-      - title: All References
-        name: all
-      - title: Classical Test Theory
-        name: ctt
-      - title: Inter-Rater Reliability
-        name: irr
-      - title: Generalizability Theory
-        name: gtheory
-      - title: Item Response Theory
-        name: irt
-      - title: Advanced Reliability (SEM)
-        name: sem
-      - title: Measurement Invariance
-        name: invariance
   - type: CollapseBox
     label: Report Language
     collapsed: false
     children:
       - type: ComboBox
         name: reportLang
-        options:
-          - title: English
-            name: en
-          - title: Español
-            name: es
 ...

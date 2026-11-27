@@ -259,9 +259,6 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
             # para que jamovi muestre esa presentación estándar en vez de
             # una propia que oculta todo.
 
-            if (!requireNamespace("lavaan", quietly = TRUE) || !requireNamespace("semTools", quietly = TRUE))
-                jmvcore::reject(private$.tr("This analysis requires the lavaan and semTools packages, which are not both installed here.", "Este an\u00E1lisis requiere los paquetes lavaan y semTools, que no est\u00E1n ambos instalados aqu\u00ED."))
-
             # ── Collect factor definitions from the dynamic "Add New
             # Factor" list (safe internal ids for lavaan syntax; user-
             # entered labels kept only for display) -- same Array/Group
@@ -280,7 +277,7 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
                 }
             }
             if (length(factors) == 0L)
-                jmvcore::reject(private$.tr("Assign at least 3 items to at least one factor to run the confirmatory analysis.", "Asigne al menos 3 \u00EDtems a al menos un factor para correr el an\u00E1lisis confirmatorio."))
+                return()
 
             all_items <- unique(unlist(lapply(factors, function(f) f$items)))
             df_raw <- self$data[, all_items, drop = FALSE]
@@ -340,7 +337,7 @@ advancedReliabilityClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6:
             # analysis is exploratory and sample-dependent too). Only run
             # when psych is available and the option is on; failures here
             # never block the confirmatory analysis below. ─────────────────
-            if (isTRUE(opt$showParallelAnalysis) && requireNamespace("psych", quietly = TRUE)) {
+            if (isTRUE(opt$showParallelAnalysis)) {
                 pa <- tryCatch({
                     cor_type <- if (item_is_ordinal) "poly" else "cor"
                     invisible(capture.output(out <- psych::fa.parallel(df_adv, fa = "fa", plot = FALSE, cor = cor_type)))

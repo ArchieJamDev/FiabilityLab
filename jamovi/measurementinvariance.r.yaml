@@ -8,6 +8,12 @@ items:
     type: Table
     title: Group Sizes
     rows: 0
+    clearWith:
+      - group
+      - factors
+      - itemType
+      - estimator
+      - reportLang
     columns:
       - name: level
         title: Group
@@ -20,6 +26,12 @@ items:
     type: Table
     title: 'Measurement Invariance Sequence (Nested Model Comparisons)'
     rows: 0
+    clearWith:
+      - group
+      - factors
+      - itemType
+      - estimator
+      - reportLang
     columns:
       - name: model
         title: Model

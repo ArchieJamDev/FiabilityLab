@@ -229,12 +229,9 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
             # para que jamovi muestre esa presentación estándar en vez de
             # una propia que oculta todo.
 
-            if (!requireNamespace("lavaan", quietly = TRUE))
-                jmvcore::reject(private$.tr("This analysis requires the lavaan package, which is not installed here.", "Este an\u00E1lisis requiere el paquete lavaan, que no est\u00E1 instalado aqu\u00ED."))
-
             group_name <- opt$group
             if (is.null(group_name) || !nzchar(group_name))
-                jmvcore::reject(private$.tr("Assign a grouping variable to test invariance across.", "Asigne una variable de agrupaci\u00F3n para comprobar la invariancia a trav\u00E9s de ella."))
+                return()
 
             factors <- list()
             factors_opt <- opt$factors
@@ -248,7 +245,7 @@ measurementInvarianceClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R
                 }
             }
             if (length(factors) == 0L)
-                jmvcore::reject(private$.tr("Assign at least 3 items to at least one factor to run the invariance sequence.", "Asigne al menos 3 \u00EDtems a al menos un factor para correr la secuencia de invariancia."))
+                return()
 
             all_items <- unique(unlist(lapply(factors, function(f) f$items)))
             df_raw <- self$data[, c(all_items, group_name), drop = FALSE]

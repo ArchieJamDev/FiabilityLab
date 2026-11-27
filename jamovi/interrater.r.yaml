@@ -11,6 +11,18 @@ items:
     type: Table
     title: Agreement Coefficients
     rows: 0
+    clearWith:
+      - ratings
+      - dataType
+      - kappa
+      - gwet
+      - krippendorff
+      - icc
+      - checkIccAssumptions
+      - kendallW
+      - bootstrapCi
+      - bootstrapSamples
+      - reportLang
     columns:
       - name: coefficient
         title: Coefficient
@@ -55,6 +67,18 @@ items:
     title: ICC Assumptions Check
     visible: (icc && checkIccAssumptions)
     rows: 0
+    clearWith:
+      - ratings
+      - dataType
+      - kappa
+      - gwet
+      - krippendorff
+      - icc
+      - checkIccAssumptions
+      - kendallW
+      - bootstrapCi
+      - bootstrapSamples
+      - reportLang
     columns:
       - name: assumption
         title: Assumption
