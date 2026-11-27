@@ -1040,3 +1040,451 @@ msgstr ""
 #: measurementInvariance/results/invarianceTable.columns.title
 msgid "Δχ² (vs. prior)"
 msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "N/A"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Excellent"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Good"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Acceptable"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Questionable"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Poor"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Unacceptable"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Select at least 2 items to compute reliability coefficients."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Not enough complete cases (minimum 5 required)."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Polytomous ({n} response options)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Complete cases"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "removed listwise"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Max. response options"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Detected level"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "⚠ Very small sample (n < 50). Estimates likely unstable."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "⚠ Small sample (n < 100). Interpret with caution."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "✓ Adequate sample (n ≥ 100). Suitable for preliminary research."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "✓ Good sample size (n ≥ 200)."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "⚠ Subject-to-item ratio very low (< 5:1). Reliability estimates unreliable."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "⚠ Subject-to-item ratio low (5–10:1). Acceptable for pilot studies."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "✓ Subject-to-item ratio adequate (≥ 10:1)."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "<b>Normality note:</b> If items deviate markedly from normality (|skew| > 2 or |kurt| > 7), prefer Ordinal Alpha or McDonald’s Omega over Cronbach’s Alpha."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "<b>2-category items detected.</b> KR-20 and KR-21 are preferred over Cronbach’s Alpha for dichotomous data."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "<b>Few response options (≤ 4).</b> Consider Ordinal Alpha; standard Alpha may underestimate reliability."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "The n and subject-to-item thresholds below are rule-of-thumb screening guidance, not universal statistical criteria -- treat them as prompts to interpret estimates more cautiously, not as pass/fail cutoffs."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "–"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Non-normal"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Normal"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Binary (0/1) items; mathematically equivalent to KR-20 for this case"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Ordinal/Likert items; assumes τ-equivalence -- see the Reliability Assumptions Check below"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Polytomous, continuous items; assumes τ-equivalence & normality"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Cronbach's α"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Ordinal α (polychoric)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Ordinal/Likert items; does not require normality"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "McDonald's ω (total)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Polytomous; robust to non-normality; preferred over α"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Multidimensional scales; proportion of variance due to g-factor"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "N/A -- parallel analysis suggests 1 factor, so this is not conceptually distinct from ω total"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "McDonald's ω hierarchical"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "GLB (Greatest Lower Bound)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Best achievable lower-bound estimate; no distributional assumptions"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Continuous items; highly sensitive to how items are split"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Model-free lower bound; robust alternative to α"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "⚠ Not computed: items are not coded 0/1 (KR-20 requires genuinely binary items, not merely 2 categories)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Dichotomous (0/1) items only; equivalent to α for binary data"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "⚠ Not computed: items are not coded 0/1 (KR-21 requires genuinely binary items, not merely 2 categories)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Dichotomous items; assumes equal item difficulty (conservative estimate)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Not applicable to polytomous/ordinal items -- KR-20 requires genuinely dichotomous (0/1) items; set Measurement level to Dichotomous if this scale is binary."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Not applicable to polytomous/ordinal items -- KR-21 requires genuinely dichotomous (0/1) items; set Measurement level to Dichotomous if this scale is binary."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Violated"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Met"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Not applicable (dichotomous/ordinal)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Shapiro-Wilk (items failing)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Tau-equivalence"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "CFA likelihood-ratio test"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "lavaan not installed"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Unidimensionality"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Parallel analysis (factors suggested)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Normality of items"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "The congeneric/tau-equivalent models below were fit with WLSMV on polychoric/tetrachoric correlations, matching how these items were detected/set (ordinal or dichotomous)."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Cronbach's α is the most commonly reported reliability coefficient and also the most assumption-laden: it equals the true reliability only when items are tau-equivalent (equal true-score loadings on a single common factor) (Cronbach, 1951; Zumbo, Gadermann &amp; Zeisser, 2007). Unlike McDonald's ω, GLB, or the Guttman λ family above (none of which require tau-equivalence), α is biased -- usually downward -- whenever this assumption fails."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "The tau-equivalence test requires the lavaan package, which is not installed here -- install it for a direct statistical test; in the meantime, the discordance panel above (α vs. ω) is an indirect signal of the same thing."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "The tau-equivalence models did not converge on this data -- no formal verdict available; rely on the discordance panel above instead."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Tau-equivalence violated"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "a congeneric model (free item loadings) fits significantly better than a tau-equivalent model (equal loadings) (p &lt; .05). Items load unequally on the underlying factor, so α is likely biased here -- report McDonald's ω instead, which does not require this assumption."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "No evidence against tau-equivalence -- the congeneric and tau-equivalent models fit comparably well, so α's assumption looks reasonable here."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Unidimensionality violated"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "parallel analysis suggests {n} factors. A single overall α mixes distinct dimensions into one number; see the Dimensionality Check panel below for what to do about it."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Parallel analysis supports a single underlying factor -- consistent with what a single overall α is meant to measure."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Item normality violated"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "{n} item(s) fail Shapiro-Wilk (see the Item Normality table below); α's standard-error formula assumes multivariate normality, so treat its confidence interval as approximate and prefer Ordinal α or the bootstrap CI above."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "All items pass the normality check -- α is not at a distributional disadvantage here."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Not applicable to dichotomous or ordinal items -- normality is a continuous-distribution concept."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Normality testing is off (enable it in Item Analysis to check this)."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Unidimensional structure suggested."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Parallel analysis recommends {nf} factor(s) and {nc} component(s). Cronbach’s α and McDonald’s ω are appropriate."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Multidimensional structure detected: {nf} factor(s), {nc} component(s)."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Recommendation: (1) Compute Cronbach’s α per subscale separately. (2) Report Omega Hierarchical (ωₕ) for the total scale. (3) Overall α across all items may be misleading."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "if removed"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Weak item-total correlation(s)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "the following item(s) fall below the r(item-total) ≥ .30 screening threshold: {items}."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "This is a diagnostic flag, not a retention rule: a low item-total correlation can come from reverse-scoring that was never recoded, multidimensionality, deliberately heterogeneous content, or an item that genuinely doesn't function as intended. Inspect the item's content and scoring direction, and consider its theoretical role in the construct, before deciding to revise, recode, or remove it — the item-analysis table above shows α if each item were dropped only as one input to that judgment, not as the criterion itself."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "No items fall below the r(item-total) ≥ .30 threshold."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Coefficients disagree"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Cronbach's α ({alpha}) and McDonald's ω ({omega}) differ by more than .04. α assumes equal item loadings (τ-equivalence);this scale's items likely load unequally on the underlying factor, so α is probably biased here — trust ω instead."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Cronbach's α and McDonald's ω agree closely — the τ-equivalence assumption behind α looks reasonable here."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "{n1} of {n2} item(s) fail the Shapiro-Wilk normality test (p < .05)."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Prefer {alt} over raw Cronbach's α for the primary estimate."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Ordinal α"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "McDonald's ω"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "All items pass the normality check — Cronbach's α is not at a distributional disadvantage here."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Parallel analysis suggests {n} factor(s) — this scale is likely multidimensional. A single overall α/ω may blend distinct dimensions; consider reporting reliability per subscale."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Parallel analysis suggests a single (unidimensional) factor — a single overall reliability estimate is appropriate."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Inspect the content, scoring direction, and theoretical role of: {items} -- only revise or remove after that substantive review."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Report McDonald's ω as the primary coefficient, not α."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Report Ordinal α alongside α given the non-normal items."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Compute reliability per subscale in addition to the overall estimate."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "n = {n} is below the n ≥ 200 rule of thumb for a stable estimate; treat the CI above as wide."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "No specific corrective action indicated — the primary estimate can be reported as-is."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "What happened"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "The primary reliability estimate for this scale is <b>{val}</b> ({lbl})."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Why"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "What it means"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "See the Reliability Coefficients and Item Analysis tables above for the exact numbers behind each point below; the Fiability Library (Coefficients section) documents each coefficient's assumptions and formula in full."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Interpretation Benchmarks"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "What to do now"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "See Fiability Library → Coefficients for full definitions, assumptions and references (Bibliography → Classical Test Theory)."
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Value (95% CI)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Corrected item-total r"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Item–Total Correlations (threshold = .30)"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Eigenvalue"
+msgstr ""
+
+#: R/internalconsistency.b.R
+msgid "Scree Plot — Parallel Analysis"
+msgstr ""
