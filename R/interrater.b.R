@@ -206,7 +206,7 @@ interRaterClass <- if (requireNamespace("jmvcore", quietly = TRUE)) R6::R6Class(
             # esa presentación estándar en vez de una propia que oculta todo.
             ratings <- opt$ratings
             if (length(ratings) < 2)
-                jmvcore::reject(private$.tr("Please select at least 2 rating variables to compute agreement coefficients.", "Por favor seleccione al menos 2 variables de calificaci\u00F3n para calcular los coeficientes de acuerdo."))
+                return()
 
             # ── 2. Prepare data ──────────────────────────────────────────────
             df_raw <- self$data[, ratings, drop = FALSE]
